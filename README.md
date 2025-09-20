@@ -50,6 +50,12 @@ A production-ready example of a multi-tenant application built with Next.js 15, 
    ```
    KV_REST_API_URL=your_redis_url
    KV_REST_API_TOKEN=your_redis_token
+   # Domains
+   NEXT_PUBLIC_MARKETING_DOMAIN=voldegardai.com
+   NEXT_PUBLIC_APP_DOMAIN=voldegard.app
+   # Supabase
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
 4. Start the development server:
@@ -59,8 +65,8 @@ A production-ready example of a multi-tenant application built with Next.js 15, 
    ```
 
 5. Access the application:
-   - Main site: http://localhost:3000
-   - Admin panel: http://localhost:3000/admin
+   - Marketing site: http://localhost:3000
+   - App root: http://localhost:3000 (local dev uses the same port)
    - Tenants: http://[tenant-name].localhost:3000
 
 ## Multi-Tenant Architecture
@@ -75,6 +81,36 @@ This application demonstrates a subdomain-based multi-tenant architecture where:
 
 The middleware (`middleware.ts`) intelligently detects subdomains across various environments (local development, production, and Vercel preview deployments).
 
+### Database Schema (Supabase)
+
+Create a `tenants` table:
+
+```sql
+create table public.tenants (
+  id uuid primary key default gen_random_uuid(),
+  subdomain text unique not null,
+  emoji text,
+  created_at timestamptz default now()
+);
+```
+
+Grant RLS as appropriate for your app (example below is open read; tighten as needed):
+
+```sql
+alter table public.tenants enable row level security;
+create policy "public read tenants" on public.tenants for select using (true);
+create policy "public insert tenants" on public.tenants for insert with check (true);
+create policy "public delete tenants" on public.tenants for delete using (true);
+```
+
+### Auth and Cookies
+
+- Marketing domain (`voldegardai.com`): auth cookies are scoped to `voldegardai.com` only.
+- App domain (`voldegard.app`): auth cookies use domain `voldegard.app` so sessions work across tenant subdomains like `tenant.voldegard.app`.
+- Local dev: cookies are host-only (no domain) so you can test `tenant.localhost`.
+
+This behavior is implemented in `lib/supabase.ts#getCookieDomainForHost`.
+
 ## Deployment
 
 This application is designed to be deployed on Vercel. To deploy:
@@ -86,5 +122,7 @@ This application is designed to be deployed on Vercel. To deploy:
 
 For custom domains, make sure to:
 
-1. Add your root domain to Vercel
-2. Set up a wildcard DNS record (`*.yourdomain.com`) on Vercel
+1. Add both marketing and app domains to Vercel
+2. Set up a wildcard DNS record for the app domain (e.g., `*.voldegard.app`)
+3. Point the marketing domain to your marketing deployment (no wildcard required)
+4. Configure `NEXT_PUBLIC_MARKETING_DOMAIN` and `NEXT_PUBLIC_APP_DOMAIN`

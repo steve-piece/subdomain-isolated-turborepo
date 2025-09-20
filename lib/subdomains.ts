@@ -1,4 +1,4 @@
-import { redis } from '@/lib/redis';
+import { createSupabaseServerClient } from '@/lib/supabase';
 
 export function isValidIcon(str: string) {
   if (str.length > 10) {
@@ -33,29 +33,31 @@ type SubdomainData = {
 
 export async function getSubdomainData(subdomain: string) {
   const sanitizedSubdomain = subdomain.toLowerCase().replace(/[^a-z0-9-]/g, '');
-  const data = await redis.get<SubdomainData>(
-    `subdomain:${sanitizedSubdomain}`
-  );
-  return data;
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from('tenants')
+    .select('emoji, created_at')
+    .eq('subdomain', sanitizedSubdomain)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    emoji: data.emoji as string,
+    createdAt: new Date(data.created_at as string).getTime()
+  } satisfies SubdomainData;
 }
 
 export async function getAllSubdomains() {
-  const keys = await redis.keys('subdomain:*');
-
-  if (!keys.length) {
-    return [];
-  }
-
-  const values = await redis.mget<SubdomainData[]>(...keys);
-
-  return keys.map((key, index) => {
-    const subdomain = key.replace('subdomain:', '');
-    const data = values[index];
-
-    return {
-      subdomain,
-      emoji: data?.emoji || '❓',
-      createdAt: data?.createdAt || Date.now()
-    };
-  });
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from('tenants')
+    .select('subdomain, emoji, created_at')
+    .order('created_at', { ascending: false });
+  if (error || !data) return [];
+  return data.map((row) => ({
+    subdomain: row.subdomain as string,
+    emoji: (row.emoji as string) || '❓',
+    createdAt: new Date(row.created_at as string).getTime()
+  }));
 }

@@ -21,7 +21,7 @@ import {
   EmojiPickerFooter
 } from '@/components/ui/emoji-picker';
 import { createSubdomainAction } from '@/app/actions';
-import { rootDomain } from '@/lib/utils';
+import { appDomain } from '@/lib/utils';
 
 type CreateState = {
   error?: string;
@@ -46,7 +46,7 @@ function SubdomainInput({ defaultValue }: { defaultValue?: string }) {
           />
         </div>
         <span className="bg-gray-100 px-3 border border-l-0 border-input rounded-r-md text-gray-500 min-h-[36px] flex items-center">
-          .{rootDomain}
+          .{appDomain}
         </span>
       </div>
     </div>

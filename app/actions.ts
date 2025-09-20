@@ -1,10 +1,10 @@
 'use server';
 
-import { redis } from '@/lib/redis';
 import { isValidIcon } from '@/lib/subdomains';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { rootDomain, protocol } from '@/lib/utils';
+import { appDomain, protocol } from '@/lib/utils';
+import { createSupabaseServerClient } from '@/lib/supabase';
 
 export async function createSubdomainAction(
   prevState: any,
@@ -38,10 +38,13 @@ export async function createSubdomainAction(
     };
   }
 
-  const subdomainAlreadyExists = await redis.get(
-    `subdomain:${sanitizedSubdomain}`
-  );
-  if (subdomainAlreadyExists) {
+  const supabase = createSupabaseServerClient();
+  const { data: exists } = await supabase
+    .from('tenants')
+    .select('id')
+    .eq('subdomain', sanitizedSubdomain)
+    .maybeSingle();
+  if (exists) {
     return {
       subdomain,
       icon,
@@ -50,12 +53,19 @@ export async function createSubdomainAction(
     };
   }
 
-  await redis.set(`subdomain:${sanitizedSubdomain}`, {
-    emoji: icon,
-    createdAt: Date.now()
-  });
+  const { error } = await supabase
+    .from('tenants')
+    .insert({ subdomain: sanitizedSubdomain, emoji: icon });
+  if (error) {
+    return {
+      subdomain,
+      icon,
+      success: false,
+      error: 'Unable to create subdomain'
+    };
+  }
 
-  redirect(`${protocol}://${sanitizedSubdomain}.${rootDomain}`);
+  redirect(`${protocol}://${sanitizedSubdomain}.${appDomain}`);
 }
 
 export async function deleteSubdomainAction(
@@ -63,7 +73,8 @@ export async function deleteSubdomainAction(
   formData: FormData
 ) {
   const subdomain = formData.get('subdomain');
-  await redis.del(`subdomain:${subdomain}`);
+  const supabase = createSupabaseServerClient();
+  await supabase.from('tenants').delete().eq('subdomain', subdomain);
   revalidatePath('/admin');
   return { success: 'Domain deleted successfully' };
 }

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { rootDomain } from '@/lib/utils';
+import { marketingDomain, appDomain } from '@/lib/utils';
 
 function extractSubdomain(request: NextRequest): string | null {
   const url = request.url;
@@ -23,7 +23,8 @@ function extractSubdomain(request: NextRequest): string | null {
   }
 
   // Production environment
-  const rootDomainFormatted = rootDomain.split(':')[0];
+  const appRoot = appDomain.split(':')[0];
+  const marketingRoot = marketingDomain.split(':')[0];
 
   // Handle preview deployment URLs (tenant---branch-name.vercel.app)
   if (hostname.includes('---') && hostname.endsWith('.vercel.app')) {
@@ -31,32 +32,52 @@ function extractSubdomain(request: NextRequest): string | null {
     return parts.length > 0 ? parts[0] : null;
   }
 
-  // Regular subdomain detection
+  // Regular subdomain detection — only treat subdomains under app domain as tenants
   const isSubdomain =
-    hostname !== rootDomainFormatted &&
-    hostname !== `www.${rootDomainFormatted}` &&
-    hostname.endsWith(`.${rootDomainFormatted}`);
+    hostname !== appRoot &&
+    hostname !== `www.${appRoot}` &&
+    hostname.endsWith(`.${appRoot}`);
 
-  return isSubdomain ? hostname.replace(`.${rootDomainFormatted}`, '') : null;
+  // Do not consider subdomains under marketing domain as tenants
+  if (
+    hostname !== marketingRoot &&
+    hostname !== `www.${marketingRoot}` &&
+    hostname.endsWith(`.${marketingRoot}`)
+  ) {
+    return null;
+  }
+
+  return isSubdomain ? hostname.replace(`.${appRoot}`, '') : null;
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const subdomain = extractSubdomain(request);
+  const host = request.headers.get('host') || '';
+  const hostname = host.split(':')[0];
+  const appRoot = appDomain.split(':')[0];
+  const marketingRoot = marketingDomain.split(':')[0];
+
+  // If request is for the marketing domain, ensure admin is accessible and no tenant rewrite
+  if (hostname === marketingRoot || hostname === `www.${marketingRoot}`) {
+    // Marketing domain: never rewrite to tenant pages
+    return NextResponse.next();
+  }
 
   if (subdomain) {
     // Block access to admin page from subdomains
     if (pathname.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/', request.url));
+      // Send them to marketing admin
+      const protocol = request.nextUrl.protocol; // includes ':'
+      return NextResponse.redirect(new URL('/admin', `${protocol}//${marketingRoot}`));
     }
 
-    // For the root path on a subdomain, rewrite to the subdomain page
-    if (pathname === '/') {
-      return NextResponse.rewrite(new URL(`/s/${subdomain}`, request.url));
-    }
+    // Rewrite all tenant subdomain paths to /s/[subdomain]/...
+    const targetPath = pathname === '/' ? `/s/${subdomain}` : `/s/${subdomain}${pathname}`;
+    return NextResponse.rewrite(new URL(targetPath, request.url));
   }
 
-  // On the root domain, allow normal access
+  // On the app root or anywhere else, allow normal access
   return NextResponse.next();
 }
 
