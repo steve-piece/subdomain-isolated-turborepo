@@ -97,6 +97,27 @@ if (url.pathname.startsWith(`/s/${subdomain}`)) {
 
 **Technology**: Supabase Auth with Row Level Security (RLS)
 
+### Database Schema
+
+The complete database structure is defined in `database-setup.sql` and includes:
+
+```
+📊 Multi-Tenant Database Structure:
+┌─ organizations (companies/groups)
+│  ├─ tenants (subdomain mapping)
+│  └─ user_profiles (extended user data)
+└─ Custom Functions & RLS Policies
+```
+
+**Core Tables:**
+
+- **organizations**: Company/group information with settings
+- **tenants**: Maps subdomains to organizations (subdomain → org_id)
+- **user_profiles**: Extends auth.users with tenant relationships and roles
+- **tenants_public**: Public view for tenant discovery (no sensitive data)
+
+**Role Hierarchy:** `superadmin` → `admin` → `member` → `view-only`
+
 ### Authentication Flow
 
 1. **Marketing Site**: Tenant discovery at `bask-app.com/signin`
