@@ -30,7 +30,7 @@ export default function Page() {
         <div className="mt-12 text-sm text-muted-foreground">
           <p>
             Each organization gets their own secure subdomain.<br />
-            Access your workspace at yourcompany.yourapp.com
+            Access your workspace at yourcompany.{process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourapp.com'}
           </p>
         </div>
       </div>

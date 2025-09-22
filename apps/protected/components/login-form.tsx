@@ -92,9 +92,26 @@ export function LoginForm({ subdomain, className, ...props }: LoginFormProps & R
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && (
+                <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                  <p className="text-sm text-red-700 flex items-center">
+                    <span className="mr-2">⚠️</span>
+                    {error}
+                  </p>
+                </div>
+              )}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Logging in...' : 'Login'}
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
+                    Logging in...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <span className="mr-2">🔐</span>
+                    Login
+                  </span>
+                )}
               </Button>
             </div>
           </form>

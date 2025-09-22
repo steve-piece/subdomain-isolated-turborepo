@@ -55,12 +55,20 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <div className="text-center">
-            <h2 className="text-lg font-semibold">Loading {subdomain}</h2>
-            <p className="text-muted-foreground">Checking your access...</p>
+      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted/30">
+        <div className="flex flex-col items-center gap-6">
+          <div className="text-6xl mb-2">🏢</div>
+          <div className="relative">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          </div>
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+              Loading {subdomain}
+            </h2>
+            <p className="text-muted-foreground flex items-center justify-center">
+              <span className="mr-2">🔍</span>
+              Verifying your access permissions...
+            </p>
           </div>
         </div>
       </div>

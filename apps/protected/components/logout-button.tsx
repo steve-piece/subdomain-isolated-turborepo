@@ -18,7 +18,8 @@ export function LogoutButton({ subdomain }: LogoutButtonProps) {
   }
 
   return (
-    <Button variant="outline" onClick={handleLogout}>
+    <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
+      <span>🚪</span>
       Sign out
     </Button>
   )

@@ -15,7 +15,7 @@ import { Input } from '@workspace/ui/components/input'
 import { Label } from '@workspace/ui/components/label'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function OrganizationSignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [organizationName, setOrganizationName] = useState('')
@@ -25,7 +25,30 @@ export function OrganizationSignUpForm({ className, ...props }: React.ComponentP
   const [repeatPassword, setRepeatPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
+  const [subdomainValidation, setSubdomainValidation] = useState<'valid' | 'invalid' | 'pending' | null>(null)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
+
+  // Validate subdomain as user types
+  useEffect(() => {
+    if (!subdomain) {
+      setSubdomainValidation(null)
+      return
+    }
+
+    if (subdomain.length < 3) {
+      setSubdomainValidation('invalid')
+      return
+    }
+
+    if (!isValidSubdomain(subdomain)) {
+      setSubdomainValidation('invalid')
+      return
+    }
+
+    setSubdomainValidation('valid')
+  }, [subdomain])
 
   // Auto-generate subdomain from organization name
   const handleOrganizationNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,10 +81,13 @@ export function OrganizationSignUpForm({ className, ...props }: React.ComponentP
 
     try {
       // First, check if subdomain is available
+      setIsValidating(true)
       // TODO: Add subdomain availability check API call here
+      await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API call
+      setIsValidating(false)
       
       // Create user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -69,7 +95,8 @@ export function OrganizationSignUpForm({ className, ...props }: React.ComponentP
             organization_name: organizationName,
             subdomain: subdomain,
             role: 'owner'
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
         },
       })
 
@@ -81,11 +108,16 @@ export function OrganizationSignUpForm({ className, ...props }: React.ComponentP
       // 2. Set up subdomain mapping
       // 3. Assign user as owner
 
+      // Show success state briefly before redirect
+      setSuccess(true)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       router.push('/auth/sign-up-success')
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsLoading(false)
+      setIsValidating(false)
     }
   }
 
@@ -121,14 +153,33 @@ export function OrganizationSignUpForm({ className, ...props }: React.ComponentP
                     required
                     value={subdomain}
                     onChange={(e) => setSubdomain(e.target.value)}
-                    className="rounded-r-none"
+                    className={cn(
+                      "rounded-r-none",
+                      subdomainValidation === 'valid' && "border-green-500",
+                      subdomainValidation === 'invalid' && "border-red-500"
+                    )}
                   />
                   <span className="bg-muted px-3 py-2 border border-l-0 rounded-r-md text-muted-foreground">
-                    .yourapp.com
+                    .{process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourapp.com'}
                   </span>
+                  {subdomainValidation === 'valid' && (
+                    <span className="ml-2 text-green-500">✓</span>
+                  )}
+                  {subdomainValidation === 'invalid' && (
+                    <span className="ml-2 text-red-500">✗</span>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Your team will access the app at {subdomain || 'subdomain'}.yourapp.com
+                <p className={cn(
+                  "text-sm",
+                  subdomainValidation === 'valid' && "text-green-600",
+                  subdomainValidation === 'invalid' && "text-red-600",
+                  !subdomainValidation && "text-muted-foreground"
+                )}>
+                  {subdomainValidation === 'invalid' && subdomain ? (
+                    "Subdomain must be 3-63 characters, letters, numbers, and hyphens only"
+                  ) : (
+                    `Your team will access the app at ${subdomain || 'subdomain'}.${process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourapp.com'}`
+                  )}
                 </p>
               </div>
 
@@ -166,10 +217,41 @@ export function OrganizationSignUpForm({ className, ...props }: React.ComponentP
                 />
               </div>
               
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && (
+                <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              {success && (
+                <div className="p-3 rounded-md bg-green-50 border border-green-200">
+                  <p className="text-sm text-green-700 flex items-center">
+                    <span className="mr-2">✓</span>
+                    Organization created successfully! Redirecting...
+                  </p>
+                </div>
+              )}
               
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating organization...' : 'Create organization'}
+              <Button 
+                type="submit" 
+                className={cn(
+                  "w-full transition-all",
+                  success && "bg-green-600 hover:bg-green-700"
+                )} 
+                disabled={isLoading || isValidating || subdomainValidation === 'invalid'}
+              >
+                {isValidating ? (
+                  'Checking availability...'
+                ) : isLoading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
+                    Creating organization...
+                  </span>
+                ) : success ? (
+                  'Organization created!'
+                ) : (
+                  'Create organization'
+                )}
               </Button>
             </div>
             
