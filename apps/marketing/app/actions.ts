@@ -27,7 +27,18 @@ export async function searchTenants(query: string): Promise<SearchTenantsRespons
   }
 
   try {
+    // Debug environment variables
+    console.log('Search Debug:', {
+      hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY,
+      urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20) + '...',
+      keyPrefix: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY?.substring(0, 20) + '...',
+      query: query
+    })
+
     const supabase = await createClient()
+    
+    console.log('About to query tenants_public with query:', query)
     
     // Use the secure public view that excludes org_id and other sensitive data
     const { data: tenants, error } = await supabase
@@ -36,6 +47,8 @@ export async function searchTenants(query: string): Promise<SearchTenantsRespons
       .or(`subdomain.ilike.%${query}%,name.ilike.%${query}%`)
       .order('name')
       .limit(5)
+      
+    console.log('Query result:', { data: tenants, error, queryUsed: `subdomain.ilike.%${query}%,name.ilike.%${query}%` })
 
     if (error) {
       console.error('Supabase error:', error)
