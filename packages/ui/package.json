@@ -7,7 +7,10 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
@@ -26,6 +29,7 @@
     "@types/react-dom": "^19.1.7",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "eslint": "^9.32.0",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2"
   },
