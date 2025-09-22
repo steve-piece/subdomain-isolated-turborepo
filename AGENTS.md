@@ -8,14 +8,14 @@ This is a **multi-tenant SaaS application** with clean subdomain-based routing a
 
 ### Domain Structure
 
-- **Marketing Domain**: `https://bask-app.com` - Public marketing site for signup and tenant discovery
-- **App Domain**: `https://[company].ghostwrite.app` - Individual tenant applications
-- **Root Domain**: `bask-app.com` - Primary domain for marketing and onboarding
+- **Marketing Domain**: `https://${NEXT_PUBLIC_ROOT_DOMAIN}` - Public marketing site for signup and tenant discovery
+- **App Domain**: `https://[company].${NEXT_PUBLIC_APP_DOMAIN}` - Individual tenant applications
+- **Root Domain**: `${NEXT_PUBLIC_ROOT_DOMAIN}` - Primary domain for marketing and onboarding
 
 ### Key Concepts
 
-- **Domain Separation**: Marketing site (`bask-app.com`) handles onboarding, tenant apps (`*.ghostwrite.app`) handle workspaces
-- **Clean URLs**: Users see `company.ghostwrite.app/admin`, not `ghostwrite.app/s/company/admin`
+- **Domain Separation**: Marketing site (`${NEXT_PUBLIC_ROOT_DOMAIN}`) handles onboarding, tenant apps (`*.${NEXT_PUBLIC_APP_DOMAIN}`) handle workspaces
+- **Clean URLs**: Users see `company.${NEXT_PUBLIC_APP_DOMAIN}/admin`, not `${NEXT_PUBLIC_APP_DOMAIN}/s/company/admin`
 - **Session Evaluation**: Protected app homepage evaluates subdomain presence and user session
 - **Internal Routing**: Next.js file structure uses `/s/[subdomain]/` for organization
 - **Middleware Translation**: Converts clean URLs to internal routing automatically
@@ -27,20 +27,20 @@ This is a **multi-tenant SaaS application** with clean subdomain-based routing a
 
 ```
 apps/
-├── marketing/          # Public marketing site (bask-app.com)
+├── marketing/          # Public marketing site (${NEXT_PUBLIC_ROOT_DOMAIN})
 │   ├── app/
 │   │   ├── page.tsx           # Landing page
 │   │   ├── auth/sign-up/      # Organization signup
 │   │   └── signin/            # Tenant discovery & subdomain lookup
 │   └── components/
-└── protected/          # Multi-tenant app (*.ghostwrite.app)
+└── protected/          # Multi-tenant app (*.${NEXT_PUBLIC_APP_DOMAIN})
     ├── app/
     │   ├── page.tsx            # Session evaluator (redirects based on subdomain)
     │   ├── s/[subdomain]/      # Internal routing structure
-    │   │   ├── page.tsx              # Dashboard: company.ghostwrite.app/
-    │   │   ├── admin/page.tsx        # Admin: company.ghostwrite.app/admin
+│   │   ├── page.tsx              # Dashboard: company.${NEXT_PUBLIC_APP_DOMAIN}/
+│   │   ├── admin/page.tsx        # Admin: company.${NEXT_PUBLIC_APP_DOMAIN}/admin
     │   │   ├── auth/
-    │   │   │   ├── login/page.tsx    # Login: company.ghostwrite.app/auth/login
+    │   │   │   ├── login/page.tsx    # Login: company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login
     │   │   │   ├── confirm/route.ts  # Email confirmation
     │   │   │   └── error/page.tsx    # Auth errors
     │   │   ├── reset-password/page.tsx
@@ -51,12 +51,12 @@ apps/
 
 ### URL Translation Table
 
-| User Sees (Clean URL)                   | Internal Next.js Route      | File Location                               |
-| --------------------------------------- | --------------------------- | ------------------------------------------- |
-| `company.ghostwrite.app/`               | `/s/company/`               | `app/s/[subdomain]/page.tsx`                |
-| `company.ghostwrite.app/admin`          | `/s/company/admin`          | `app/s/[subdomain]/admin/page.tsx`          |
-| `company.ghostwrite.app/auth/login`     | `/s/company/auth/login`     | `app/s/[subdomain]/auth/login/page.tsx`     |
-| `company.ghostwrite.app/reset-password` | `/s/company/reset-password` | `app/s/[subdomain]/reset-password/page.tsx` |
+| User Sees (Clean URL)                              | Internal Next.js Route      | File Location                               |
+| -------------------------------------------------- | --------------------------- | ------------------------------------------- |
+| `company.${NEXT_PUBLIC_APP_DOMAIN}/`               | `/s/company/`               | `app/s/[subdomain]/page.tsx`                |
+| `company.${NEXT_PUBLIC_APP_DOMAIN}/admin`          | `/s/company/admin`          | `app/s/[subdomain]/admin/page.tsx`          |
+| `company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login`     | `/s/company/auth/login`     | `app/s/[subdomain]/auth/login/page.tsx`     |
+| `company.${NEXT_PUBLIC_APP_DOMAIN}/reset-password` | `/s/company/reset-password` | `app/s/[subdomain]/reset-password/page.tsx` |
 
 ## ⚙️ Middleware Routing Logic
 
@@ -70,11 +70,11 @@ apps/
 
 ```typescript
 // Example flow:
-// User visits: company.ghostwrite.app/auth/login
+// User visits: company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login
 // Middleware extracts: subdomain = "company"
 // Rewrites internally to: /s/company/auth/login
 // Routes to file: app/s/[subdomain]/auth/login/page.tsx
-// User still sees: company.ghostwrite.app/auth/login
+// User still sees: company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login
 ```
 
 ### Key Middleware Functions
@@ -120,9 +120,9 @@ The complete database structure is defined in `database-setup.sql` and includes:
 
 ### Authentication Flow
 
-1. **Marketing Site**: Tenant discovery at `bask-app.com/signin`
-2. **No Subdomain Access**: Users visiting `ghostwrite.app` (no subdomain) are redirected to `bask-app.com`
-3. **Subdomain Login**: User redirected to `company.ghostwrite.app/auth/login`
+1. **Marketing Site**: Tenant discovery at `${NEXT_PUBLIC_ROOT_DOMAIN}/signin`
+2. **No Subdomain Access**: Users visiting `${NEXT_PUBLIC_APP_DOMAIN}` (no subdomain) are redirected to `${NEXT_PUBLIC_ROOT_DOMAIN}`
+3. **Subdomain Login**: User redirected to `company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login`
 4. **Session Management**: Handled by Supabase client/server
 5. **Route Protection**: Middleware + component-level checks
 6. **Clean Redirects**: All auth URLs are clean (no `/s/` paths)
@@ -138,11 +138,11 @@ The complete database structure is defined in `database-setup.sql` and includes:
 ### Auth URL Patterns (All Clean)
 
 ```
-company.ghostwrite.app/auth/login      # Login page
-company.ghostwrite.app/reset-password  # Password reset
-company.ghostwrite.app/update-password # Update password (from email)
-company.ghostwrite.app/auth/confirm    # Email confirmation
-company.ghostwrite.app/auth/error      # Auth error handling
+company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login      # Login page
+company.${NEXT_PUBLIC_APP_DOMAIN}/reset-password  # Password reset
+company.${NEXT_PUBLIC_APP_DOMAIN}/update-password # Update password (from email)
+company.${NEXT_PUBLIC_APP_DOMAIN}/auth/confirm    # Email confirmation
+company.${NEXT_PUBLIC_APP_DOMAIN}/auth/error      # Auth error handling
 ```
 
 ## 🎯 Component Architecture
@@ -197,7 +197,7 @@ router.push(`/s/${subdomain}/auth/login`)
 
 1. **Create file**: `app/s/[subdomain]/new-route/page.tsx`
 2. **Use clean links**: `href="/new-route"` in components
-3. **Test middleware**: Verify `company.domain.com/new-route` works
+3. **Test middleware**: Verify `company.${NEXT_PUBLIC_APP_DOMAIN}/new-route` works
 4. **Handle auth**: Add protection if needed
 
 ### Common Patterns
@@ -242,23 +242,23 @@ export function MyComponent({ subdomain }: { subdomain: string }) {
 
 ### Vercel Setup
 
-- **Marketing App**: `apps/marketing/` → `bask-app.com`
-- **Protected App**: `apps/protected/` → `*.ghostwrite.app` (wildcard)
+- **Marketing App**: `apps/marketing/` → `${NEXT_PUBLIC_ROOT_DOMAIN}`
+- **Protected App**: `apps/protected/` → `*.${NEXT_PUBLIC_APP_DOMAIN}` (wildcard)
 
 ### Environment Variables
 
 ```bash
-NEXT_PUBLIC_APP_DOMAIN='ghostwrite.app'
-NEXT_PUBLIC_MARKETING_DOMAIN='bask-app.com'
+NEXT_PUBLIC_APP_DOMAIN='yourdomain.com'
+NEXT_PUBLIC_ROOT_DOMAIN='yourdomain.com'
 # Supabase vars...
 ```
 
 ### DNS Configuration
 
 ```
-CNAME *.ghostwrite.app → vercel-deployment.vercel.app
-A     bask-app.com     → Vercel IP
-CNAME ghostwrite.app   → vercel-deployment.vercel.app (base domain redirects to marketing)
+CNAME *.${NEXT_PUBLIC_APP_DOMAIN} → vercel-deployment.vercel.app
+A     ${NEXT_PUBLIC_ROOT_DOMAIN}     → Vercel IP
+CNAME ${NEXT_PUBLIC_APP_DOMAIN}   → vercel-deployment.vercel.app (base domain redirects to marketing)
 ```
 
 ## 🔍 Debugging & Troubleshooting
@@ -295,8 +295,8 @@ The **SessionEvaluator** component (`apps/protected/components/session-evaluator
 
 ### Purpose
 
-- Handles users visiting the base domain `ghostwrite.app` (no subdomain)
-- Redirects them to the marketing site `bask-app.com`
+- Handles users visiting the base domain `${NEXT_PUBLIC_APP_DOMAIN}` (no subdomain)
+- Redirects them to the marketing site `${NEXT_PUBLIC_ROOT_DOMAIN}`
 - Shows a loading UI while evaluation happens
 - Prevents users from accessing the protected app without a subdomain
 
@@ -326,3 +326,15 @@ export default function ProtectedHomePage() {
 ## 💡 Remember
 
 This architecture provides **clean, professional URLs** while maintaining **internal routing flexibility** and **strict domain separation**. The middleware handles routing magic, while the SessionEvaluator ensures proper access patterns. Always think "clean URLs for users, internal structure for Next.js routing, marketing for onboarding."
+
+## 📄 Database Setup
+
+The `database-setup.sql` file contains the complete database schema including:
+
+- **Multi-tenant tables**: organizations, tenants, user_profiles
+- **Custom types**: user_role enum with role hierarchy
+- **Utility functions**: Tenant isolation and user management
+- **RLS policies**: Comprehensive row-level security
+- **Triggers**: Auto-profile creation and timestamp updates
+
+Run this script in your Supabase SQL Editor to set up the complete multi-tenant database structure.
