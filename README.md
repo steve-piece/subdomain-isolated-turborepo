@@ -72,9 +72,9 @@ packages/
      ```
 
 4. Access the application:
-   - Marketing site: http://localhost:3000
-   - Protected app: http://localhost:3001
-   - Tenant subdomains: http://[tenant].localhost:3001
+   - Marketing site: http://localhost:3002
+   - Protected app: http://localhost:3003
+   - Tenant subdomains: http://[tenant].localhost:3003
 
 ## Multi‑Tenant Architecture
 

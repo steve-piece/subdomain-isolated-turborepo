@@ -1,26 +1,30 @@
-'use client'
+"use client";
 
-import { Button } from '@workspace/ui/components/button'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { Button } from "@workspace/ui/components/button";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 interface LogoutButtonProps {
-  subdomain: string
+  subdomain: string;
 }
 
 export function LogoutButton({ subdomain }: LogoutButtonProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push(`/s/${subdomain}/login`)
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+  };
 
   return (
-    <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
+    <Button
+      variant="outline"
+      onClick={handleLogout}
+      className="flex items-center gap-2"
+    >
       <span>🚪</span>
       Sign out
     </Button>
-  )
+  );
 }

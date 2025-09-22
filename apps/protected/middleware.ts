@@ -10,10 +10,22 @@ export async function middleware(request: NextRequest) {
   
   // If accessing via subdomain, rewrite to subdomain route
   if (subdomain) {
-    // Rewrite to /s/[subdomain] route if not already
-    if (!url.pathname.startsWith('/s/')) {
-      url.pathname = `/s/${subdomain}${url.pathname}`
-      return NextResponse.rewrite(url)
+    // Only rewrite if not already in the /s/ structure and not an API/static route
+    if (!url.pathname.startsWith('/s/') && !url.pathname.startsWith('/api/') && !url.pathname.startsWith('/_next/')) {
+      // Create internal rewrite URL
+      const rewriteUrl = url.clone()
+      rewriteUrl.pathname = `/s/${subdomain}${url.pathname}`
+      
+      // This creates an internal rewrite that doesn't change the URL the user sees
+      return NextResponse.rewrite(rewriteUrl)
+    }
+    
+    // If URL already contains /s/subdomain, prevent double subdomain by redirecting to clean URL
+    if (url.pathname.startsWith(`/s/${subdomain}`)) {
+      const cleanPath = url.pathname.replace(`/s/${subdomain}`, '') || '/'
+      const redirectUrl = url.clone()
+      redirectUrl.pathname = cleanPath
+      return NextResponse.redirect(redirectUrl)
     }
   }
 

@@ -1,23 +1,29 @@
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
-import { Button } from "@workspace/ui/components/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import Link from "next/link"
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { Button } from "@workspace/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import Link from "next/link";
 
 export default async function AdminPage({
   params,
 }: {
-  params: Promise<{ subdomain: string }>
+  params: Promise<{ subdomain: string }>;
 }) {
-  const { subdomain } = await params
-  const supabase = await createClient()
+  const { subdomain } = await params;
+  const supabase = await createClient();
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/s/${subdomain}/login`)
+    redirect("/auth/login");
   }
 
   // TODO: Add role-based authorization check here
@@ -37,7 +43,7 @@ export default async function AdminPage({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Link href={`/s/${subdomain}`}>
+            <Link href="/">
               <Button variant="outline" size="sm">
                 ← Back to Dashboard
               </Button>
@@ -45,7 +51,7 @@ export default async function AdminPage({
           </div>
         </div>
       </header>
-      
+
       <main className="flex-1 p-6 bg-gradient-to-br from-background to-muted/30">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* Admin Overview */}
@@ -64,8 +70,12 @@ export default async function AdminPage({
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Card className="hover:shadow-md transition-shadow cursor-pointer group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">User Management</CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">👥</div>
+                <CardTitle className="text-sm font-medium">
+                  User Management
+                </CardTitle>
+                <div className="text-2xl group-hover:scale-110 transition-transform">
+                  👥
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">0</div>
@@ -77,8 +87,12 @@ export default async function AdminPage({
 
             <Card className="hover:shadow-md transition-shadow cursor-pointer group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Organization Settings</CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">⚙️</div>
+                <CardTitle className="text-sm font-medium">
+                  Organization Settings
+                </CardTitle>
+                <div className="text-2xl group-hover:scale-110 transition-transform">
+                  ⚙️
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">-</div>
@@ -90,8 +104,12 @@ export default async function AdminPage({
 
             <Card className="hover:shadow-md transition-shadow cursor-pointer group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Billing & Plans</CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">💳</div>
+                <CardTitle className="text-sm font-medium">
+                  Billing & Plans
+                </CardTitle>
+                <div className="text-2xl group-hover:scale-110 transition-transform">
+                  💳
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">Free</div>
@@ -104,7 +122,9 @@ export default async function AdminPage({
             <Card className="hover:shadow-md transition-shadow cursor-pointer group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Security</CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">🔐</div>
+                <div className="text-2xl group-hover:scale-110 transition-transform">
+                  🔐
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">✓</div>
@@ -116,8 +136,12 @@ export default async function AdminPage({
 
             <Card className="hover:shadow-md transition-shadow cursor-pointer group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Integrations</CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">🔌</div>
+                <CardTitle className="text-sm font-medium">
+                  Integrations
+                </CardTitle>
+                <div className="text-2xl group-hover:scale-110 transition-transform">
+                  🔌
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">0</div>
@@ -130,7 +154,9 @@ export default async function AdminPage({
             <Card className="hover:shadow-md transition-shadow cursor-pointer group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Analytics</CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">📊</div>
+                <div className="text-2xl group-hover:scale-110 transition-transform">
+                  📊
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">-</div>
@@ -148,24 +174,38 @@ export default async function AdminPage({
                 <CardTitle className="flex items-center gap-2">
                   ⚡ Quick Admin Actions
                 </CardTitle>
-                <CardDescription>
-                  Common administrative tasks
-                </CardDescription>
+                <CardDescription>Common administrative tasks</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full justify-start" size="lg" variant="outline">
+                <Button
+                  className="w-full justify-start"
+                  size="lg"
+                  variant="outline"
+                >
                   <span className="mr-2">👤</span>
                   Invite Admin User
                 </Button>
-                <Button variant="outline" className="w-full justify-start" size="lg">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  size="lg"
+                >
                   <span className="mr-2">📧</span>
                   Send Team Notification
                 </Button>
-                <Button variant="outline" className="w-full justify-start" size="lg">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  size="lg"
+                >
                   <span className="mr-2">🔄</span>
                   Export Organization Data
                 </Button>
-                <Button variant="outline" className="w-full justify-start" size="lg">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  size="lg"
+                >
                   <span className="mr-2">📋</span>
                   Generate Usage Report
                 </Button>
@@ -213,5 +253,5 @@ export default async function AdminPage({
         </div>
       </main>
     </div>
-  )
+  );
 }

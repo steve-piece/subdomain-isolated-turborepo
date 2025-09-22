@@ -1,32 +1,35 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { OrganizationDashboard } from '../components/organization-dashboard'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { OrganizationDashboard } from "../components/organization-dashboard";
 
 interface SubdomainAuthCheckerProps {
-  subdomain: string
+  subdomain: string;
 }
 
 export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [userEmail, setUserEmail] = useState<string | null>(null)
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const supabase = createClient()
-        
+        const supabase = createClient();
+
         // Check if user has valid session
-        const { data: { user }, error } = await supabase.auth.getUser()
-        
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
         if (error || !user) {
           // No valid session - redirect to login
-          router.replace(`/s/${subdomain}/login`)
-          return
+          router.replace("/auth/login");
+          return;
         }
 
         // TODO: Add organization membership verification here
@@ -36,21 +39,20 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
         //   .select('role, tenant_id')
         //   .eq('user_id', user.id)
         //   .single()
-        
-        // For now, assume user is authorized if they have a valid session
-        setIsAuthenticated(true)
-        setUserEmail(user.email || null)
-        setIsLoading(false)
-        
-      } catch (error) {
-        console.error('Auth check error:', error)
-        // On error, redirect to login
-        router.replace(`/s/${subdomain}/login`)
-      }
-    }
 
-    checkAuth()
-  }, [subdomain, router])
+        // For now, assume user is authorized if they have a valid session
+        setIsAuthenticated(true);
+        setUserEmail(user.email || null);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        // On error, redirect to login
+        router.replace("/auth/login");
+      }
+    };
+
+    checkAuth();
+  }, [subdomain, router]);
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -72,19 +74,16 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // If authenticated, show the dashboard
   if (isAuthenticated && userEmail) {
     return (
-      <OrganizationDashboard 
-        subdomain={subdomain} 
-        userEmail={userEmail}
-      />
-    )
+      <OrganizationDashboard subdomain={subdomain} userEmail={userEmail} />
+    );
   }
 
   // Fallback - should not reach here due to redirects above
-  return null
+  return null;
 }

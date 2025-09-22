@@ -31,7 +31,7 @@ export function extractSubdomainFromHostname(hostname: string): string | null {
   
   const parts = hostname.split('.')
   
-  // For localhost development (e.g., subdomain.localhost:3001)
+  // For localhost development (e.g., subdomain.localhost:3003)
   if (hostname.includes('localhost')) {
     const subdomain = parts[0]
     return subdomain && subdomain !== 'localhost' ? subdomain : null
@@ -51,7 +51,7 @@ export function extractSubdomainFromHostname(hostname: string): string | null {
  */
 export function buildSubdomainUrl(subdomain: string, path = '/', isDevelopment = false, appDomain?: string): string {
   if (isDevelopment) {
-    return `http://${subdomain}.localhost:3001${path}`
+    return `http://${subdomain}.localhost:3003${path}`
   }
   
   const domain = appDomain || process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourapp.com'

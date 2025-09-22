@@ -4,7 +4,7 @@ export default function ProtectedHomePage() {
   // Redirect users to the marketing app's login page for subdomain lookup
   const isDevelopment = process.env.NODE_ENV === 'development'
   const marketingUrl = isDevelopment 
-    ? 'http://localhost:3000/auth/login'
+    ? 'http://localhost:3002/auth/login'
     : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}/auth/login`
     
   redirect(marketingUrl)
