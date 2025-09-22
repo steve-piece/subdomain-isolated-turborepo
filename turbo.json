@@ -9,6 +9,8 @@
       "env": [
         "NODE_ENV",
         "NEXT_PUBLIC_APP_DOMAIN",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY",
         "POSTGRES_URL",
         "POSTGRES_PRISMA_URL",
         "SUPABASE_URL",
@@ -27,6 +29,8 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "env": [
         "NEXT_PUBLIC_APP_DOMAIN",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY",
         "SUPABASE_URL",
         "SUPABASE_ANON_KEY"
       ]
