@@ -34,47 +34,124 @@ packages/
 - [Radix UI](https://www.radix-ui.com/) for accessible components
 - [Lucide React](https://lucide.dev/) for icons
 - [TypeScript](https://www.typescriptlang.org/) for type safety
+- [Supabase UI](https://supabase.com/ui/docs/getting-started/introduction) for authentication components
 
-## Getting Started
+## 🏗️ Built on Supabase UI Components
+
+This project leverages the **Supabase UI component library** - a flexible, open-source, React-based UI component library built on shadcn/ui, designed to simplify Supabase-powered projects with pre-built Auth, Storage, and Realtime features.
+
+### Authentication Foundation
+
+The authentication system is built using Supabase's password-based auth registry:
+
+```bash
+npx shadcn@latest add https://supabase.com/ui/r/password-based-auth-nextjs.json
+```
+
+This provides:
+
+- 🔐 **Pre-built Auth Components**: Login, signup, password reset forms
+- 🎨 **Consistent Design**: Built on shadcn/ui design system
+- 🔧 **Extensible**: Modify and extend components as needed
+- 🏗️ **Composable**: Modular structure for easy integration
+- 🚀 **Production Ready**: Scaffolding for complex auth flows
+
+Learn more about the Supabase UI component library at [supabase.com/ui](https://supabase.com/ui/docs/getting-started/introduction).
+
+## 🚀 Complete Setup Guide
 
 ### Prerequisites
 
-- Node.js 20 or later
-- pnpm (recommended package manager)
+- ✅ Node.js 20 or later
+- ✅ pnpm (recommended package manager)
+- ✅ Vercel account (for deployment)
+- ✅ Supabase account (for authentication)
 
-### Installation
+### 📋 Local Development Setup
 
-1. Clone your repository and cd into it.
+#### Step 1: Repository Setup
 
-2. Install dependencies:
+```bash
+# Clone and navigate to your repository
+git clone <your-repo-url>
+cd subdomain-isolated-turborepo
 
-   ```bash
-   pnpm install
-   ```
+# Install all dependencies
+pnpm install
+```
 
-3. Start the development server(s):
+#### Step 2: Supabase Project Setup
 
-   You can run all apps at once or individually:
-   - Run all apps:
+```mermaid
+flowchart LR
+    A[Create Supabase Project] --> B[Copy Project URL & Keys]
+    B --> C[Set up Authentication]
+    C --> D[Configure RLS Policies]
+    D --> E[Ready for Integration]
+```
 
-     ```bash
-     pnpm dev
-     ```
+1. **Create Supabase Project**: Go to [supabase.com](https://supabase.com) and create a new project
+2. **Copy Credentials**: Navigate to Project Settings → API to get:
+   - Project URL
+   - Anon/Public Key
+   - Service Role Key (for server-side operations)
 
-   - Run individual apps:
+#### Step 3: Environment Variables Setup
 
-     ```bash
-     # Marketing app (port 3000)
-     pnpm --filter marketing dev
+Create `.env.local` files in both apps with your Supabase credentials:
 
-     # Protected app (port 3001)
-     pnpm --filter protected dev
-     ```
+**📁 `apps/marketing/.env.local`**
 
-4. Access the application:
-   - Marketing site: http://localhost:3002
-   - Protected app: http://localhost:3003
-   - Tenant subdomains: http://[tenant].localhost:3003
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
+
+# Domain Configuration
+NEXT_PUBLIC_APP_DOMAIN=yourdomain.com
+NEXT_PUBLIC_ROOT_DOMAIN=yourdomain.com
+```
+
+**📁 `apps/protected/.env.local`**
+
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
+
+# Domain Configuration
+NEXT_PUBLIC_APP_DOMAIN=yourdomain.com
+NEXT_PUBLIC_ROOT_DOMAIN=yourdomain.com
+```
+
+#### Step 4: Start Development Servers
+
+```bash
+# Option 1: Run both apps simultaneously
+pnpm dev
+
+# Option 2: Run individual apps
+pnpm --filter marketing dev    # Port 3002
+pnpm --filter protected dev    # Port 3003
+```
+
+#### Step 5: Access Your Applications
+
+- 🏠 **Marketing Site**: http://localhost:3002
+- 🔒 **Protected App**: http://localhost:3003
+- 🏢 **Tenant Subdomains**: http://[company].localhost:3003
+
+```mermaid
+graph TD
+    A[localhost:3002<br/>Marketing Site] --> B[Sign Up New Organization]
+    A --> C[Find Existing Team]
+    C --> D[company.localhost:3003<br/>Tenant Workspace]
+    B --> E[Create Subdomain]
+    E --> D
+    D --> F[Dashboard]
+    D --> G[Admin Panel]
+    D --> H[Auth Pages]
+```
 
 ## Multi‑Tenant Architecture
 
@@ -82,52 +159,78 @@ This application demonstrates a **subdomain‑based multi‑tenant architecture*
 
 ### Domain Structure
 
-- **Marketing Site**: `https://bask-app.com` - Landing page, signup, and tenant discovery
-- **Tenant Apps**: `https://[company].ghostwrite.app` - Individual workspace applications
-- **Base App Domain**: `https://ghostwrite.app` - Redirects to marketing site (no subdomain access)
+- **Marketing Site**: `https://${NEXT_PUBLIC_ROOT_DOMAIN}` - Landing page, signup, and tenant discovery
+- **Tenant Apps**: `https://[company].${NEXT_PUBLIC_APP_DOMAIN}` - Individual workspace applications
+- **Base App Domain**: `https://${NEXT_PUBLIC_APP_DOMAIN}` - Redirects to marketing site (no subdomain access)
 
 ### Key Features
 
-- Each tenant gets their own subdomain (`company.ghostwrite.app`)
-- Users see clean URLs like `company.ghostwrite.app/admin` instead of `ghostwrite.app/s/company/admin`
+- Each tenant gets their own subdomain (`company.${NEXT_PUBLIC_APP_DOMAIN}`)
+- Users see clean URLs like `company.${NEXT_PUBLIC_APP_DOMAIN}/admin` instead of `${NEXT_PUBLIC_APP_DOMAIN}/s/company/admin`
 - The middleware handles transparent routing between clean URLs and internal file structure
-- Strict domain separation: marketing on `bask-app.com`, workspaces on `*.ghostwrite.app`
+- Strict domain separation: marketing on `${NEXT_PUBLIC_ROOT_DOMAIN}`, workspaces on `*.${NEXT_PUBLIC_APP_DOMAIN}`
 - Session evaluation on protected app homepage redirects based on subdomain presence
 - Subdomains are dynamically mapped to tenant-specific content with proper authentication
 - Shared UI components are available across all apps via the workspace package
 
-### Clean URL Routing System
+### 🎯 Clean URL Routing System
 
 The middleware (`apps/protected/middleware.ts`) provides a **clean URL façade** that works as follows:
 
-1. **User Experience**: Clean, professional URLs
-   - `https://company.ghostwrite.app/auth/login`
-   - `https://company.ghostwrite.app/admin`
-   - `https://company.ghostwrite.app/dashboard`
+```mermaid
+flowchart TB
+    A["🌐 User visits:<br/>company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login"]
+    B["🔍 Middleware extracts:<br/>subdomain = 'company'"]
+    C["🔄 Internal rewrite:<br/>/s/company/auth/login"]
+    D["📁 Routes to file:<br/>app/s/[subdomain]/auth/login/page.tsx"]
+    E["✨ User still sees:<br/>company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login"]
 
-2. **Internal Routing**: Middleware rewrites to Next.js file structure
-   - Extracts subdomain from hostname (`company`)
-   - Rewrites `/auth/login` → `/s/company/auth/login` internally
-   - Routes to `apps/protected/app/s/[subdomain]/auth/login/page.tsx`
+    A --> B
+    B --> C
+    C --> D
+    D --> E
 
-3. **Benefits**:
-   - Professional URLs that don't expose internal routing structure
-   - Proper subdomain isolation for multi-tenant security
-   - SEO-friendly URLs for each tenant
-   - Clean bookmarkable links
+    style A fill:#e1f5fe
+    style E fill:#e8f5e8
+    style C fill:#fff3e0
+```
 
-### Authentication Flow
+#### Benefits:
 
-- **Domain-Based Flow**: Users start at `bask-app.com` for tenant discovery
-- **Session Evaluation**: Protected app homepage evaluates subdomain presence and user session
-- **No Subdomain Redirect**: `ghostwrite.app` (base domain) → `bask-app.com`
-- **Supabase Integration**: Row-level security and user authentication
-- **Tenant Isolation**: Each subdomain has its own authentication context
-- **Session Management**: Automatic redirects and session validation
-- **Clean URLs**: All auth flows use clean URLs (`/auth/login`, `/reset-password`)
-- **Middleware Protection**: Unauthenticated users are redirected appropriately
+- ✨ **Professional URLs** that don't expose internal routing structure
+- 🔒 **Proper subdomain isolation** for multi-tenant security
+- 🔍 **SEO-friendly URLs** for each tenant
+- 🔖 **Clean bookmarkable links**
 
-The system intelligently detects subdomains across various environments (local development, production, and Vercel preview deployments) and maintains clean URL structure while preserving Next.js routing capabilities.
+### 🔐 Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant M as 🏠 Marketing Site<br/>${NEXT_PUBLIC_ROOT_DOMAIN}
+    participant P as 🔒 Protected App<br/>${NEXT_PUBLIC_APP_DOMAIN}
+    participant T as 🏢 Tenant App<br/>company.${NEXT_PUBLIC_APP_DOMAIN}
+    participant S as 🗄️ Supabase Auth
+
+    U->>P: Visit base domain
+    P->>M: Redirect (no subdomain)
+    U->>M: Sign in / Find tenant
+    M->>T: Redirect to subdomain
+    T->>S: Authenticate user
+    S->>T: Return session
+    T->>U: Show dashboard
+```
+
+#### Key Features:
+
+- 🏠 **Domain-Based Flow**: Users start at `${NEXT_PUBLIC_ROOT_DOMAIN}` for tenant discovery
+- 🔍 **Session Evaluation**: Protected app homepage evaluates subdomain presence and user session
+- ↩️ **No Subdomain Redirect**: `${NEXT_PUBLIC_APP_DOMAIN}` (base domain) → `${NEXT_PUBLIC_ROOT_DOMAIN}`
+- 🔐 **Supabase Integration**: Row-level security and user authentication
+- 🏢 **Tenant Isolation**: Each subdomain has its own authentication context
+- 🔄 **Session Management**: Automatic redirects and session validation
+- ✨ **Clean URLs**: All auth flows use clean URLs (`/auth/login`, `/reset-password`)
+- 🛡️ **Middleware Protection**: Unauthenticated users are redirected appropriately
 
 ## Available Scripts
 
@@ -165,7 +268,7 @@ sequenceDiagram
   participant Tenant as Tenant /login
   User->>Marketing: Enter account subdomain
   Marketing->>Redirect: GET /login/redirect?account=<subdomain>
-  Redirect-->>User: 302 to https://<subdomain>.<APP_DOMAIN>/login
+  Redirect-->>User: 302 to https://<subdomain>.${NEXT_PUBLIC_APP_DOMAIN}/login
   User->>Tenant: Open tenant login
   Tenant-->>User: Sign in, then redirect to next
 ```
@@ -183,33 +286,128 @@ sequenceDiagram
   Page->>Action: submit(formData)
   Action->>DB: insert { subdomain, emoji }
   DB-->>Action: ok
-  Action-->>Browser: redirect https://<subdomain>.<APP_DOMAIN>
+  Action-->>Browser: redirect https://<subdomain>.${NEXT_PUBLIC_APP_DOMAIN}
 ```
 
-## Deployment
+## 🚀 Production Deployment
 
-This repository deploys two Next.js apps to Vercel from the same GitHub repo using Turborepo and pnpm workspaces.
+### 📊 Deployment Architecture
 
-- Project A (Marketing):
-  - Root Directory: `apps/marketing`
-  - Install Command: `corepack enable pnpm && pnpm install --frozen-lockfile`
-  - Build Command: `next build`
-  - Node.js: 20
-  - Domains: `bask-app.com`
+```mermaid
+graph TB
+    subgraph "🌍 DNS Configuration"
+        D1[${NEXT_PUBLIC_ROOT_DOMAIN}]
+        D2[*.${NEXT_PUBLIC_APP_DOMAIN}]
+        D3[${NEXT_PUBLIC_APP_DOMAIN}]
+    end
 
-- Project B (Protected / Tenants):
-  - Root Directory: `apps/protected`
-  - Install Command: `corepack enable pnpm && pnpm install --frozen-lockfile`
-  - Build Command: `next build`
-  - Node.js: 20
-  - Domains: `ghostwrite.app` and wildcard `*.ghostwrite.app` (DNS CNAME to Vercel)
+    subgraph "☁️ Vercel Projects"
+        V1[📱 Marketing Project<br/>apps/marketing]
+        V2[🔒 Protected Project<br/>apps/protected]
+    end
 
-### Environment Variables
+    subgraph "📁 GitHub Repository"
+        R1[turborepo-main]
+    end
 
-Set these in both Vercel projects (and locally via `.env.local`):
+    D1 --> V1
+    D2 --> V2
+    D3 --> V2
+    R1 --> V1
+    R1 --> V2
 
-- `NEXT_PUBLIC_APP_DOMAIN=ghostwrite.app` (for the protected app)
-- `NEXT_PUBLIC_MARKETING_DOMAIN=bask-app.com` (for marketing redirects)
-- `NEXT_PUBLIC_ROOT_DOMAIN=bask-app.com` (root domain reference)
+    style V1 fill:#e1f5fe
+    style V2 fill:#f3e5f5
+    style R1 fill:#e8f5e8
+```
 
-After connecting both projects to the same repo with the Root Directory settings above, push to `main` to trigger builds.
+### Step 1: Supabase Integration with Vercel
+
+1. **Connect Supabase to Vercel** (Recommended):
+   - Go to your Vercel dashboard
+   - Navigate to your project → **Integrations**
+   - Install the **Supabase integration**
+   - This automatically syncs environment variables
+
+2. **Manual Environment Setup** (Alternative):
+   - Copy environment variables from Supabase dashboard
+   - Add them to both Vercel projects
+
+### Step 2: Create Two Vercel Projects
+
+```mermaid
+flowchart LR
+    A[📁 Same GitHub Repo] --> B[📱 Marketing Project]
+    A --> C[🔒 Protected Project]
+
+    B --> D[Root Directory:<br/>apps/marketing]
+    C --> E[Root Directory:<br/>apps/protected]
+
+    D --> F[Domain:<br/>${NEXT_PUBLIC_ROOT_DOMAIN}]
+    E --> G[Domains:<br/>${NEXT_PUBLIC_APP_DOMAIN}<br/>*.${NEXT_PUBLIC_APP_DOMAIN}]
+```
+
+#### Project A (Marketing):
+
+- **Root Directory**: `apps/marketing`
+- **Install Command**: `corepack enable pnpm && pnpm install --frozen-lockfile`
+- **Build Command**: `next build`
+- **Node.js**: 20
+- **Domains**: `${NEXT_PUBLIC_ROOT_DOMAIN}`
+
+#### Project B (Protected / Tenants):
+
+- **Root Directory**: `apps/protected`
+- **Install Command**: `corepack enable pnpm && pnpm install --frozen-lockfile`
+- **Build Command**: `next build`
+- **Node.js**: 20
+- **Domains**: `${NEXT_PUBLIC_APP_DOMAIN}` and wildcard `*.${NEXT_PUBLIC_APP_DOMAIN}`
+
+### Step 3: Environment Variables Configuration
+
+Set these in **both** Vercel projects:
+
+```bash
+# Core Domain Configuration
+NEXT_PUBLIC_APP_DOMAIN=yourdomain.com
+NEXT_PUBLIC_ROOT_DOMAIN=yourdomain.com
+
+# Supabase Configuration (auto-synced if using Vercel integration)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
+```
+
+### Step 4: DNS Configuration
+
+```mermaid
+graph LR
+    subgraph "🌐 DNS Records"
+        A[A Record<br/>${NEXT_PUBLIC_ROOT_DOMAIN}] --> D[Vercel IP]
+        B[CNAME<br/>*.${NEXT_PUBLIC_APP_DOMAIN}] --> E[vercel-deployment.vercel.app]
+        C[CNAME<br/>${NEXT_PUBLIC_APP_DOMAIN}] --> E
+    end
+
+    subgraph "☁️ Vercel Projects"
+        V1[Marketing Project]
+        V2[Protected Project]
+    end
+
+    D --> V1
+    E --> V2
+```
+
+### Step 5: GitHub Actions Setup (Optional)
+
+For optimal CI/CD performance with Turborepo remote caching:
+
+1. Go to your repository on GitHub
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Add these repository secrets:
+   - `TURBO_TEAM` - Your Turbo team ID
+   - `TURBO_TOKEN` - Your Turbo API token
+
+🚀 **Benefits**: Remote caching across CI/CD runs, significantly speeding up builds and deployments.
+
+### Step 6: Deploy
+
+After completing the above setup, push to `main` to trigger automatic deployments to both Vercel projects.
