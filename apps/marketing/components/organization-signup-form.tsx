@@ -19,6 +19,7 @@ import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { createOrganizationAfterSignup } from "@/app/actions";
 
 export function OrganizationSignUpForm({
   className,
@@ -228,7 +229,7 @@ export function OrganizationSignUpForm({
       setIsValidating(false);
 
       // Create user account
-      const { error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -244,11 +245,25 @@ export function OrganizationSignUpForm({
 
       if (authError) throw authError;
 
-      // TODO: Create organization record in database here
-      // This would typically involve calling an API endpoint to:
-      // 1. Create organization record
-      // 2. Set up subdomain mapping
-      // 3. Assign user as owner
+      // Create organization record in database
+      if (authData.user) {
+        const orgResult = await createOrganizationAfterSignup(
+          authData.user.id,
+          organizationName,
+          subdomain,
+          email
+        );
+
+        if (!orgResult.success) {
+          // If organization creation fails, we should handle this gracefully
+          console.error("Organization creation failed:", orgResult.error);
+          setError(
+            `Account created but organization setup failed: ${orgResult.error}`
+          );
+          setIsLoading(false);
+          return;
+        }
+      }
 
       // Show success state briefly before redirect
       setSuccess(true);

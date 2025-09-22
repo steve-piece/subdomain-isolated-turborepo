@@ -18,6 +18,94 @@ export interface VerifyTenantResponse {
   error?: string;
 }
 
+export interface CreateOrganizationResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+/**
+ * Create organization and tenant mapping after successful user signup
+ */
+export async function createOrganizationAfterSignup(
+  userId: string,
+  organizationName: string,
+  subdomain: string,
+  userEmail: string
+): Promise<CreateOrganizationResponse> {
+  try {
+    const supabase = await createClient();
+
+    // Create organization record
+    const { data: organization, error: orgError } = await supabase
+      .from("organizations")
+      .insert({
+        name: organizationName,
+        settings: {},
+        owner_id: userId,
+      })
+      .select()
+      .single();
+
+    if (orgError) {
+      console.error("Organization creation error:", orgError);
+      return {
+        success: false,
+        error: `Failed to create organization: ${orgError.message}`,
+      };
+    }
+
+    // Create tenant mapping (subdomain -> organization)
+    const { data: tenant, error: tenantError } = await supabase
+      .from("tenants")
+      .insert({
+        subdomain: subdomain.toLowerCase(),
+        org_id: organization.id,
+        name: organizationName,
+      })
+      .select()
+      .single();
+
+    if (tenantError) {
+      console.error("Tenant creation error:", tenantError);
+      return {
+        success: false,
+        error: `Failed to create tenant mapping: ${tenantError.message}`,
+      };
+    }
+
+    // Create user profile with superadmin role (owner is tracked in organizations.owner_id)
+    const { error: profileError } = await supabase
+      .from("user_profiles")
+      .insert({
+        user_id: userId,
+        tenant_id: tenant.id, // Use tenant.id, not organization.id
+        role: "superadmin",
+        email: userEmail,
+      });
+
+    if (profileError) {
+      console.error("User profile creation error:", profileError);
+      return {
+        success: false,
+        error: `Failed to create user profile: ${profileError.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Organization created successfully",
+    };
+  } catch (error) {
+    console.error("Organization creation error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
 /**
  * Search for tenants by name or subdomain
  */

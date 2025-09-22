@@ -35,6 +35,7 @@ CREATE TABLE public.organizations (
     website text,
     logo_url text,
     settings jsonb DEFAULT '{}'::jsonb,
+    owner_id uuid REFERENCES auth.users(id), -- Organization owner for backwards compatibility and clear ownership tracking
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
@@ -123,44 +124,74 @@ BEGIN
 END;
 $$;
 
--- Get user claims for JWT tokens (role and subdomain)
-CREATE OR REPLACE FUNCTION public.get_user_claims(payload jsonb)
+-- Custom Access Token Hook for adding tenant-specific claims to JWT
+-- Based on official Supabase documentation: https://supabase.com/docs/guides/auth/auth-hooks/custom-access-token-hook
+CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
+STABLE
 SECURITY DEFINER
+SET search_path = 'public'
 AS $$
 DECLARE
-  v_user_id uuid;
-  v_role public.user_role;
-  v_subdomain text;
+  claims jsonb;
+  user_role text;
+  user_subdomain text;
+  user_tenant_id text;
+  user_org_id text;
 BEGIN
-  -- Accept either {"user": {"id": "..."}} or {"user_id": "..."}
-  BEGIN
-    v_user_id := NULLIF(COALESCE(
-      (payload -> 'user' ->> 'id'),
-      (payload ->> 'user_id')
-    ), '')::uuid;
-  EXCEPTION WHEN OTHERS THEN
-    v_user_id := NULL; -- ignore parse errors
-  END;
-
-  IF v_user_id IS NULL THEN
-    RETURN '{}'::jsonb;
-  END IF;
-
-  SELECT p.role, t.subdomain
-    INTO v_role, v_subdomain
+  -- Extract claims from the event
+  claims := event->'claims';
+  
+  -- Fetch the user role and tenant info from user_profiles
+  SELECT 
+    p.role::text, 
+    t.subdomain,
+    p.tenant_id::text,
+    t.org_id::text
+  INTO user_role, user_subdomain, user_tenant_id, user_org_id
   FROM public.user_profiles p
   LEFT JOIN public.tenants t ON t.id = p.tenant_id
-  WHERE p.user_id = v_user_id
+  WHERE p.user_id = (event->>'user_id')::uuid
   LIMIT 1;
 
-  RETURN jsonb_build_object(
-    'role', COALESCE(v_role::text, NULL),
-    'subdomain', COALESCE(v_subdomain, NULL)
-  );
+  -- Add custom claims to the existing claims object
+  IF user_role IS NOT NULL THEN
+    claims := jsonb_set(claims, '{user_role}', to_jsonb(user_role));
+  END IF;
+  
+  IF user_subdomain IS NOT NULL THEN
+    claims := jsonb_set(claims, '{subdomain}', to_jsonb(user_subdomain));
+  END IF;
+  
+  IF user_tenant_id IS NOT NULL THEN
+    claims := jsonb_set(claims, '{tenant_id}', to_jsonb(user_tenant_id));
+  END IF;
+  
+  IF user_org_id IS NOT NULL THEN
+    claims := jsonb_set(claims, '{org_id}', to_jsonb(user_org_id));
+  END IF;
+
+  -- Update the 'claims' object in the original event
+  event := jsonb_set(event, '{claims}', claims);
+
+  -- Return the modified event
+  RETURN event;
 END;
 $$;
+
+-- =====================================================
+-- 🔐 CUSTOM CLAIMS FUNCTION PERMISSIONS
+-- =====================================================
+
+-- Grant access to function to supabase_auth_admin (required for custom claims hook)
+GRANT EXECUTE ON FUNCTION public.custom_access_token_hook TO supabase_auth_admin;
+
+-- Grant access to schema to supabase_auth_admin
+GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
+
+-- Revoke function permissions from authenticated, anon and public (security)
+REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, anon, public;
 
 -- Auto-update timestamp function
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -180,8 +211,8 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 begin
-  insert into public.user_profiles (user_id, email)
-  values (new.id, coalesce(new.email, ''))
+  insert into public.user_profiles (user_id, email, role)
+  values (new.id, coalesce(new.email, ''), 'superadmin')
   on conflict (user_id) do nothing;
   return new;
 end; 

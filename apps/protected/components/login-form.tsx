@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@workspace/ui/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { loginWithToast } from "@/app/actions";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -13,8 +13,8 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 interface LoginFormProps {
   subdomain: string;
@@ -29,29 +29,40 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for verification success message from URL parameters
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    const message = searchParams.get("message");
+    
+    if (verified === "true" && message) {
+      setSuccess(decodeURIComponent(message));
+      // Clear URL parameters after showing message
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      // First, verify the user belongs to this organization/subdomain
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-
-      // TODO: Add organization/tenant verification here
-      // You might want to check if the user belongs to the specified subdomain
-
-      router.push("/");
+      const result = await loginWithToast(email, password);
+      
+      if (result.success) {
+        // Redirect to dashboard or specified location
+        router.push(result.redirectTo || "/dashboard");
+      } else {
+        setError(result.message || "Login failed");
+      }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -98,11 +109,28 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              {success && (
+                <div className="p-3 rounded-md bg-green-50 border border-green-200">
+                  <p className="text-sm text-green-700 flex items-center">
+                    <span className="mr-2">✅</span>
+                    {success}
+                  </p>
+                </div>
+              )}
+              
               {error && (
                 <div className="p-3 rounded-md bg-red-50 border border-red-200">
                   <p className="text-sm text-red-700 flex items-center">
                     <span className="mr-2">⚠️</span>
                     {error}
+                    {error.includes("Email not confirmed") && (
+                      <Link 
+                        href="/auth/resend-verification" 
+                        className="ml-2 underline underline-offset-4 hover:no-underline"
+                      >
+                        Resend verification email
+                      </Link>
+                    )}
                   </p>
                 </div>
               )}

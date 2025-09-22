@@ -48,6 +48,16 @@ The authentication system is built using Supabase's password-based auth registry
 npx shadcn@latest add https://supabase.com/ui/r/password-based-auth-nextjs.json
 ```
 
+#### Email Verification Setup
+
+For email verification with subdomain routing to work properly, you need to configure your Supabase Dashboard. See [EMAIL_VERIFICATION_SETUP.md](./EMAIL_VERIFICATION_SETUP.md) for detailed configuration steps.
+
+#### Custom Claims Configuration
+
+For multi-tenant JWT claims to work properly, you need to configure custom claims in your Supabase Dashboard. See:
+
+- [SUPABASE_CLAIMS_SETUP.md](./SUPABASE_CLAIMS_SETUP.md) - Complete setup guide
+
 This provides:
 
 - 🔐 **Pre-built Auth Components**: Login, signup, password reset forms
