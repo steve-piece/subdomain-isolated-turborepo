@@ -6,12 +6,30 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["NODE_ENV", "NEXT_PUBLIC_APP_DOMAIN"]
+      "env": [
+        "NODE_ENV",
+        "NEXT_PUBLIC_APP_DOMAIN",
+        "POSTGRES_URL",
+        "POSTGRES_PRISMA_URL",
+        "SUPABASE_URL",
+        "POSTGRES_URL_NON_POOLING",
+        "SUPABASE_JWT_SECRET",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_DATABASE",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "POSTGRES_HOST",
+        "SUPABASE_ANON_KEY"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "env": ["NEXT_PUBLIC_APP_DOMAIN"]
+      "env": [
+        "NEXT_PUBLIC_APP_DOMAIN",
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY"
+      ]
     },
     "check-types": {
       "dependsOn": ["^check-types"]
