@@ -8,13 +8,13 @@ This is a **multi-tenant SaaS application** with clean subdomain-based routing a
 
 ### Domain Structure
 
-- **Marketing Domain**: `https://${NEXT_PUBLIC_ROOT_DOMAIN}` - Public marketing site for signup and tenant discovery
+- **Marketing Domain**: `https://${NEXT_PUBLIC_MARKETING_DOMAIN}` - Public marketing site for signup and tenant discovery
 - **App Domain**: `https://[company].${NEXT_PUBLIC_APP_DOMAIN}` - Individual tenant applications
-- **Root Domain**: `${NEXT_PUBLIC_ROOT_DOMAIN}` - Primary domain for marketing and onboarding
+- **Root Domain**: `${NEXT_PUBLIC_MARKETING_DOMAIN}` - Primary domain for marketing and onboarding
 
 ### Key Concepts
 
-- **Domain Separation**: Marketing site (`${NEXT_PUBLIC_ROOT_DOMAIN}`) handles onboarding, tenant apps (`*.${NEXT_PUBLIC_APP_DOMAIN}`) handle workspaces
+- **Domain Separation**: Marketing site (`${NEXT_PUBLIC_MARKETING_DOMAIN}`) handles onboarding, tenant apps (`*.${NEXT_PUBLIC_APP_DOMAIN}`) handle workspaces
 - **Clean URLs**: Users see `company.${NEXT_PUBLIC_APP_DOMAIN}/admin`, not `${NEXT_PUBLIC_APP_DOMAIN}/s/company/admin`
 - **Session Evaluation**: Protected app homepage evaluates subdomain presence and user session
 - **Internal Routing**: Next.js file structure uses `/s/[subdomain]/` for organization
@@ -27,7 +27,7 @@ This is a **multi-tenant SaaS application** with clean subdomain-based routing a
 
 ```
 apps/
-├── marketing/          # Public marketing site (${NEXT_PUBLIC_ROOT_DOMAIN})
+├── marketing/          # Public marketing site (${NEXT_PUBLIC_MARKETING_DOMAIN})
 │   ├── app/
 │   │   ├── page.tsx           # Landing page
 │   │   ├── signup/      # Organization signup
@@ -120,8 +120,8 @@ The complete database structure is defined in `database-setup.sql` and includes:
 
 ### Authentication Flow
 
-1. **Marketing Site**: Tenant discovery at `${NEXT_PUBLIC_ROOT_DOMAIN}/login`
-2. **No Subdomain Access**: Users visiting `${NEXT_PUBLIC_APP_DOMAIN}` (no subdomain) are redirected to `${NEXT_PUBLIC_ROOT_DOMAIN}`
+1. **Marketing Site**: Tenant discovery at `${NEXT_PUBLIC_MARKETING_DOMAIN}/login`
+2. **No Subdomain Access**: Users visiting `${NEXT_PUBLIC_APP_DOMAIN}` (no subdomain) are redirected to `${NEXT_PUBLIC_MARKETING_DOMAIN}`
 3. **Subdomain Login**: User redirected to `company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login`
 4. **Session Management**: Handled by Supabase client/server
 5. **Route Protection**: Middleware + component-level checks
@@ -242,14 +242,14 @@ export function MyComponent({ subdomain }: { subdomain: string }) {
 
 ### Vercel Setup
 
-- **Marketing App**: `apps/marketing/` → `${NEXT_PUBLIC_ROOT_DOMAIN}`
+- **Marketing App**: `apps/marketing/` → `${NEXT_PUBLIC_MARKETING_DOMAIN}`
 - **Protected App**: `apps/protected/` → `*.${NEXT_PUBLIC_APP_DOMAIN}` (wildcard)
 
 ### Environment Variables
 
 ```bash
 NEXT_PUBLIC_APP_DOMAIN='yourdomain.com'
-NEXT_PUBLIC_ROOT_DOMAIN='yourdomain.com'
+NEXT_PUBLIC_MARKETING_DOMAIN='yourdomain.com'
 # Supabase vars...
 ```
 
@@ -257,7 +257,7 @@ NEXT_PUBLIC_ROOT_DOMAIN='yourdomain.com'
 
 ```
 CNAME *.${NEXT_PUBLIC_APP_DOMAIN} → vercel-deployment.vercel.app
-A     ${NEXT_PUBLIC_ROOT_DOMAIN}     → Vercel IP
+A     ${NEXT_PUBLIC_MARKETING_DOMAIN}     → Vercel IP
 CNAME ${NEXT_PUBLIC_APP_DOMAIN}   → vercel-deployment.vercel.app (base domain redirects to marketing)
 ```
 
@@ -296,7 +296,7 @@ The **SessionEvaluator** component (`apps/protected/components/session-evaluator
 ### Purpose
 
 - Handles users visiting the base domain `${NEXT_PUBLIC_APP_DOMAIN}` (no subdomain)
-- Redirects them to the marketing site `${NEXT_PUBLIC_ROOT_DOMAIN}`
+- Redirects them to the marketing site `${NEXT_PUBLIC_MARKETING_DOMAIN}`
 - Shows a loading UI while evaluation happens
 - Prevents users from accessing the protected app without a subdomain
 

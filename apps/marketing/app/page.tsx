@@ -13,7 +13,7 @@ export default function Page() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild size="lg">
-            <Link href="/auth/sign-up">Create Organization</Link>
+            <Link href="/signup">Create Organization</Link>
           </Button>
 
           <Button variant="outline" asChild size="lg">

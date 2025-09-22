@@ -168,7 +168,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
 
 # Domain Configuration
 NEXT_PUBLIC_APP_DOMAIN=yourdomain.com
-NEXT_PUBLIC_ROOT_DOMAIN=yourdomain.com
+NEXT_PUBLIC_MARKETING_DOMAIN=yourdomain.com
 ```
 
 **📁 `apps/protected/.env.local`**
@@ -180,7 +180,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
 
 # Domain Configuration
 NEXT_PUBLIC_APP_DOMAIN=yourdomain.com
-NEXT_PUBLIC_ROOT_DOMAIN=yourdomain.com
+NEXT_PUBLIC_MARKETING_DOMAIN=yourdomain.com
 ```
 
 #### Step 4: Start Development Servers
@@ -218,7 +218,7 @@ This application demonstrates a **subdomain‑based multi‑tenant architecture*
 
 ### Domain Structure
 
-- **Marketing Site**: `https://${NEXT_PUBLIC_ROOT_DOMAIN}` - Landing page, signup, and tenant discovery
+- **Marketing Site**: `https://${NEXT_PUBLIC_MARKETING_DOMAIN}` - Landing page, signup, and tenant discovery
 - **Tenant Apps**: `https://[company].${NEXT_PUBLIC_APP_DOMAIN}` - Individual workspace applications
 - **Base App Domain**: `https://${NEXT_PUBLIC_APP_DOMAIN}` - Redirects to marketing site (no subdomain access)
 
@@ -227,7 +227,7 @@ This application demonstrates a **subdomain‑based multi‑tenant architecture*
 - Each tenant gets their own subdomain (`company.${NEXT_PUBLIC_APP_DOMAIN}`)
 - Users see clean URLs like `company.${NEXT_PUBLIC_APP_DOMAIN}/admin` instead of `${NEXT_PUBLIC_APP_DOMAIN}/s/company/admin`
 - The middleware handles transparent routing between clean URLs and internal file structure
-- Strict domain separation: marketing on `${NEXT_PUBLIC_ROOT_DOMAIN}`, workspaces on `*.${NEXT_PUBLIC_APP_DOMAIN}`
+- Strict domain separation: marketing on `${NEXT_PUBLIC_MARKETING_DOMAIN}`, workspaces on `*.${NEXT_PUBLIC_APP_DOMAIN}`
 - Session evaluation on protected app homepage redirects based on subdomain presence
 - Subdomains are dynamically mapped to tenant-specific content with proper authentication
 - Shared UI components are available across all apps via the workspace package
@@ -266,7 +266,7 @@ flowchart TB
 ```mermaid
 sequenceDiagram
     participant U as 👤 User
-    participant M as 🏠 Marketing Site<br/>${NEXT_PUBLIC_ROOT_DOMAIN}
+    participant M as 🏠 Marketing Site<br/>${NEXT_PUBLIC_MARKETING_DOMAIN}
     participant P as 🔒 Protected App<br/>${NEXT_PUBLIC_APP_DOMAIN}
     participant T as 🏢 Tenant App<br/>company.${NEXT_PUBLIC_APP_DOMAIN}
     participant S as 🗄️ Supabase Auth
@@ -282,9 +282,9 @@ sequenceDiagram
 
 #### Key Features:
 
-- 🏠 **Domain-Based Flow**: Users start at `${NEXT_PUBLIC_ROOT_DOMAIN}` for tenant discovery
+- 🏠 **Domain-Based Flow**: Users start at `${NEXT_PUBLIC_MARKETING_DOMAIN}` for tenant discovery
 - 🔍 **Session Evaluation**: Protected app homepage evaluates subdomain presence and user session
-- ↩️ **No Subdomain Redirect**: `${NEXT_PUBLIC_APP_DOMAIN}` (base domain) → `${NEXT_PUBLIC_ROOT_DOMAIN}`
+- ↩️ **No Subdomain Redirect**: `${NEXT_PUBLIC_APP_DOMAIN}` (base domain) → `${NEXT_PUBLIC_MARKETING_DOMAIN}`
 - 🔐 **Supabase Integration**: Row-level security and user authentication
 - 🏢 **Tenant Isolation**: Each subdomain has its own authentication context
 - 🔄 **Session Management**: Automatic redirects and session validation
@@ -327,7 +327,7 @@ sequenceDiagram
   participant Tenant as Tenant /login
   User->>Marketing: Enter account subdomain
   Marketing->>Redirect: GET /login/redirect?account=<subdomain>
-  Redirect-->>User: 302 to https://<subdomain>.${NEXT_PUBLIC_APP_DOMAIN}/login
+  Redirect-->>User: 302 to https://<subdomain>.${NEXT_PUBLIC_APP_DOMAIN}/auth/login
   User->>Tenant: Open tenant login
   Tenant-->>User: Sign in, then redirect to next
 ```
@@ -355,7 +355,7 @@ sequenceDiagram
 ```mermaid
 graph TB
     subgraph "🌍 DNS Configuration"
-        D1[${NEXT_PUBLIC_ROOT_DOMAIN}]
+        D1[${NEXT_PUBLIC_MARKETING_DOMAIN}]
         D2[*.${NEXT_PUBLIC_APP_DOMAIN}]
         D3[${NEXT_PUBLIC_APP_DOMAIN}]
     end
@@ -402,7 +402,7 @@ flowchart LR
     B --> D[Root Directory:<br/>apps/marketing]
     C --> E[Root Directory:<br/>apps/protected]
 
-    D --> F[Domain:<br/>${NEXT_PUBLIC_ROOT_DOMAIN}]
+    D --> F[Domain:<br/>${NEXT_PUBLIC_MARKETING_DOMAIN}]
     E --> G[Domains:<br/>${NEXT_PUBLIC_APP_DOMAIN}<br/>*.${NEXT_PUBLIC_APP_DOMAIN}]
 ```
 
@@ -412,7 +412,7 @@ flowchart LR
 - **Install Command**: `corepack enable pnpm && pnpm install --frozen-lockfile`
 - **Build Command**: `next build`
 - **Node.js**: 20
-- **Domains**: `${NEXT_PUBLIC_ROOT_DOMAIN}`
+- **Domains**: `${NEXT_PUBLIC_MARKETING_DOMAIN}`
 
 #### Project B (Protected / Tenants):
 
@@ -429,7 +429,7 @@ Set these in **both** Vercel projects:
 ```bash
 # Core Domain Configuration
 NEXT_PUBLIC_APP_DOMAIN=yourdomain.com
-NEXT_PUBLIC_ROOT_DOMAIN=yourdomain.com
+NEXT_PUBLIC_MARKETING_DOMAIN=yourdomain.com
 
 # Supabase Configuration (auto-synced if using Vercel integration)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
@@ -441,7 +441,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
 ```mermaid
 graph LR
     subgraph "🌐 DNS Records"
-        A[A Record<br/>${NEXT_PUBLIC_ROOT_DOMAIN}] --> D[Vercel IP]
+        A[A Record<br/>${NEXT_PUBLIC_MARKETING_DOMAIN}] --> D[Vercel IP]
         B[CNAME<br/>*.${NEXT_PUBLIC_APP_DOMAIN}] --> E[vercel-deployment.vercel.app]
         C[CNAME<br/>${NEXT_PUBLIC_APP_DOMAIN}] --> E
     end
