@@ -17,7 +17,7 @@ export default function Page() {
           </Button>
 
           <Button variant="outline" asChild size="lg">
-            <Link href="/signin">Sign In</Link>
+            <Link href="/login">Sign In</Link>
           </Button>
         </div>
 

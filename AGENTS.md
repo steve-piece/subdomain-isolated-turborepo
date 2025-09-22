@@ -30,8 +30,8 @@ apps/
 ├── marketing/          # Public marketing site (${NEXT_PUBLIC_ROOT_DOMAIN})
 │   ├── app/
 │   │   ├── page.tsx           # Landing page
-│   │   ├── auth/sign-up/      # Organization signup
-│   │   └── signin/            # Tenant discovery & subdomain lookup
+│   │   ├── signup/      # Organization signup
+│   │   └── login/            # Tenant discovery & subdomain lookup
 │   └── components/
 └── protected/          # Multi-tenant app (*.${NEXT_PUBLIC_APP_DOMAIN})
     ├── app/
@@ -120,7 +120,7 @@ The complete database structure is defined in `database-setup.sql` and includes:
 
 ### Authentication Flow
 
-1. **Marketing Site**: Tenant discovery at `${NEXT_PUBLIC_ROOT_DOMAIN}/signin`
+1. **Marketing Site**: Tenant discovery at `${NEXT_PUBLIC_ROOT_DOMAIN}/login`
 2. **No Subdomain Access**: Users visiting `${NEXT_PUBLIC_APP_DOMAIN}` (no subdomain) are redirected to `${NEXT_PUBLIC_ROOT_DOMAIN}`
 3. **Subdomain Login**: User redirected to `company.${NEXT_PUBLIC_APP_DOMAIN}/auth/login`
 4. **Session Management**: Handled by Supabase client/server

@@ -237,10 +237,7 @@ export function SubdomainLookupForm({
 
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an organization yet?{" "}
-              <Link
-                href="/auth/sign-up"
-                className="underline underline-offset-4"
-              >
+              <Link href="/login" className="underline underline-offset-4">
                 Create one
               </Link>
             </div>
