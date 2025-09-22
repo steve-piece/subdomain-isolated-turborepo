@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { updateSession } from './lib/supabase/middleware'
 import { extractSubdomainFromHostname } from '@workspace/ui/lib/subdomains'
 
 export async function middleware(request: NextRequest) {
@@ -17,9 +16,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.rewrite(url)
     }
   }
-  
-  // Handle auth session updates 
-  return await updateSession(request)
+
+  // Pass through without session update to keep middleware Edge-compatible
+  return NextResponse.next()
 }
 
 export const config = {
