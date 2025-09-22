@@ -58,6 +58,61 @@ This provides:
 
 Learn more about the Supabase UI component library at [supabase.com/ui](https://supabase.com/ui/docs/getting-started/introduction).
 
+### 🗄️ Database Structure
+
+The project includes a complete multi-tenant database setup script (`database-setup.sql`) that creates:
+
+```mermaid
+erDiagram
+    ORGANIZATIONS {
+        uuid id PK
+        text name
+        text description
+        text website
+        text logo_url
+        jsonb settings
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    TENANTS {
+        uuid id PK
+        text subdomain UK
+        text name
+        uuid org_id FK
+        timestamptz created_at
+    }
+
+    USER_PROFILES {
+        uuid id PK
+        uuid user_id UK,FK
+        uuid tenant_id FK
+        text email
+        text name
+        user_role role
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    AUTH_USERS {
+        uuid id PK
+        text email
+        text encrypted_password
+    }
+
+    ORGANIZATIONS ||--o{ TENANTS : "org_id"
+    TENANTS ||--o{ USER_PROFILES : "tenant_id"
+    AUTH_USERS ||--|| USER_PROFILES : "user_id"
+```
+
+**Key Features:**
+
+- 🏢 **Organizations**: Company/group management
+- 🌐 **Tenants**: Subdomain to organization mapping
+- 👤 **User Profiles**: Extended user data with tenant relationships
+- 🔐 **Role-Based Access**: `superadmin` → `admin` → `member` → `view-only`
+- 🛡️ **Row Level Security**: Comprehensive RLS policies for tenant isolation
+
 ## 🚀 Complete Setup Guide
 
 ### Prerequisites
@@ -84,14 +139,18 @@ pnpm install
 
 ```mermaid
 flowchart LR
-    A[Create Supabase Project] --> B[Copy Project URL & Keys]
-    B --> C[Set up Authentication]
-    C --> D[Configure RLS Policies]
+    A[Create Supabase Project] --> B[Run Database Setup Script]
+    B --> C[Copy Project URL & Keys]
+    C --> D[Configure Authentication]
     D --> E[Ready for Integration]
 ```
 
 1. **Create Supabase Project**: Go to [supabase.com](https://supabase.com) and create a new project
-2. **Copy Credentials**: Navigate to Project Settings → API to get:
+2. **Set up Database Structure**:
+   - Open the SQL Editor in your Supabase dashboard
+   - Copy and run the complete `database-setup.sql` script (located in repository root)
+   - This creates all necessary tables, RLS policies, and functions for multi-tenant architecture
+3. **Copy Credentials**: Navigate to Project Settings → API to get:
    - Project URL
    - Anon/Public Key
    - Service Role Key (for server-side operations)
@@ -411,3 +470,19 @@ For optimal CI/CD performance with Turborepo remote caching:
 ### Step 6: Deploy
 
 After completing the above setup, push to `main` to trigger automatic deployments to both Vercel projects.
+
+## 📁 Repository Files
+
+```
+📦 subdomain-isolated-turborepo/
+├── 📄 database-setup.sql          # Complete Supabase database setup
+├── 📄 AGENTS.md                   # AI agent development guide
+├── 📄 README.md                   # This documentation
+├── 📁 apps/
+│   ├── 📁 marketing/              # Landing page & tenant discovery
+│   └── 📁 protected/              # Multi-tenant workspaces
+└── 📁 packages/
+    ├── 📁 ui/                     # Shared component library
+    ├── 📁 eslint-config/          # Linting configuration
+    └── 📁 typescript-config/      # TypeScript configuration
+```

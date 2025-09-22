@@ -227,9 +227,8 @@ export function MyComponent({ subdomain }: { subdomain: string }) {
 ### Environment Variables
 
 ```bash
-NEXT_PUBLIC_APP_DOMAIN=ghostwrite.app
-NEXT_PUBLIC_MARKETING_DOMAIN=bask-app.com
-NEXT_PUBLIC_ROOT_DOMAIN=bask-app.com
+NEXT_PUBLIC_APP_DOMAIN='ghostwrite.app'
+NEXT_PUBLIC_MARKETING_DOMAIN='bask-app.com'
 # Supabase vars...
 ```
 
