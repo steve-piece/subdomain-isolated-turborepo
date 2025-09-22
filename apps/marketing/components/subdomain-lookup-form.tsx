@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@workspace/ui/lib/utils'
-import { isValidSubdomain, buildSubdomainUrl } from '@workspace/ui/lib/subdomains'
+import { isValidSubdomain } from '@workspace/ui/lib/subdomains'
 import { searchTenants, verifyTenant, type TenantSearchResult } from '@/app/actions'
 import { Button } from '@workspace/ui/components/button'
 import {
