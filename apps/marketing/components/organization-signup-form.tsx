@@ -26,10 +26,39 @@ export function OrganizationSignUpForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const [organizationName, setOrganizationName] = useState("");
   const [subdomain, setSubdomain] = useState("");
+  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [touchedFields, setTouchedFields] = useState<{
+    organizationName: boolean;
+    userName: boolean;
+    email: boolean;
+    password: boolean;
+    repeatPassword: boolean;
+  }>({
+    organizationName: false,
+    userName: false,
+    email: false,
+    password: false,
+    repeatPassword: false,
+  });
+  const [fieldErrors, setFieldErrors] = useState<{
+    organizationName: string | null;
+    userName: string | null;
+    email: string | null;
+    password: string | null;
+    repeatPassword: string | null;
+  }>({
+    organizationName: null,
+    userName: null,
+    email: null,
+    password: null,
+    repeatPassword: null,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [subdomainValidation, setSubdomainValidation] = useState<
@@ -59,16 +88,116 @@ export function OrganizationSignUpForm({
   }, [subdomain]);
 
   // Auto-generate subdomain from organization name
+  // Validation functions
+  const validateField = (
+    fieldName: keyof typeof fieldErrors,
+    value: string
+  ) => {
+    let error: string | null = null;
+
+    switch (fieldName) {
+      case "organizationName":
+        if (value.trim().length < 2) {
+          error = "Organization name must be at least 2 characters";
+        }
+        break;
+      case "userName":
+        if (value.trim().length < 2) {
+          error = "Full name must be at least 2 characters";
+        }
+        break;
+      case "email":
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          error = "Please enter a valid email address";
+        }
+        break;
+      case "password":
+        if (value.length < 6) {
+          error = "Password must be at least 6 characters";
+        }
+        break;
+      case "repeatPassword":
+        if (value !== password) {
+          error = "Passwords do not match";
+        }
+        break;
+    }
+
+    setFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
+    return error === null;
+  };
+
+  const handleFieldBlur = (
+    fieldName: keyof typeof touchedFields,
+    value: string
+  ) => {
+    setTouchedFields((prev) => ({ ...prev, [fieldName]: true }));
+    validateField(fieldName, value);
+  };
+
   const handleOrganizationNameChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const name = e.target.value;
     setOrganizationName(name);
 
+    // Clear error when user starts typing again
+    if (touchedFields.organizationName) {
+      validateField("organizationName", name);
+    }
+
     // Generate subdomain suggestion using utility function
     const suggestion = generateSubdomainSuggestion(name);
 
     setSubdomain(suggestion);
+  };
+
+  const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    setUserName(name);
+
+    // Clear error when user starts typing again
+    if (touchedFields.userName) {
+      validateField("userName", name);
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value;
+    setEmail(email);
+
+    // Clear error when user starts typing again
+    if (touchedFields.email) {
+      validateField("email", email);
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pwd = e.target.value;
+    setPassword(pwd);
+
+    // Clear error when user starts typing again
+    if (touchedFields.password) {
+      validateField("password", pwd);
+    }
+
+    // Revalidate repeat password if it was already touched
+    if (touchedFields.repeatPassword) {
+      validateField("repeatPassword", repeatPassword);
+    }
+  };
+
+  const handleRepeatPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const pwd = e.target.value;
+    setRepeatPassword(pwd);
+
+    // Clear error when user starts typing again
+    if (touchedFields.repeatPassword) {
+      validateField("repeatPassword", pwd);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -104,11 +233,12 @@ export function OrganizationSignUpForm({
         password,
         options: {
           data: {
+            full_name: userName,
             organization_name: organizationName,
             subdomain: subdomain,
             role: "owner",
           },
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: `https://${subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/confirm`,
         },
       });
 
@@ -124,7 +254,7 @@ export function OrganizationSignUpForm({
       setSuccess(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      router.push("/signup-success");
+      router.push("/signup/success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -154,7 +284,22 @@ export function OrganizationSignUpForm({
                   required
                   value={organizationName}
                   onChange={handleOrganizationNameChange}
+                  onBlur={() =>
+                    handleFieldBlur("organizationName", organizationName)
+                  }
+                  className={
+                    touchedFields.organizationName &&
+                    fieldErrors.organizationName
+                      ? "border-red-500"
+                      : ""
+                  }
                 />
+                {touchedFields.organizationName &&
+                  fieldErrors.organizationName && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {fieldErrors.organizationName}
+                    </p>
+                  )}
               </div>
 
               <div className="grid gap-2">
@@ -198,6 +343,29 @@ export function OrganizationSignUpForm({
               </div>
 
               <div className="grid gap-2">
+                <Label htmlFor="user-name">Your Full Name</Label>
+                <Input
+                  id="user-name"
+                  type="text"
+                  placeholder="John Smith"
+                  required
+                  value={userName}
+                  onChange={handleUserNameChange}
+                  onBlur={() => handleFieldBlur("userName", userName)}
+                  className={
+                    touchedFields.userName && fieldErrors.userName
+                      ? "border-red-500"
+                      : ""
+                  }
+                />
+                {touchedFields.userName && fieldErrors.userName && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {fieldErrors.userName}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid gap-2">
                 <Label htmlFor="email">Your Email</Label>
                 <Input
                   id="email"
@@ -205,30 +373,143 @@ export function OrganizationSignUpForm({
                   placeholder="admin@acme.com"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
+                  onBlur={() => handleFieldBlur("email", email)}
+                  className={
+                    touchedFields.email && fieldErrors.email
+                      ? "border-red-500"
+                      : ""
+                  }
                 />
+                {touchedFields.email && fieldErrors.email && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={handlePasswordChange}
+                    onBlur={() => handleFieldBlur("password", password)}
+                    className={cn(
+                      "pr-10",
+                      touchedFields.password && fieldErrors.password
+                        ? "border-red-500"
+                        : ""
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                        <line x1="3" y1="3" x2="21" y2="21" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {touchedFields.password && fieldErrors.password && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="repeat-password">Confirm Password</Label>
-                <Input
-                  id="repeat-password"
-                  type="password"
-                  required
-                  value={repeatPassword}
-                  onChange={(e) => setRepeatPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="repeat-password"
+                    type={showRepeatPassword ? "text" : "password"}
+                    required
+                    value={repeatPassword}
+                    onChange={handleRepeatPasswordChange}
+                    onBlur={() =>
+                      handleFieldBlur("repeatPassword", repeatPassword)
+                    }
+                    className={cn(
+                      "pr-10",
+                      touchedFields.repeatPassword && fieldErrors.repeatPassword
+                        ? "border-red-500"
+                        : ""
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showRepeatPassword ? (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                        <line x1="3" y1="3" x2="21" y2="21" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {touchedFields.repeatPassword && fieldErrors.repeatPassword && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {fieldErrors.repeatPassword}
+                  </p>
+                )}
               </div>
 
               {error && (
