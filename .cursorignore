@@ -1,0 +1,3 @@
+apps/protected/lib/supabase/client.ts
+apps/protected/lib/supabase/middleware.ts
+apps/protected/lib/supabase/server.ts
