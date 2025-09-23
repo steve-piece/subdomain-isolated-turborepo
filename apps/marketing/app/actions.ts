@@ -134,53 +134,122 @@ export async function searchTenants(
   }
 
   try {
+    console.log("=== SEARCH TENANTS DEBUG START ===");
+
     // Debug environment variables
-    console.log("Search Debug:", {
+    console.log("Environment Check:", {
       hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY,
-      urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20) + "...",
+      urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + "...",
       keyPrefix:
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY?.substring(
           0,
-          20
+          30
         ) + "...",
       query: query,
     });
 
     const supabase = await createClient();
 
-    console.log("About to query tenants_public with query:", query);
-
-    // Use the secure public view that excludes org_id and other sensitive data
-    const { data: tenants, error } = await supabase
-      .from("tenants_public")
-      .select("subdomain, name")
-      .or(`subdomain.ilike.%${query}%,name.ilike.%${query}%`)
-      .order("name")
-      .limit(5);
-
-    console.log("Query result:", {
-      data: tenants,
-      error,
-      queryUsed: `subdomain.ilike.%${query}%,name.ilike.%${query}%`,
+    // Check current session
+    const { data: session, error: sessionError } =
+      await supabase.auth.getSession();
+    console.log("Session status:", {
+      hasSession: !!session?.session,
+      sessionError: sessionError?.message,
+      userId: session?.session?.user?.id?.substring(0, 8) + "...",
     });
 
-    if (error) {
-      console.error("Supabase error:", error);
+    console.log("Attempting to query tenants_public...");
+
+    // First, try a simple count query to test basic access
+    const { count: tenantCount, error: countError } = await supabase
+      .from("tenants_public")
+      .select("*", { count: "exact", head: true });
+
+    console.log("Access test result:", {
+      count: tenantCount,
+      countError: countError?.message,
+    });
+
+    if (countError) {
+      console.error("CRITICAL: Cannot access tenants_public view:", {
+        code: countError.code,
+        message: countError.message,
+        details: countError.details,
+        hint: countError.hint,
+        fullError: countError,
+      });
+
+      // Provide more specific error message
+      const errorMsg =
+        countError.message ||
+        countError.details ||
+        countError.hint ||
+        `Database error (code: ${countError.code})` ||
+        "Unknown database access error";
+
       return {
         tenants: [],
-        error: "Failed to search tenants",
+        error: `Database access error: ${errorMsg}`,
       };
     }
 
+    // Now try the actual search query
+    const { data: tenants, error } = await supabase
+      .from("tenants_public")
+      .select("subdomain, company_name")
+      .or(`subdomain.ilike.%${query}%,company_name.ilike.%${query}%`)
+      .order("company_name")
+      .limit(5);
+
+    console.log("Search query result:", {
+      resultCount: tenants?.length || 0,
+      firstResult: tenants?.[0],
+      error: error
+        ? {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+          }
+        : null,
+      queryUsed: `subdomain.ilike.%${query}%,company_name.ilike.%${query}%`,
+    });
+
+    console.log("=== SEARCH TENANTS DEBUG END ===");
+
+    if (error) {
+      console.error("Supabase search error:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      return {
+        tenants: [],
+        error: `Search failed: ${error.message}`,
+      };
+    }
+
+    // Map company_name to name for client consumption
+    const mappedTenants = (tenants || []).map((tenant) => ({
+      subdomain: tenant.subdomain,
+      name: tenant.company_name,
+    }));
+
     return {
-      tenants: tenants || [],
+      tenants: mappedTenants,
     };
   } catch (error) {
-    console.error("Search tenants error:", error);
+    console.error("Search tenants catch error:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return {
       tenants: [],
-      error: "Internal server error",
+      error: error instanceof Error ? error.message : "Internal server error",
     };
   }
 }

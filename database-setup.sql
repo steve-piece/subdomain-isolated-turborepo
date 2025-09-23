@@ -60,6 +60,7 @@ CREATE TABLE public.tenants (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     subdomain text NOT NULL UNIQUE,
     company_name text NOT NULL, -- Duplicated for performance/caching
+    searchable boolean NOT NULL DEFAULT true,
     org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
     created_at timestamptz DEFAULT now()
 );
@@ -85,7 +86,8 @@ CREATE VIEW public.tenants_public AS
 SELECT 
     subdomain,
     company_name
-FROM public.tenants;
+FROM public.tenants
+WHERE searchable = true;
 
 -- Enable security invoker for proper RLS
 ALTER VIEW public.tenants_public SET (security_invoker = true);
@@ -230,6 +232,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Prevent changing uid on user_profiles after creation
+CREATE OR REPLACE FUNCTION public.prevent_user_id_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.uid <> OLD.uid THEN
+    RAISE EXCEPTION 'uid is immutable';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Keep user_profiles.email in sync with auth.users.email
+CREATE OR REPLACE FUNCTION public.sync_user_email()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.email IS DISTINCT FROM OLD.email THEN
+    UPDATE public.user_profiles
+       SET email = COALESCE(NEW.email, email),
+           updated_at = now()
+     WHERE uid = NEW.id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- =====================================================
 -- 🔐 CUSTOM CLAIMS FUNCTION PERMISSIONS
 -- =====================================================
@@ -259,11 +286,23 @@ CREATE TRIGGER trg_user_profiles_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION public.set_updated_at();
 
+-- Prevent uid changes on user_profiles
+CREATE TRIGGER prevent_user_id_change_trigger
+    BEFORE UPDATE ON public.user_profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION public.prevent_user_id_change();
+
 -- Auto-create user profile when new user signs up
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
+
+-- Keep user_profiles.email synced when auth.users.email changes
+CREATE TRIGGER sync_email_on_auth_update
+    AFTER UPDATE ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.sync_user_email();
 
 -- =====================================================
 -- 🔒 ROW LEVEL SECURITY (RLS) POLICIES
@@ -304,25 +343,52 @@ CREATE POLICY "organizations_admin_write" ON public.organizations
 -- Tenants Policies  
 -- =====================================================
 
--- Public read access for tenant discovery (marketing site)
-CREATE POLICY "tenants_public_read" ON public.tenants
-    FOR SELECT TO public, anon
-    USING (true);
+-- Anonymous read access for tenant discovery when searchable
+CREATE POLICY "tenants_anon_select_searchable" ON public.tenants
+    FOR SELECT TO anon
+    USING (searchable = true);
 
--- Public insert for organization creation (marketing signup)
-CREATE POLICY "tenants_public_insert" ON public.tenants
-    FOR INSERT TO public, anon
-    WITH CHECK (true);
+-- Admin insert access for tenant management
+CREATE POLICY "tenants_admin_insert" ON public.tenants
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles up
+            WHERE up.uid = auth.uid()
+              AND up.org_id = tenants.org_id
+              AND up.role IN ('admin', 'superadmin')
+        )
+    );
 
--- Admin write access for tenant management
-CREATE POLICY "tenants_admin_write" ON public.tenants
-    FOR ALL TO authenticated
+-- Admin update access for tenant management
+CREATE POLICY "tenants_admin_update" ON public.tenants
+    FOR UPDATE TO authenticated
     USING (
         EXISTS (
             SELECT 1 FROM public.user_profiles up
-            WHERE up.uid = auth.uid() 
-                AND up.org_id = tenants.org_id 
-                AND up.role IN ('admin', 'superadmin')
+            WHERE up.uid = auth.uid()
+              AND up.org_id = tenants.org_id
+              AND up.role IN ('admin', 'superadmin')
+        )
+    )
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles up
+            WHERE up.uid = auth.uid()
+              AND up.org_id = tenants.org_id
+              AND up.role IN ('admin', 'superadmin')
+        )
+    );
+
+-- Admin delete access for tenant management
+CREATE POLICY "tenants_admin_delete" ON public.tenants
+    FOR DELETE TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles up
+            WHERE up.uid = auth.uid()
+              AND up.org_id = tenants.org_id
+              AND up.role IN ('admin', 'superadmin')
         )
     );
 
