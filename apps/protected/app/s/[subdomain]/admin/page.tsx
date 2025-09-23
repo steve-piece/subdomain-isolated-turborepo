@@ -18,12 +18,15 @@ export default async function AdminPage({
   const { subdomain } = await params;
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claims, error } = await supabase.auth.getClaims();
 
-  if (!user) {
+  if (!claims || error) {
     redirect("/auth/login");
+  }
+
+  // Verify user belongs to this specific subdomain/organization
+  if (claims.claims.subdomain !== subdomain) {
+    redirect("/auth/login?error=unauthorized");
   }
 
   // TODO: Add role-based authorization check here
@@ -177,14 +180,16 @@ export default async function AdminPage({
                 <CardDescription>Common administrative tasks</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button
-                  className="w-full justify-start"
-                  size="lg"
-                  variant="outline"
-                >
-                  <span className="mr-2">👤</span>
-                  Invite Admin User
-                </Button>
+                <Link href="/invite-user">
+                  <Button
+                    className="w-full justify-start"
+                    size="lg"
+                    variant="outline"
+                  >
+                    <span className="mr-2">👤</span>
+                    Invite Admin User
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
                   className="w-full justify-start"

@@ -37,12 +37,13 @@ export async function createOrganizationAfterSignup(
     const supabase = await createClient();
 
     // Create organization record
+    // Note: owner_id will be set after user profile is created (since it references user_profiles.user_id)
     const { data: organization, error: orgError } = await supabase
       .from("organizations")
       .insert({
-        name: organizationName,
+        company_name: organizationName,
         settings: {},
-        owner_id: userId,
+        metadata: {},
       })
       .select()
       .single();
@@ -61,7 +62,7 @@ export async function createOrganizationAfterSignup(
       .insert({
         subdomain: subdomain.toLowerCase(),
         org_id: organization.id,
-        name: organizationName,
+        company_name: organizationName,
       })
       .select()
       .single();
@@ -74,12 +75,14 @@ export async function createOrganizationAfterSignup(
       };
     }
 
-    // Create user profile with superadmin role (owner is tracked in organizations.owner_id)
+    // Create user profile with new structure (direct org_id reference)
+    const shortUserId = userId.toString().substring(0, 8); // First 8 chars as new primary key
     const { error: profileError } = await supabase
       .from("user_profiles")
       .insert({
-        user_id: userId,
-        tenant_id: tenant.id, // Use tenant.id, not organization.id
+        user_id: shortUserId,
+        uid: userId, // Full UUID for auth.users reference
+        org_id: organization.id, // Direct reference to organization
         role: "superadmin",
         email: userEmail,
       });
@@ -89,6 +92,20 @@ export async function createOrganizationAfterSignup(
       return {
         success: false,
         error: `Failed to create user profile: ${profileError.message}`,
+      };
+    }
+
+    // Update organization.owner_id to reference the user's short ID
+    const { error: ownerUpdateError } = await supabase
+      .from("organizations")
+      .update({ owner_id: shortUserId })
+      .eq("id", organization.id);
+
+    if (ownerUpdateError) {
+      console.error("Owner ID update error:", ownerUpdateError);
+      return {
+        success: false,
+        error: `Failed to set organization owner: ${ownerUpdateError.message}`,
       };
     }
 
@@ -188,7 +205,7 @@ export async function verifyTenant(
     // Check if tenant exists with exact subdomain match using secure view
     const { data: tenant, error } = await supabase
       .from("tenants_public")
-      .select("subdomain, name")
+      .select("subdomain, company_name")
       .eq("subdomain", subdomain.toLowerCase().trim())
       .single();
 
@@ -213,7 +230,7 @@ export async function verifyTenant(
       exists: true,
       tenant: {
         subdomain: tenant.subdomain,
-        name: tenant.name,
+        name: tenant.company_name,
       },
     };
   } catch (error) {

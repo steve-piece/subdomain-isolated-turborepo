@@ -213,10 +213,22 @@ export default async function MyPage({
   const { subdomain } = await params
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: claims, error } = await supabase.auth.getClaims(); // **getUser() is DEPRECATED**
   if (!user) {
     redirect('/auth/login') // Clean URL redirect
   }
+   // If no claims or auth error, redirect to login
+  if (!claims || error) {
+    redirect("/auth/login");
+  }
+  // Verify user belongs to this specific subdomain/organization
+  if (claims.claims.subdomain !== subdomain) {
+    redirect("/auth/login?error=unauthorized");
+  }
+  const userName =
+    claims.claims.user_metadata?.full_name ||
+    claims.claims.email ||
+    "Unknown User";
 
   return <MyComponent subdomain={subdomain} />
 }

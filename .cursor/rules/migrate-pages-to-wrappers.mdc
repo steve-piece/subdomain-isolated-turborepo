@@ -1,0 +1,138 @@
+---
+description: Step-by-step migration from code-in-page to wrapper + layout structure
+globs:
+  - apps/**/app/**/page.tsx
+alwaysApply: false
+---
+
+# Migration Guide: Code-in-Page → Wrapper + Layout
+
+Follow this checklist for each route to migrate from a heavy `page.tsx` to a thin page that composes a wrapper and uses a local `layout.tsx`.
+
+## 1) Create feature directory and wrapper
+
+- Identify the feature (e.g., `auth/login`).
+- Create a folder under `apps/<app>/components/<feature>/`.
+- Create `actions.ts` (server actions for the feature).
+- Create presentational components (`*-form.tsx`, `*-cta.tsx`, etc.).
+- Create `*-wrapper.tsx` that composes the feature’s UI and uses actions.
+
+Example structure:
+
+- `apps/marketing/components/auth/login/login-wrapper.tsx`
+- `apps/marketing/components/auth/login/login-form.tsx`
+- `apps/marketing/components/auth/login/login-cta.tsx`
+- `apps/marketing/components/auth/login/actions.ts`
+
+## 2) Add per-route layout
+
+- At `apps/<app>/app/<route>/layout.tsx`, define page-level metadata/SEO and page-specific layout chrome.
+- Keep this layout minimal and local to the route.
+
+```tsx
+// apps/marketing/app/login/layout.tsx
+export const metadata = {
+  title: "Login",
+  description: "Sign in to your account",
+};
+
+export default function LoginLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <div className="min-h-screen grid place-items-center">{children}</div>;
+}
+```
+
+## 3) Thin the page.tsx
+
+- Replace heavy logic with an import of the wrapper.
+- Page remains responsible only for composing the wrapper.
+
+```tsx
+// apps/marketing/app/login/page.tsx
+import LoginWrapper from "@/apps/marketing/components/auth/login/login-wrapper";
+
+export default function Page() {
+  return <LoginWrapper />;
+}
+```
+
+## 4) Move logic into wrapper and actions
+
+- Client interactivity stays in client components under the wrapper.
+- Server data fetching/mutations live in `actions.ts` with `"use server"`.
+- Validate inputs with `zod` and use clean URL redirects.
+
+## 5) Clean URLs and tenant context
+
+- Ensure all links are clean (no `/s/${subdomain}` in UI).
+- Pass `subdomain` explicitly to components that require it.
+
+## 6) Remove dead code from page.tsx
+
+- Delete any leftover fetch or business logic from page.
+- Keep imports minimal and local.
+
+## 7) Test
+
+- Verify middleware rewrites still produce clean URLs.
+- Navigate to the route and confirm wrapper renders correctly.
+- Add/adjust unit tests for wrapper and actions.
+
+---
+
+## Appendix: Ready-to-paste scaffolds
+
+```tsx
+// apps/marketing/app/login/layout.tsx
+export const metadata = {
+  title: "Login",
+  description: "Sign in to your account",
+};
+
+export default function LoginLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <div className="min-h-screen grid place-items-center">{children}</div>;
+}
+```
+
+```tsx
+// apps/marketing/components/auth/login/login-wrapper.tsx
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@workspace/ui/components/card";
+import { LoginForm } from "./login-form";
+import Link from "next/link";
+
+export default function LoginWrapper() {
+  return (
+    <div className="container mx-auto max-w-sm p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LoginForm />
+          <div className="mt-4 text-sm text-muted-foreground">
+            <Link href="/signup" className="underline underline-offset-4">
+              Create an account
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+```

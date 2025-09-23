@@ -1,0 +1,35 @@
+---
+globs: *.test.ts,*.spec.ts
+alwaysApply: false
+---
+
+# Testing Conventions
+
+## Tooling (recommended)
+
+- Unit/Component: Vitest + @testing-library/react + happy-dom
+- Integration (API/routes/actions): Vitest + supertest/msw
+- E2E: Playwright
+
+## Guidelines
+
+- Test clean URL behavior in components (no `/s/` strings in links).
+- For tenant routes, provide a `subdomain` prop in tests; assert it flows correctly.
+- Mock Supabase client at the module boundary; avoid real network calls.
+- Prefer `msw` to emulate PostgREST responses when needed.
+- Use small, focused tests; keep the public API stable.
+
+## Examples
+
+```ts
+// Example: mocking supabase client in a component test
+vi.mock("@/lib/supabase/client", () => ({
+  createClient: () => ({
+    auth: {
+      getClaims: async () => ({
+        data: { claims: { subdomain: "acme", email: "a@b.com" } },
+      }),
+    },
+  }),
+}));
+```

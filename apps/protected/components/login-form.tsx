@@ -38,11 +38,11 @@ export function LoginForm({
   useEffect(() => {
     const verified = searchParams.get("verified");
     const message = searchParams.get("message");
-    
+
     if (verified === "true" && message) {
       setSuccess(decodeURIComponent(message));
       // Clear URL parameters after showing message
-      window.history.replaceState({}, '', window.location.pathname);
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, [searchParams]);
 
@@ -54,7 +54,7 @@ export function LoginForm({
 
     try {
       const result = await loginWithToast(email, password);
-      
+
       if (result.success) {
         // Redirect to dashboard or specified location
         router.push(result.redirectTo || "/dashboard");
@@ -62,7 +62,9 @@ export function LoginForm({
         setError(result.message || "Login failed");
       }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An unexpected error occurred");
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +97,7 @@ export function LoginForm({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <Link
-                    href="/auth/reset-password"
+                    href="/auth/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
                     Forgot your password?
@@ -117,15 +119,15 @@ export function LoginForm({
                   </p>
                 </div>
               )}
-              
+
               {error && (
                 <div className="p-3 rounded-md bg-red-50 border border-red-200">
                   <p className="text-sm text-red-700 flex items-center">
                     <span className="mr-2">⚠️</span>
                     {error}
                     {error.includes("Email not confirmed") && (
-                      <Link 
-                        href="/auth/resend-verification" 
+                      <Link
+                        href="/auth/resend-verification"
                         className="ml-2 underline underline-offset-4 hover:no-underline"
                       >
                         Resend verification email

@@ -1,0 +1,25 @@
+---
+globs: apps/protected**/*
+alwaysApply: false
+---
+
+# Auth Claims and Tenant Isolation
+
+## Claims First
+
+- Always prefer `supabase.auth.getClaims()` for fast checks.
+- If claims missing or error → redirect to `/auth/login` (clean URL).
+
+## Tenant Match
+
+- Assert `claims.claims.subdomain === params.subdomain` for tenant routes.
+- On mismatch, redirect to `/auth/login?error=unauthorized`.
+
+## SessionEvaluator Pattern
+
+- The protected app root (`apps/protected/app/page.tsx`) should render `SessionEvaluator` to redirect base-domain traffic back to the marketing site.
+
+## Logout and Redirects
+
+- Use clean URL redirects (`/auth/login`, `/dashboard`).
+- Do not redirect to `/s/...` from UI.

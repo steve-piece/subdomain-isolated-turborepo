@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@workspace/ui/lib/utils";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -13,36 +13,33 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
-import { useState } from "react";
 
 interface ForgotPasswordFormProps {
   subdomain: string;
-  className?: string;
 }
 
-export function ForgotPasswordForm({
-  subdomain,
-  className,
-  ...props
-}: ForgotPasswordFormProps & React.ComponentPropsWithoutRef<"div">) {
+export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps) {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
-    setMessage(null);
 
     try {
+      // Redirect to the current tenant's update-password route
+      const redirectTo = `https://${subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/update-password`;
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password`,
+        redirectTo,
       });
+
       if (error) throw error;
-      setMessage("Check your email for the password reset link");
+      setSuccess(true);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -51,43 +48,82 @@ export function ForgotPasswordForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Forgot password</CardTitle>
-          <CardDescription>
-            Enter your email to reset your password
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleResetPassword}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+    <>
+      {success ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Check Your Email</CardTitle>
+            <CardDescription>Password reset instructions sent</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-3 rounded-md bg-green-50 border border-green-200">
+                <p className="text-sm text-green-700 flex items-center">
+                  <span className="mr-2">✅</span>
+                  If you registered using your email and password, you will
+                  receive a password reset email with a link to reset your
+                  password.
+                </p>
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              {message && <p className="text-sm text-green-600">{message}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Sending..." : "Send reset email"}
-              </Button>
+              <div className="text-center text-sm">
+                <Link
+                  href="/auth/login"
+                  className="underline underline-offset-4"
+                >
+                  ← Back to Login
+                </Link>
+              </div>
             </div>
-            <div className="mt-4 text-center text-sm">
-              Remember your password?{" "}
-              <Link href="/auth/login" className="underline underline-offset-4">
-                Sign in
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+            <CardDescription>
+              Enter your email address and we&apos;ll send you a link to reset
+              your password for <strong>{subdomain}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleForgotPassword}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                {error && (
+                  <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                    <p className="text-sm text-red-700 flex items-center">
+                      <span className="mr-2">⚠️</span>
+                      {error}
+                    </p>
+                  </div>
+                )}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Sending..." : "Send Reset Email"}
+                </Button>
+              </div>
+              <div className="mt-4 text-center text-sm">
+                Remember your password?{" "}
+                <Link
+                  href="/auth/login"
+                  className="underline underline-offset-4"
+                >
+                  Login
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+    </>
   );
 }

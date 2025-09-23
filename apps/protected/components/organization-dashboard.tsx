@@ -116,10 +116,12 @@ export function OrganizationDashboard({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full justify-start" size="lg">
-                  <span className="mr-2">👤</span>
-                  Invite Team Members
-                </Button>
+                <Link href="/invite-user">
+                  <Button className="w-full justify-start" size="lg">
+                    <span className="mr-2">👤</span>
+                    Invite Team Members
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
                   className="w-full justify-start"

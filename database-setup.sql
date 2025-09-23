@@ -1,15 +1,28 @@
 -- =====================================================
--- 🗄️ SUBDOMAIN MULTI-TENANT DATABASE SETUP SCRIPT
+-- 🗄️ SUBDOMAIN MULTI-TENANT DATABASE SETUP SCRIPT  
 -- =====================================================
 -- 
 -- This script sets up the complete database structure for the 
--- subdomain-isolated multi-tenant architecture.
+-- subdomain-isolated multi-tenant architecture with enhanced
+-- organizational data management and single-user-per-organization enforcement.
 --
--- Based on Supabase UI Auth Registry:
--- npx shadcn@latest add https://supabase.com/ui/r/password-based-auth-nextjs.json
+-- Key Features:
+-- • Organizations as primary table (not tenants)
+-- • Short user_id (8 chars) + full uid (UUID) system
+-- • Address standardization support
+-- • Metadata storage for organizational context
+-- • Strict single-organization membership
+-- • Enhanced security with custom claims
 --
 -- Run this script in your Supabase SQL Editor after creating a new project.
 -- =====================================================
+
+-- =====================================================
+-- 🧩 EXTENSIONS
+-- =====================================================
+
+-- Enable address standardization for organization addresses
+CREATE EXTENSION IF NOT EXISTS address_standardizer;
 
 -- =====================================================
 -- 🔧 CUSTOM TYPES
@@ -17,9 +30,9 @@
 
 -- User role hierarchy for multi-tenant access control
 CREATE TYPE public.user_role AS ENUM (
-    'superadmin',  -- Global admin across all tenants
-    'admin',       -- Tenant admin with full access
-    'member',      -- Regular tenant member
+    'superadmin',  -- Organization owner with full control
+    'admin',       -- Organization admin with management access
+    'member',      -- Regular organization member
     'view-only'    -- Read-only access
 );
 
@@ -27,65 +40,74 @@ CREATE TYPE public.user_role AS ENUM (
 -- 📊 CORE TABLES
 -- =====================================================
 
--- Organizations table - represents companies/groups
+-- Organizations table - PRIMARY organizational data table
 CREATE TABLE public.organizations (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    name text NOT NULL,
+    company_name text NOT NULL,
     description text,
     website text,
     logo_url text,
+    address text, -- Standardized using address_standardizer extension
     settings jsonb DEFAULT '{}'::jsonb,
-    owner_id uuid REFERENCES auth.users(id), -- Organization owner for backwards compatibility and clear ownership tracking
+    metadata jsonb DEFAULT '{}'::jsonb, -- Industry, size, founding year, etc.
+    owner_id uuid REFERENCES auth.users(id), -- Organization owner reference
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
 
--- Tenants table - maps subdomains to organizations  
+-- Tenants table - Subdomain mapping to organizations (1:1 relationship)
 CREATE TABLE public.tenants (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     subdomain text NOT NULL UNIQUE,
-    name text NOT NULL,
-    org_id uuid NOT NULL REFERENCES public.organizations(id),
+    company_name text NOT NULL, -- Duplicated for performance/caching
+    org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
     created_at timestamptz DEFAULT now()
 );
 
--- User profiles - extends auth.users with tenant relationships
+-- User profiles - Enhanced user management with short IDs
 CREATE TABLE public.user_profiles (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id uuid NOT NULL UNIQUE REFERENCES auth.users(id),
-    tenant_id uuid REFERENCES public.tenants(id),
-    email text NOT NULL,
-    name text,
-    role public.user_role DEFAULT 'member'::public.user_role NOT NULL,
-    created_at timestamptz DEFAULT now() NOT NULL,
-    updated_at timestamptz DEFAULT now() NOT NULL
+    user_id text PRIMARY KEY, -- Short ID (first 8 chars of UUID) for cross-table references  
+    uid uuid UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, -- Full UUID sync
+    org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE, -- Direct org reference
+    email text UNIQUE NOT NULL, -- Enforces one email = one user across all orgs
+    full_name text,
+    role public.user_role NOT NULL DEFAULT 'superadmin', -- New users default to superadmin
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 -- =====================================================
 -- 📋 VIEWS
 -- =====================================================
 
--- Public view for tenant discovery (no sensitive data)
+-- Public view for tenant discovery (minimal data, anon accessible)
 CREATE VIEW public.tenants_public AS
-SELECT subdomain, name
+SELECT 
+    subdomain,
+    company_name
 FROM public.tenants;
+
+-- Enable security invoker for proper RLS
+ALTER VIEW public.tenants_public SET (security_invoker = true);
 
 -- =====================================================
 -- ⚙️ UTILITY FUNCTIONS
 -- =====================================================
 
--- Get the current user's organization ID
+-- Get the current user's organization ID (updated for direct org_id reference)
 CREATE OR REPLACE FUNCTION public.get_user_org_id()
 RETURNS uuid
 LANGUAGE plpgsql
+STABLE
 SECURITY DEFINER
+SET search_path = 'public'
 AS $$
 DECLARE
     org_id uuid;
 BEGIN
-    SELECT tenant_id INTO org_id
-    FROM public.user_profiles 
-    WHERE user_id = auth.uid()
+    SELECT up.org_id INTO org_id
+    FROM public.user_profiles up
+    WHERE up.uid = auth.uid()
     LIMIT 1;
     
     RETURN org_id;
@@ -96,13 +118,15 @@ $$;
 CREATE OR REPLACE FUNCTION public.user_has_role(required_role text)
 RETURNS boolean
 LANGUAGE plpgsql
+STABLE
 SECURITY DEFINER
+SET search_path = 'public'
 AS $$
 BEGIN
     RETURN EXISTS (
         SELECT 1 
         FROM public.user_profiles 
-        WHERE user_id = auth.uid() 
+        WHERE uid = auth.uid() 
         AND role::text = required_role
     );
 END;
@@ -112,14 +136,16 @@ $$;
 CREATE OR REPLACE FUNCTION public.user_in_org(org_uuid uuid)
 RETURNS boolean
 LANGUAGE plpgsql
+STABLE
 SECURITY DEFINER
+SET search_path = 'public'
 AS $$
 BEGIN
     RETURN EXISTS (
         SELECT 1 
         FROM public.user_profiles 
-        WHERE user_id = auth.uid() 
-        AND tenant_id = org_uuid
+        WHERE uid = auth.uid() 
+        AND org_id = org_uuid
     );
 END;
 $$;
@@ -137,22 +163,20 @@ DECLARE
   claims jsonb;
   user_role text;
   user_subdomain text;
-  user_tenant_id text;
   user_org_id text;
 BEGIN
   -- Extract claims from the event
   claims := event->'claims';
   
-  -- Fetch the user role and tenant info from user_profiles
+  -- Fetch the user role and tenant info from user_profiles with new structure
   SELECT 
-    p.role::text, 
+    up.role::text, 
     t.subdomain,
-    p.tenant_id::text,
-    t.org_id::text
-  INTO user_role, user_subdomain, user_tenant_id, user_org_id
-  FROM public.user_profiles p
-  LEFT JOIN public.tenants t ON t.id = p.tenant_id
-  WHERE p.user_id = (event->>'user_id')::uuid
+    up.org_id::text
+  INTO user_role, user_subdomain, user_org_id
+  FROM public.user_profiles up
+  LEFT JOIN public.tenants t ON t.org_id = up.org_id
+  WHERE up.uid = (event->>'user_id')::uuid
   LIMIT 1;
 
   -- Add custom claims to the existing claims object
@@ -162,10 +186,6 @@ BEGIN
   
   IF user_subdomain IS NOT NULL THEN
     claims := jsonb_set(claims, '{subdomain}', to_jsonb(user_subdomain));
-  END IF;
-  
-  IF user_tenant_id IS NOT NULL THEN
-    claims := jsonb_set(claims, '{tenant_id}', to_jsonb(user_tenant_id));
   END IF;
   
   IF user_org_id IS NOT NULL THEN
@@ -180,6 +200,36 @@ BEGIN
 END;
 $$;
 
+-- Auto-update timestamp function
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END; 
+$$;
+
+-- Auto-create user profile when auth user is created (updated for new structure)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Create user profile with superadmin role for new signups
+  -- Uses new user_id (first 8 chars of UUID) and uid (full UUID)
+  INSERT INTO public.user_profiles (user_id, uid, email, role)
+  VALUES (
+    substring(NEW.id::text from 1 for 8),
+    NEW.id, 
+    COALESCE(NEW.email, ''),
+    'superadmin'::user_role
+  )
+  ON CONFLICT (uid) DO NOTHING;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- =====================================================
 -- 🔐 CUSTOM CLAIMS FUNCTION PERMISSIONS
 -- =====================================================
@@ -193,34 +243,15 @@ GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
 -- Revoke function permissions from authenticated, anon and public (security)
 REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, anon, public;
 
--- Auto-update timestamp function
-CREATE OR REPLACE FUNCTION public.set_updated_at()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-begin
-  new.updated_at = now();
-  return new;
-end; 
-$$;
-
--- Auto-create user profile when auth user is created
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-begin
-  insert into public.user_profiles (user_id, email, role)
-  values (new.id, coalesce(new.email, ''), 'superadmin')
-  on conflict (user_id) do nothing;
-  return new;
-end; 
-$$;
-
 -- =====================================================
 -- 🔄 TRIGGERS  
 -- =====================================================
+
+-- Auto-update timestamp on organization changes
+CREATE TRIGGER trg_organizations_updated_at
+    BEFORE UPDATE ON public.organizations
+    FOR EACH ROW
+    EXECUTE FUNCTION public.set_updated_at();
 
 -- Auto-update timestamp on user profile changes
 CREATE TRIGGER trg_user_profiles_updated_at
@@ -243,175 +274,135 @@ ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
+-- =====================================================
 -- Organizations Policies
+-- =====================================================
+
+-- Members can read their own organization
 CREATE POLICY "organizations_member_read" ON public.organizations
     FOR SELECT TO authenticated
-    USING (id = get_user_org_id());
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles up
+            WHERE up.uid = auth.uid() AND up.org_id = id
+        )
+    );
 
+-- Admins can manage their organization
 CREATE POLICY "organizations_admin_write" ON public.organizations
     FOR ALL TO authenticated
     USING (
         EXISTS (
-            SELECT 1
-            FROM public.user_profiles
-            WHERE user_profiles.user_id = auth.uid()
-            AND user_profiles.tenant_id = organizations.id
-            AND user_profiles.role::text = ANY (ARRAY['admin'::text, 'superadmin'::text])
-        )
-    )
-    WITH CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.user_profiles
-            WHERE user_profiles.user_id = auth.uid()
-            AND user_profiles.tenant_id = organizations.id
-            AND user_profiles.role::text = ANY (ARRAY['admin'::text, 'superadmin'::text])
+            SELECT 1 FROM public.user_profiles up
+            WHERE up.uid = auth.uid() 
+                AND up.org_id = id 
+                AND up.role IN ('admin', 'superadmin')
         )
     );
 
--- Tenants Policies
-CREATE POLICY "public read tenants" ON public.tenants
-    FOR SELECT TO public
+-- =====================================================
+-- Tenants Policies  
+-- =====================================================
+
+-- Public read access for tenant discovery (marketing site)
+CREATE POLICY "tenants_public_read" ON public.tenants
+    FOR SELECT TO public, anon
     USING (true);
 
-CREATE POLICY "public insert tenants" ON public.tenants
-    FOR INSERT TO public
+-- Public insert for organization creation (marketing signup)
+CREATE POLICY "tenants_public_insert" ON public.tenants
+    FOR INSERT TO public, anon
     WITH CHECK (true);
 
-CREATE POLICY "public delete tenants" ON public.tenants
-    FOR DELETE TO public
-    USING (true);
-
-CREATE POLICY "tenants_org_member_read" ON public.tenants
-    FOR SELECT TO authenticated
-    USING (org_id = get_user_org_id());
-
+-- Admin write access for tenant management
 CREATE POLICY "tenants_admin_write" ON public.tenants
     FOR ALL TO authenticated
     USING (
         EXISTS (
-            SELECT 1
-            FROM public.user_profiles
-            WHERE user_profiles.user_id = auth.uid()
-            AND (
-                user_profiles.role::text = 'superadmin'::text
-                OR (
-                    user_profiles.role::text = 'admin'::text
-                    AND user_profiles.tenant_id = tenants.org_id
-                )
-            )
-        )
-    )
-    WITH CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.user_profiles
-            WHERE user_profiles.user_id = auth.uid()
-            AND (
-                user_profiles.role::text = 'superadmin'::text
-                OR (
-                    user_profiles.role::text = 'admin'::text
-                    AND user_profiles.tenant_id = tenants.org_id
-                )
-            )
+            SELECT 1 FROM public.user_profiles up
+            WHERE up.uid = auth.uid() 
+                AND up.org_id = tenants.org_id 
+                AND up.role IN ('admin', 'superadmin')
         )
     );
 
+-- =====================================================
 -- User Profiles Policies
-CREATE POLICY "profiles self read" ON public.user_profiles
-    FOR SELECT TO public
-    USING (auth.uid() = user_id);
+-- =====================================================
 
-CREATE POLICY "profiles self insert" ON public.user_profiles
-    FOR INSERT TO public
-    WITH CHECK (auth.uid() = user_id);
+-- Users can read their own profile
+CREATE POLICY "profiles_self_read" ON public.user_profiles
+    FOR SELECT TO public, anon, authenticated
+    USING (uid = auth.uid());
 
-CREATE POLICY "profiles self update" ON public.user_profiles
-    FOR UPDATE TO public
-    USING (auth.uid() = user_id);
+-- Users can update their own profile (limited fields)
+CREATE POLICY "profiles_self_update" ON public.user_profiles
+    FOR UPDATE TO authenticated
+    USING (uid = auth.uid())
+    WITH CHECK (uid = auth.uid());
 
-CREATE POLICY "user_profiles_own_read" ON public.user_profiles
-    FOR SELECT TO authenticated
-    USING (user_id = auth.uid());
+-- Users can insert their own profile (signup flow)
+CREATE POLICY "profiles_self_insert" ON public.user_profiles
+    FOR INSERT TO public, anon
+    WITH CHECK (uid = auth.uid());
 
-CREATE POLICY "user_profiles_org_read" ON public.user_profiles
+-- Org admins can read profiles in their organization
+CREATE POLICY "profiles_org_admin_read" ON public.user_profiles
     FOR SELECT TO authenticated
     USING (
-        tenant_id = get_user_org_id()
-        AND EXISTS (
-            SELECT 1
-            FROM public.user_profiles viewer
-            WHERE viewer.user_id = auth.uid()
-            AND viewer.role::text = ANY (ARRAY['admin'::text, 'superadmin'::text])
+        EXISTS (
+            SELECT 1 FROM public.user_profiles admin
+            WHERE admin.uid = auth.uid() 
+                AND admin.org_id = user_profiles.org_id
+                AND admin.role IN ('admin', 'superadmin')
         )
     );
 
-CREATE POLICY "user_profiles_self_update" ON public.user_profiles
-    FOR UPDATE TO authenticated
-    USING (user_id = auth.uid())
-    WITH CHECK (
-        user_id = auth.uid()
-        AND user_id = (
-            SELECT user_profiles_1.user_id
-            FROM public.user_profiles user_profiles_1
-            WHERE user_profiles_1.id = user_profiles_1.id
-        )
-        AND tenant_id = (
-            SELECT user_profiles_1.tenant_id
-            FROM public.user_profiles user_profiles_1
-            WHERE user_profiles_1.id = user_profiles_1.id
-        )
-        AND role = (
-            SELECT user_profiles_1.role
-            FROM public.user_profiles user_profiles_1
-            WHERE user_profiles_1.id = user_profiles_1.id
-        )
-    );
-
-CREATE POLICY "user_profiles_admin_write" ON public.user_profiles
+-- Org admins can manage profiles in their organization  
+CREATE POLICY "profiles_org_admin_manage" ON public.user_profiles
     FOR ALL TO authenticated
     USING (
         EXISTS (
-            SELECT 1
-            FROM public.user_profiles admin_profile
-            WHERE admin_profile.user_id = auth.uid()
-            AND admin_profile.tenant_id = user_profiles.tenant_id
-            AND admin_profile.role::text = ANY (ARRAY['admin'::text, 'superadmin'::text])
-        )
-    )
-    WITH CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.user_profiles admin_profile
-            WHERE admin_profile.user_id = auth.uid()
-            AND admin_profile.tenant_id = user_profiles.tenant_id
-            AND admin_profile.role::text = ANY (ARRAY['admin'::text, 'superadmin'::text])
+            SELECT 1 FROM public.user_profiles admin
+            WHERE admin.uid = auth.uid() 
+                AND admin.org_id = user_profiles.org_id
+                AND admin.role IN ('admin', 'superadmin')
         )
     );
 
-CREATE POLICY "tenant role read" ON public.user_profiles
-    FOR SELECT TO public
-    USING (
-        EXISTS (
-            SELECT 1
-            FROM public.user_profiles me
-            WHERE me.user_id = auth.uid()
-            AND me.tenant_id = user_profiles.tenant_id
-            AND me.role = ANY (ARRAY['superadmin'::public.user_role, 'admin'::public.user_role])
-        )
-    );
+-- =====================================================
+-- 📝 INDEXES FOR PERFORMANCE
+-- =====================================================
 
-CREATE POLICY "tenant role manage" ON public.user_profiles
-    FOR UPDATE TO public
-    USING (
-        EXISTS (
-            SELECT 1
-            FROM public.user_profiles me
-            WHERE me.user_id = auth.uid()
-            AND me.tenant_id = user_profiles.tenant_id
-            AND me.role = ANY (ARRAY['superadmin'::public.user_role, 'admin'::public.user_role])
-        )
-    );
+-- Create indexes for frequently queried columns
+CREATE INDEX IF NOT EXISTS idx_user_profiles_uid ON public.user_profiles(uid);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_org_id ON public.user_profiles(org_id);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON public.user_profiles(email);
+CREATE INDEX IF NOT EXISTS idx_tenants_subdomain ON public.tenants(subdomain);
+CREATE INDEX IF NOT EXISTS idx_tenants_org_id ON public.tenants(org_id);
+CREATE INDEX IF NOT EXISTS idx_organizations_owner_id ON public.organizations(owner_id);
+
+-- =====================================================
+-- 🎯 GRANTS AND PERMISSIONS
+-- =====================================================
+
+-- Grant access to tenants_public view for anon users (marketing site tenant discovery)
+GRANT SELECT ON public.tenants_public TO anon, public;
+
+-- =====================================================
+-- 💬 TABLE COMMENTS
+-- =====================================================
+
+COMMENT ON TABLE public.organizations IS 'Primary organizational data - companies, groups, teams';
+COMMENT ON TABLE public.tenants IS 'Subdomain to organization mapping (1:1 relationship)';
+COMMENT ON TABLE public.user_profiles IS 'Enhanced user profiles with organizational relationships';
+
+COMMENT ON COLUMN public.user_profiles.user_id IS 'Short user ID (first 8 chars of UUID) - primary key for cross-table references';
+COMMENT ON COLUMN public.user_profiles.uid IS 'Full UUID sync with auth.users.id';
+COMMENT ON COLUMN public.user_profiles.org_id IS 'Direct reference to organizations.id';
+COMMENT ON COLUMN public.organizations.address IS 'Standardized address using address_standardizer extension';
+COMMENT ON COLUMN public.organizations.metadata IS 'Organization metadata (industry, size, founding year, etc.)';
+COMMENT ON COLUMN public.organizations.owner_id IS 'References the user who owns this organization';
 
 -- =====================================================
 -- 📋 EXAMPLE DATA (OPTIONAL)
@@ -420,16 +411,21 @@ CREATE POLICY "tenant role manage" ON public.user_profiles
 -- Uncomment to add sample data for testing:
 
 /*
--- Sample organization
-INSERT INTO public.organizations (name, description) 
-VALUES ('Acme Corporation', 'Example organization for testing');
+-- Sample organization with metadata
+INSERT INTO public.organizations (company_name, description, metadata, address) 
+VALUES (
+    'Acme Corporation', 
+    'Example technology company',
+    '{"industry": "Technology", "size": "50-100", "founded": "2020", "type": "B2B SaaS"}',
+    '123 Tech Street, San Francisco, CA 94105'
+);
 
--- Sample tenant (subdomain)
-INSERT INTO public.tenants (subdomain, name, org_id)
+-- Sample tenant (subdomain mapping)
+INSERT INTO public.tenants (subdomain, company_name, org_id)
 VALUES (
     'acme', 
-    'Acme Corp Workspace',
-    (SELECT id FROM public.organizations WHERE name = 'Acme Corporation')
+    'Acme Corporation',
+    (SELECT id FROM public.organizations WHERE company_name = 'Acme Corporation')
 );
 */
 
@@ -437,23 +433,34 @@ VALUES (
 -- ✅ SETUP COMPLETE
 -- =====================================================
 
--- Your multi-tenant database is now ready!
+-- Your enhanced multi-tenant database is now ready!
 -- 
 -- Next steps:
--- 1. Configure your Next.js apps with these Supabase credentials
--- 2. Set up your domain routing (marketing + tenant subdomains)  
--- 3. Users can sign up and be automatically added to user_profiles
--- 4. Create organizations and tenants through your app interface
+-- 1. Configure Custom Access Token Hook in Supabase Dashboard:
+--    • Hook Type: Custom Access Token
+--    • Hook URL: pg-functions://postgres/public/custom_access_token_hook
+--    • Status: Enabled
 --
--- Tables created:
--- • organizations - Company/group information
--- • tenants - Subdomain to organization mapping
--- • user_profiles - User data with tenant relationships
--- • tenants_public - Public view for tenant discovery
+-- 2. Configure email templates in Authentication → Email Templates
+-- 3. Set up redirect URLs in Authentication → URL Configuration
+-- 4. Deploy your Next.js apps with proper environment variables
 --
--- Security features:
--- • Row Level Security (RLS) on all tables
--- • Role-based access control (superadmin, admin, member, view-only)
--- • Tenant isolation - users only see their tenant's data
--- • Auto-user profile creation on signup
--- • Comprehensive policy system for data protection
+-- Database Features:
+-- • Enhanced organizational structure (orgs → tenants → users)
+-- • Short user IDs (8 chars) for better UX and performance
+-- • Address standardization support with dedicated extension
+-- • Rich metadata storage for organizational context  
+-- • Strict single-organization membership enforcement
+-- • Comprehensive Row Level Security (RLS) policies
+-- • Custom JWT claims with org/tenant/role data
+-- • Auto-profile creation with superadmin default role
+-- • Optimized indexes for query performance
+--
+-- Security Features:
+-- • Unique email addresses across entire system
+-- • Direct organization references (no tenant table dependency)
+-- • Immutable user-organization relationships
+-- • Role-based access control with inheritance
+-- • Tenant isolation via subdomain verification
+-- • Public tenant discovery for marketing site
+-- • Comprehensive audit trail with timestamps

@@ -20,29 +20,24 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
       try {
         const supabase = createClient();
 
-        // Check if user has valid session
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
+        // Get claims for fast, local authentication + tenant verification
+        const { data: claims, error } = await supabase.auth.getClaims();
 
-        if (error || !user) {
+        if (error || !claims) {
           // No valid session - redirect to login
           router.replace("/auth/login");
           return;
         }
 
-        // TODO: Add organization membership verification here
-        // Check if user belongs to this specific subdomain/organization
-        // const { data: membership } = await supabase
-        //   .from('user_profiles')
-        //   .select('role, tenant_id')
-        //   .eq('user_id', user.id)
-        //   .single()
+        // Verify user belongs to this specific subdomain/organization
+        if (claims.claims.subdomain !== subdomain) {
+          router.replace("/auth/login?error=unauthorized");
+          return;
+        }
 
-        // For now, assume user is authorized if they have a valid session
+        // User is authenticated and authorized for this tenant
         setIsAuthenticated(true);
-        setUserEmail(user.email || null);
+        setUserEmail(claims.claims.email || null);
         setIsLoading(false);
       } catch (error) {
         console.error("Auth check error:", error);

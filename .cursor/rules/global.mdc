@@ -1,0 +1,118 @@
+---
+description: These rules apply across the repo to keep architecture, dependencies, and code style consistent.
+
+globs:
+alwaysApply: true
+---
+
+# Global Standards for Subdomain-Isolated Turborepo
+
+## Architecture Principles
+
+- Use clean URLs in all UI (no `/s/` in visible links). Middleware maps clean URLs to internal routes.
+- Maintain strict domain separation:
+  - Marketing at `${NEXT_PUBLIC_MARKETING_DOMAIN}`
+  - Tenant apps at `*.${NEXT_PUBLIC_APP_DOMAIN}`
+- Internal routing lives under `apps/protected/app/s/[subdomain]/...` but never leaks to the UI.
+- Always pass `subdomain` explicitly to components that need tenant context.
+- Server work belongs in `actions.ts` files using Next.js Server Actions.
+
+## Dependency Alignment (do not drift)
+
+- Next.js: `^15.4.7`
+- React / ReactDOM: `^19.1.1`
+- Supabase: `@supabase/supabase-js ^2.57.4`, `@supabase/ssr ^0.7.0`
+- Tailwind: `^4.1.11` with `@tailwindcss/postcss ^4.1.11`
+- UI: `lucide-react ^0.475.0`, Radix UI where used
+- TypeScript: prefer `^5.9.x` across apps and packages
+- Linting: `eslint ^9.32.0`, `@typescript-eslint ^8.39.0`, `@next/eslint-plugin-next ^15.4.5`
+- Formatting: `prettier ^3.6.2`
+
+When adding packages:
+
+- Prefer workspace dependencies (`workspace:*`) for internal packages
+- Keep versions consistent across apps; update both `marketing` and `protected`
+
+## File Structure and Naming
+
+- Apps:
+  - `apps/marketing` for public site and tenant discovery
+  - `apps/protected` for subdomain tenant apps
+- Internal routing: `apps/protected/app/s/[subdomain]/...`
+- Server Actions: place in feature-local `actions.ts` files
+- Component wrappers: group feature UI under component folders and keep page files thin
+
+Example structure to target:
+
+- `apps/marketing/components/auth/login/login-wrapper.tsx`
+- `apps/marketing/components/auth/login/login-form.tsx`
+- `apps/marketing/components/auth/login/login-cta.tsx`
+- `apps/marketing/components/auth/login/actions.ts`
+- `apps/marketing/app/login/page.tsx` imports `login-wrapper`
+
+Page section structure (per-route):
+
+- `apps/marketing/app/login/page.tsx` (thin page that renders wrapper)
+- `apps/marketing/app/login/layout.tsx` (page-level metadata & SEO + per-page layout)
+
+Within `page.tsx` (example):
+
+```tsx
+import LoginWrapper from "@/apps/marketing/components/auth/login/login-wrapper";
+
+export default function Page() {
+  return <LoginWrapper />;
+}
+```
+
+## URL Rules
+
+- UI links and navigation must be clean:
+  - Correct: `/admin`, `/auth/login`, `/reset-password`
+  - Incorrect: `/s/${subdomain}/admin`, `/s/${subdomain}/auth/login`
+- Middleware performs rewrites/redirects; do not duplicate `/s/` logic in components.
+
+## Authentication and Authorization
+
+- Use `supabase.auth.getClaims()` (not `getUser()`).
+- Verify `claims.claims.subdomain === params.subdomain` before accessing tenant data; otherwise redirect to `/auth/login`.
+- Rely on RLS; do not bypass with service role on the client.
+- Admin-only operations requiring service role must execute on the server with a dedicated service-role client (never exposed to the browser).
+
+## Supabase Clients
+
+- Client components: `apps/*/lib/supabase/client.ts` (browser) exports `createClient()`.
+- Server actions/components: `apps/*/lib/supabase/server.ts` (server) exports `createClient()` and reads cookies.
+- Middleware must stay Edge-compatible (no session reads/writes).
+
+## Server Actions
+
+- Always start with `"use server"`.
+- Import the server client from `@/lib/supabase/server`.
+- Validate input (use `zod` where appropriate) and return typed results.
+- Prefer querying views like `tenants_public` for unauthenticated lookups.
+- Never leak internal IDs or sensitive data in responses.
+
+## Components
+
+- Use `@workspace/ui` components and `cn` from `@workspace/ui/lib/utils`.
+- Keep page files minimal; move logic/UI into wrapper components.
+- Only add `"use client"` when client capabilities are required.
+
+## Middleware
+
+- Use `extractSubdomainFromHostname()` from `@workspace/ui/lib/subdomains`.
+- Rewrite clean URLs to `/s/[subdomain]` internally and redirect back if `/s/` is exposed.
+- Exclude `_next/*`, `api/*`, and static asset routes.
+
+## Coding Standards
+
+- Strongly typed exports, avoid `any`.
+- Early returns; minimal nesting.
+- No service role in client code, ever.
+- Use clean, descriptive names; avoid abbreviations.
+
+## CI Hygiene
+
+- Run: `pnpm lint` and `pnpm -w build` locally before PRs.
+- Keep dependency updates consistent across `marketing`, `protected`, and `packages/*`.

@@ -13,6 +13,8 @@ A multi-tenant Turborepo built with Next.js 15, featuring custom subdomains for 
 - ✅ TypeScript support across all packages
 - ✅ ESLint configuration shared across packages
 
+- ✅ Optional Cursor rules for consistent code standards and guardrails
+
 ## Turborepo layout
 
 ```
@@ -30,11 +32,19 @@ packages/
 - [Next.js 15](https://nextjs.org/) with App Router
 - [React 19](https://react.dev/)
 - [Tailwind CSS 4](https://tailwindcss.com/) for styling
-- [shadcn/ui](https://ui.shadcn.com/) for the design system
+- shadcn-style components (Radix + CVA) via `@workspace/ui`
 - [Radix UI](https://www.radix-ui.com/) for accessible components
 - [Lucide React](https://lucide.dev/) for icons
 - [TypeScript](https://www.typescriptlang.org/) for type safety
 - [Supabase UI](https://supabase.com/ui/docs/getting-started/introduction) for authentication components
+
+### Dependency alignment (pinned ranges)
+
+- Next.js `^15.4.7`, React/ReactDOM `^19.1.1`
+- Supabase `@supabase/supabase-js ^2.57.4`, `@supabase/ssr ^0.7.0`
+- Tailwind `^4.1.11` (+ `@tailwindcss/postcss ^4.1.11`)
+- ESLint `^9.32.0`, TS-ESLint `^8.39.0`, Next ESLint plugin `^15.4.5`
+- Prettier `^3.6.2`, TypeScript `^5.9.x`
 
 ## 🏗️ Built on Supabase UI Components
 
@@ -123,6 +133,13 @@ erDiagram
 - 🔐 **Role-Based Access**: `superadmin` → `admin` → `member` → `view-only`
 - 🛡️ **Row Level Security**: Comprehensive RLS policies for tenant isolation
 
+Verified schema (example project via Supabase MCP):
+
+- Tables: `organizations`, `tenants`, `user_profiles` (RLS enabled)
+- View: `tenants_public` (subdomain, name)
+- Functions: `get_user_org_id`, `user_has_role`, `user_in_org`, `custom_access_token_hook`, `set_updated_at`, `handle_new_user`
+- Triggers: `trg_user_profiles_updated_at`, `on_auth_user_created` (see SQL)
+
 ## 🚀 Complete Setup Guide
 
 ### Prerequisites
@@ -192,6 +209,10 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_APP_DOMAIN=yourdomain.com
 NEXT_PUBLIC_MARKETING_DOMAIN=yourdomain.com
 ```
+
+Notes:
+
+- Do not expose `SUPABASE_SERVICE_ROLE_KEY` to clients. If needed for admin tasks, use server-only utilities and environment scoping.
 
 #### Step 4: Start Development Servers
 
@@ -300,6 +321,11 @@ sequenceDiagram
 - 🔄 **Session Management**: Automatic redirects and session validation
 - ✨ **Clean URLs**: All auth flows use clean URLs (`/auth/login`, `/reset-password`)
 - 🛡️ **Middleware Protection**: Unauthenticated users are redirected appropriately
+
+#### Auth patterns
+
+- Prefer `supabase.auth.getClaims()` for tenant checks; `getUser()` is deprecated.
+- Validate `claims.claims.subdomain === params.subdomain`; otherwise redirect to `/auth/login`.
 
 ## Available Scripts
 
@@ -488,6 +514,7 @@ After completing the above setup, push to `main` to trigger automatic deployment
 ├── 📄 database-setup.sql          # Complete Supabase database setup
 ├── 📄 AGENTS.md                   # AI agent development guide
 ├── 📄 README.md                   # This documentation
+├── 📁 rules/                      # Optional Cursor rules (.mdc)
 ├── 📁 apps/
 │   ├── 📁 marketing/              # Landing page & tenant discovery
 │   └── 📁 protected/              # Multi-tenant workspaces
@@ -496,3 +523,39 @@ After completing the above setup, push to `main` to trigger automatic deployment
     ├── 📁 eslint-config/          # Linting configuration
     └── 📁 typescript-config/      # TypeScript configuration
 ```
+
+## Code Standards & Cursor Rules (optional)
+
+This repo ships optional Cursor rules to standardize architecture and guardrails for AI/codegen.
+
+### Where rules live
+
+- `rules/global.mdc` (global standards: clean URLs, RLS, dependency alignment)
+- `rules/db-actions.mdc` (server actions: claims, tenant checks, RLS)
+- `rules/components.mdc` (wrappers, thin pages, clean links)
+- `rules/middleware-routing.mdc` (rewrite/redirect behavior)
+- `rules/auth-claims.mdc` (claims-first, tenant isolation)
+- `rules/tests.mdc` (testing conventions)
+
+### How to use in Cursor
+
+1. Open the repo in Cursor
+2. Ensure `.mdc` files are present under `rules/`
+3. Cursor will auto-apply global and scoped rules based on `appliesTo` globs
+4. When adding new features, co-locate `actions.ts` and wrapper components and follow the rules prompts
+
+### Wrapper-first component structure
+
+Target structure for feature pages:
+
+- `apps/marketing/components/auth/login/login-wrapper.tsx` (compose page)
+- `apps/marketing/components/auth/login/login-form.tsx`
+- `apps/marketing/components/auth/login/login-cta.tsx`
+- `apps/marketing/components/auth/login/actions.ts`
+- Thin `apps/marketing/app/login/page.tsx` imports `login-wrapper`
+
+Guidelines:
+
+- Keep page files minimal; move logic/UI into wrapper components
+- Use clean URLs in links/navigation; never `/s/<subdomain>` in UI
+- Server actions must validate claims and tenant subdomain
