@@ -1,51 +1,51 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { extractSubdomainFromHostname } from '@workspace/ui/lib/subdomains'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
 
 export function SessionEvaluator() {
-  const [isEvaluating, setIsEvaluating] = useState(true)
-  const router = useRouter()
+  const [isEvaluating, setIsEvaluating] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const evaluateAndRedirect = () => {
       try {
         // Extract subdomain from current hostname
-        const hostname = window.location.hostname
-        const subdomain = extractSubdomainFromHostname(hostname)
+        const hostname = window.location.hostname;
+        const subdomain = extractSubdomainFromHostname(hostname);
 
         // If no subdomain, redirect to marketing site
         if (!subdomain) {
-          const isDevelopment = process.env.NODE_ENV === 'development'
-          const marketingUrl = isDevelopment 
-            ? 'http://localhost:3002'
-            : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`
-          
-          window.location.href = marketingUrl
-          return
+          const isDevelopment = process.env.NODE_ENV === "development";
+          const marketingUrl = isDevelopment
+            ? "http://localhost:3002"
+            : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`;
+
+          window.location.href = marketingUrl;
+          return;
         }
 
         // If there is a subdomain, this should have been handled by middleware
         // This is an edge case - redirect to root to trigger middleware
-        console.warn('SessionEvaluator running with subdomain - this should not happen')
-        router.replace('/')
-        
+        console.warn(
+          "SessionEvaluator running with subdomain - this should not happen"
+        );
+        router.replace("/");
       } catch (error) {
-        console.error('Session evaluation error:', error)
+        console.error("Session evaluation error:", error);
         // On error, redirect to marketing for safety
-        const isDevelopment = process.env.NODE_ENV === 'development'
-        const marketingUrl = isDevelopment 
-          ? 'http://localhost:3002'
-          : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`
-        
-        window.location.href = marketingUrl
-      }
-    }
+        const isDevelopment = process.env.NODE_ENV === "development";
+        const marketingUrl = isDevelopment
+          ? "http://localhost:3002"
+          : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`;
 
-    evaluateAndRedirect()
-  }, [router])
+        window.location.href = marketingUrl;
+      }
+    };
+
+    evaluateAndRedirect();
+  }, [router]);
 
   // Loading UI while evaluating route
   return (
@@ -66,5 +66,5 @@ export function SessionEvaluator() {
         </div>
       </div>
     </div>
-  )
+  );
 }
