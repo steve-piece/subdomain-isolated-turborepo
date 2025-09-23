@@ -16,21 +16,27 @@ export default async function AdminPage({
   params: Promise<{ subdomain: string }>;
 }) {
   const { subdomain } = await params;
-  const supabase = await createClient();
 
-  const { data: claims, error } = await supabase.auth.getClaims();
+  try {
+    const supabase = await createClient();
 
-  if (!claims || error) {
+    const { data: claims, error } = await supabase.auth.getClaims();
+
+    if (!claims || error) {
+      redirect("/auth/login");
+    }
+
+    // Verify user belongs to this specific subdomain/organization
+    if (claims.claims.subdomain !== subdomain) {
+      redirect("/auth/login?error=unauthorized");
+    }
+
+    // TODO: Add role-based authorization check here
+    // Check if user has admin/owner role for this organization
+  } catch (error) {
+    console.error("Admin auth error:", error);
     redirect("/auth/login");
   }
-
-  // Verify user belongs to this specific subdomain/organization
-  if (claims.claims.subdomain !== subdomain) {
-    redirect("/auth/login?error=unauthorized");
-  }
-
-  // TODO: Add role-based authorization check here
-  // Check if user has admin/owner role for this organization
 
   return (
     <div className="flex h-screen w-full flex-col">

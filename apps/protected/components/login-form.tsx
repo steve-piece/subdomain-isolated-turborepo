@@ -15,6 +15,7 @@ import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 interface LoginFormProps {
   subdomain: string;
@@ -48,23 +49,24 @@ export function LoginForm({
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const supabase = createClient();
     setIsLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
-      const result = await loginWithToast(email, password);
+      // First, verify the user belongs to this organization/subdomain
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
 
-      if (result.success) {
-        // Redirect to dashboard or specified location
-        router.push(result.redirectTo || "/dashboard");
-      } else {
-        setError(result.message || "Login failed");
-      }
+      // TODO: Add organization/tenant verification here
+      // You might want to check if the user belongs to the specified subdomain
+
+      router.push(`/s/${subdomain}`);
     } catch (error: unknown) {
-      setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
-      );
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }

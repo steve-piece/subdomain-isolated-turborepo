@@ -49,6 +49,32 @@ export async function updateSession(request: NextRequest) {
       }
     );
 
+    // Extend the auth object with custom getClaims method
+    const originalAuth = supabase.auth;
+    supabase.auth = {
+      ...originalAuth,
+      async getClaims() {
+        try {
+          const { data: userData, error } = await originalAuth.getUser();
+
+          if (error || !userData.user) {
+            return { data: null, error };
+          }
+
+          // For marketing app, return basic user info without tenant data
+          return {
+            data: {
+              claims: userData.user,
+            },
+            error: null,
+          };
+        } catch (error) {
+          console.error("getClaims error:", error);
+          return { data: null, error };
+        }
+      },
+    };
+
     // Do not run code between createServerClient and
     // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
     // issues with users being randomly logged out.
