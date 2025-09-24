@@ -117,7 +117,7 @@ export function OrganizationSignUpForm({
     debounceRef.current = setTimeout(() => {
       setSubdomainValidation("pending");
       setIsValidating(true);
-      verifyTenantAction(subdomain)
+      verifyTenantAction(subdomain.trim().toLowerCase())
         .then((res) => {
           if (cancelled) return;
           if (res.error) {
@@ -263,6 +263,8 @@ export function OrganizationSignUpForm({
       }
 
       // Sign up the user
+      const normalizedSubdomain = subdomain.trim().toLowerCase();
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -270,7 +272,7 @@ export function OrganizationSignUpForm({
           data: {
             full_name: userName,
             organization_name: organizationName,
-            subdomain,
+            subdomain: normalizedSubdomain,
             role: "owner",
           },
         },
@@ -295,7 +297,7 @@ export function OrganizationSignUpForm({
         setStatus("creating_org");
         orgResult = await createOrgAction({
           companyName: organizationName,
-          subdomain,
+          subdomain: normalizedSubdomain,
         });
 
         if (!orgResult.success) {

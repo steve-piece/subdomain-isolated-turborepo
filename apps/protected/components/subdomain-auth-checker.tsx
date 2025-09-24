@@ -22,30 +22,36 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
         const supabase = createClient();
 
         // Get claims for fast, local authentication + tenant verification
-        const { data: claims, error } = await supabase.auth.getClaims();
+        const { data: claimsData, error: claimsError } =
+          await supabase.auth.getClaims();
 
-        if (error || !claims) {
+        if (claimsError || !claimsData) {
           // No valid session - redirect to login
           router.replace("/auth/login");
           return;
         }
 
-        if (claims.claims.email_confirmed !== true) {
+        const emailConfirmed = claimsData.claims?.email_confirmed === true;
+
+        if (!emailConfirmed) {
           router.replace("/auth/login?error=email_unconfirmed");
           return;
         }
 
         // Verify user belongs to this specific subdomain/organization
-        if (claims.claims.subdomain !== subdomain) {
+        const claimSubdomain = (
+          claimsData.claims?.subdomain as string | undefined
+        )?.toLowerCase();
+        if (claimSubdomain !== subdomain.toLowerCase()) {
           router.replace("/auth/login?error=unauthorized");
           return;
         }
 
         // User is authenticated and authorized for this tenant
         setIsAuthenticated(true);
-        setUserEmail(claims.claims.email || null);
+        setUserEmail((claimsData.claims?.email as string | undefined) || null);
         setOrganizationName(
-          (claims.claims.company_name as string | undefined) || subdomain
+          (claimsData.claims?.company_name as string | undefined) || subdomain
         );
         setIsLoading(false);
       } catch (error) {

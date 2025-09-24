@@ -59,17 +59,19 @@ export async function createOrganizationRpc(input: {
 
     const supabase = await createClient();
 
-    const { data: claims, error: claimsError } =
+    const { data: claimsData, error: claimsError } =
       await supabase.auth.getClaims();
 
-    if (claimsError || !claims) {
+    if (claimsError || !claimsData) {
       return {
         success: false,
         error: "Authentication required",
       };
     }
 
-    if (claims.claims.email_confirmed !== true) {
+    const emailConfirmed = claimsData.claims?.email_confirmed === true;
+
+    if (!emailConfirmed) {
       return {
         success: false,
         error: "Please confirm your email before creating an organization",
@@ -103,7 +105,9 @@ export async function createOrganizationRpc(input: {
 export async function searchTenants(
   query: string
 ): Promise<SearchTenantsResponse> {
-  if (!query || query.length < 2) {
+  const trimmedQuery = query.trim();
+
+  if (!trimmedQuery || trimmedQuery.length < 2) {
     return { tenants: [] };
   }
 
@@ -170,10 +174,14 @@ export async function searchTenants(
     }
 
     // Now try the actual search query
+    const escapedQuery = trimmedQuery.replace(/[%_]/g, "\\$&");
+    const wildcardQuery = `%${escapedQuery}%`;
+    const searchCondition = `subdomain.ilike.${wildcardQuery},company_name.ilike.${wildcardQuery}`;
+
     const { data: tenants, error } = await supabase
       .from("tenants_public")
       .select("subdomain, company_name")
-      .or(`subdomain.ilike.%${query}%,company_name.ilike.%${query}%`)
+      .or(searchCondition)
       .order("company_name")
       .limit(5);
 
@@ -188,7 +196,7 @@ export async function searchTenants(
             hint: error.hint,
           }
         : null,
-      queryUsed: `subdomain.ilike.%${query}%,company_name.ilike.%${query}%`,
+      queryUsed: searchCondition,
     });
 
     console.log("=== SEARCH TENANTS DEBUG END ===");
@@ -246,14 +254,20 @@ export async function verifyTenant(
     const supabase = await createClient();
 
     // Check if tenant exists with exact subdomain match using secure view
-    const { data: tenant, error } = await supabase
+    const normalizedSubdomain = subdomain.trim().toLowerCase();
+
+    const {
+      data: tenant,
+      error,
+      status,
+    } = await supabase
       .from("tenants_public")
       .select("subdomain, company_name")
-      .eq("subdomain", subdomain.toLowerCase().trim())
+      .eq("subdomain", normalizedSubdomain)
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (status === 406 || status === 404 || error.code === "PGRST116") {
         // No rows returned - tenant doesn't exist
         return {
           exists: false,
