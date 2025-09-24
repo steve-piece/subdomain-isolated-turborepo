@@ -13,6 +13,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [organizationName, setOrganizationName] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -38,6 +39,11 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
         // User is authenticated and authorized for this tenant
         setIsAuthenticated(true);
         setUserEmail(claims.claims.email || null);
+        setOrganizationName(
+          ((claims.claims as Record<string, unknown>)["company_name"] as
+            | string
+            | undefined) || subdomain
+        );
         setIsLoading(false);
       } catch (error) {
         console.error("Auth check error:", error);
@@ -75,7 +81,11 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
   // If authenticated, show the dashboard
   if (isAuthenticated && userEmail) {
     return (
-      <OrganizationDashboard subdomain={subdomain} userEmail={userEmail} />
+      <OrganizationDashboard
+        organizationName={organizationName ?? subdomain}
+        subdomain={subdomain}
+        userEmail={userEmail}
+      />
     );
   }
 
