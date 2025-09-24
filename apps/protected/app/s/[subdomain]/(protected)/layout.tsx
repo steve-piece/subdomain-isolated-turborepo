@@ -15,7 +15,23 @@ export default async function ProtectedLayout({
 
   return (
     <RequireTenantAuth subdomain={subdomain}>
-      {() => children}
+      {(claims) => {
+        if (!claims.claims.org_id) {
+          console.warn(
+            "RequireTenantAuth missing org_id for user",
+            JSON.stringify(claims.claims)
+          );
+        }
+
+        if (!claims.claims.user_role) {
+          console.warn(
+            "RequireTenantAuth missing user_role for user",
+            JSON.stringify(claims.claims)
+          );
+        }
+
+        return children;
+      }}
     </RequireTenantAuth>
   );
 }

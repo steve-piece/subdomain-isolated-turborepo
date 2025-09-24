@@ -49,7 +49,7 @@ After correct configuration, the issued JWT should include custom tenant data, f
 
 ```json
 {
-  "user_role": "superadmin",
+  "user_role": "owner",
   "subdomain": "your-company",
   "tenant_id": "uuid-tenant-id",
   "org_id": "uuid-org-id",

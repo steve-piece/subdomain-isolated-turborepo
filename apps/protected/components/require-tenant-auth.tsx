@@ -9,7 +9,7 @@
  */
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 type AppRole = "superadmin" | "admin" | "member" | "view-only";
 
@@ -44,6 +44,10 @@ export default async function RequireTenantAuth({
 
   // No session or decode error: send the user to login (clean URL)
   if (error || !claims) redirect("/auth/login");
+
+  if (claims.claims.email_confirmed !== true) {
+    redirect("/auth/login?error=email_unconfirmed");
+  }
 
   // Ensure the JWT belongs to the same tenant as the route
   if (claims.claims.subdomain !== subdomain) {

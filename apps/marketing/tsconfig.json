@@ -10,6 +10,11 @@
       {
         "name": "next"
       }
+    ],
+    "types": [
+      "vitest/globals",
+      "vitest-dom/extend-expect",
+      "@testing-library/jest-dom"
     ]
   },
   "include": [

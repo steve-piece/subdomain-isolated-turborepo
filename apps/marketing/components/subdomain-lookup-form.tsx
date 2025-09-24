@@ -25,7 +25,6 @@ export function SubdomainLookupForm({
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [subdomain, setSubdomain] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<TenantSearchResult[]>([]);
@@ -73,7 +72,6 @@ export function SubdomainLookupForm({
   }, [searchTerm]);
 
   const handleSelectOrganization = (tenant: TenantSearchResult) => {
-    setSubdomain(tenant.subdomain);
     setSearchTerm(tenant.name); // Show the friendly name in the input
     setShowDropdown(false);
 
@@ -108,7 +106,6 @@ export function SubdomainLookupForm({
 
         if (verifyResult.exists && verifyResult.tenant) {
           // Direct subdomain match found - redirect immediately
-          setSubdomain(verifyResult.tenant.subdomain);
           handleSelectOrganization(verifyResult.tenant);
           return;
         }
@@ -140,7 +137,6 @@ export function SubdomainLookupForm({
 
         if (exactMatch) {
           // Set the subdomain state and redirect
-          setSubdomain(exactMatch.subdomain);
           handleSelectOrganization(exactMatch);
         } else {
           // Show results in dropdown for user selection

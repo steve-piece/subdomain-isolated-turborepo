@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { OrganizationDashboard } from "../components/organization-dashboard";
+import { vi } from "vitest";
 
 interface SubdomainAuthCheckerProps {
   subdomain: string;
@@ -27,6 +28,11 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
         if (error || !claims) {
           // No valid session - redirect to login
           router.replace("/auth/login");
+          return;
+        }
+
+        if (claims.claims.email_confirmed !== true) {
+          router.replace("/auth/login?error=email_unconfirmed");
           return;
         }
 

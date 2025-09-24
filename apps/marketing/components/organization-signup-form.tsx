@@ -18,22 +18,41 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { verifyTenant, createOrganizationRpc } from "@/app/actions";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  verifyTenant,
+  createOrganizationRpc,
+  type CreateOrganizationResponse,
+  type VerifyTenantResponse,
+} from "@/app/actions";
+
+type VerifyTenantFn = (subdomain: string) => Promise<VerifyTenantResponse>;
+
+export interface OrganizationSignUpFormProps
+  extends React.ComponentPropsWithoutRef<"div"> {
+  createOrgAction?: typeof createOrganizationRpc;
+  verifyTenantAction?: VerifyTenantFn;
+}
 
 export function OrganizationSignUpForm({
   className,
+  createOrgAction = createOrganizationRpc,
+  verifyTenantAction = verifyTenant,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: OrganizationSignUpFormProps) {
+  // Form fields
   const [organizationName, setOrganizationName] = useState("");
   const [subdomain, setSubdomain] = useState("");
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+
+  // UI toggles
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  // Validation state
   const [touchedFields, setTouchedFields] = useState<{
     organizationName: boolean;
     userName: boolean;
@@ -60,30 +79,70 @@ export function OrganizationSignUpForm({
     password: null,
     repeatPassword: null,
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
   const [subdomainValidation, setSubdomainValidation] = useState<
     "valid" | "invalid" | "pending" | null
   >(null);
+  const [subdomainTaken, setSubdomainTaken] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+
+  // Flow state
+  const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<
+    null | "pending_email" | "creating_org" | "needs_profile" | "error"
+  >(null);
   const router = useRouter();
 
-  // Validate subdomain as user types
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Validate subdomain as user types, including availability check
   useEffect(() => {
+    let cancelled = false;
     if (!subdomain) {
+      setSubdomainTaken(false);
       setSubdomainValidation(null);
       return;
     }
-    if (subdomain.length < 3) {
+    if (subdomain.length < 3 || !isValidSubdomain(subdomain)) {
+      setSubdomainTaken(false);
       setSubdomainValidation("invalid");
       return;
     }
-    if (!isValidSubdomain(subdomain)) {
-      setSubdomainValidation("invalid");
-      return;
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
-    setSubdomainValidation("valid");
-  }, [subdomain]);
+
+    debounceRef.current = setTimeout(() => {
+      setSubdomainValidation("pending");
+      setIsValidating(true);
+      verifyTenantAction(subdomain)
+        .then((res) => {
+          if (cancelled) return;
+          if (res.error) {
+            setSubdomainTaken(false);
+            setSubdomainValidation("valid");
+          } else if (res.exists) {
+            setSubdomainTaken(true);
+            setSubdomainValidation("invalid");
+          } else {
+            setSubdomainTaken(false);
+            setSubdomainValidation("valid");
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setIsValidating(false);
+        });
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [subdomain, verifyTenantAction]);
 
   // Field validators
   const validateField = (
@@ -142,6 +201,22 @@ export function OrganizationSignUpForm({
     if (touchedFields.userName) validateField("userName", name);
   };
 
+  const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    // Enforce allowed characters and lowercase for subdomains
+    const cleaned = raw.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setSubdomain(cleaned);
+    if (!cleaned) {
+      setSubdomainValidation(null);
+      return;
+    }
+    if (cleaned.length < 3) {
+      setSubdomainValidation("invalid");
+      return;
+    }
+    setSubdomainValidation(isValidSubdomain(cleaned) ? "valid" : "invalid");
+  };
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
@@ -177,25 +252,13 @@ export function OrganizationSignUpForm({
       setIsLoading(false);
       return;
     }
-    if (!isValidSubdomain(subdomain)) {
-      setError(
-        "Subdomain must be 3-63 characters and contain only letters, numbers, and hyphens"
-      );
-      setIsLoading(false);
-      return;
-    }
 
     try {
-      // Check subdomain availability via server action
-      setIsValidating(true);
-      const verification = await verifyTenant(subdomain);
-      setIsValidating(false);
-      if (verification.error) {
-        throw new Error(verification.error);
-      }
-      if (verification.exists) {
+      if (subdomainValidation !== "valid") {
         throw new Error(
-          "This subdomain is already taken. Please choose another."
+          subdomainTaken
+            ? "This subdomain is already taken. Please choose another."
+            : "Please choose a valid subdomain."
         );
       }
 
@@ -215,29 +278,59 @@ export function OrganizationSignUpForm({
 
       if (authError) throw authError;
 
-      // Check if we have a session (required for organization creation)
       const { data: sessionRes } = await supabase.auth.getSession();
       const hasSession = Boolean(sessionRes?.session);
 
-      if (hasSession && authData.user) {
-        // Create organization using RPC (requires authenticated session)
-        const orgResult = await createOrganizationRpc({
+      if (!hasSession) {
+        setStatus("pending_email");
+        setSuccess(true);
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        router.push("/signup/success");
+        return;
+      }
+
+      let orgResult: CreateOrganizationResponse | null = null;
+
+      if (authData.user) {
+        setStatus("creating_org");
+        orgResult = await createOrgAction({
           companyName: organizationName,
           subdomain,
         });
 
         if (!orgResult.success) {
+          if (
+            orgResult.error ===
+            "Please confirm your email before creating an organization"
+          ) {
+            setStatus("pending_email");
+            setSuccess(true);
+            await new Promise((resolve) => setTimeout(resolve, 1200));
+            router.push("/signup/success");
+            return;
+          }
+
+          if (
+            orgResult.error ===
+            "User profile could not be linked to organization"
+          ) {
+            setStatus("needs_profile");
+            setError(
+              "We created your account but need a moment to finish setup. Please wait a few seconds and try again."
+            );
+            return;
+          }
+
           console.error("Organization creation failed:", orgResult.error);
           setError(
             `Account created but organization setup failed: ${orgResult.error}`
           );
-          setIsLoading(false);
+          setStatus("error");
           return;
         }
-      } else {
-        // No session yet - email confirmation required
-        console.log("No session after signup - email confirmation required");
       }
+
+      setStatus(null);
 
       // Show success state briefly before redirect
       setSuccess(true);
@@ -246,6 +339,7 @@ export function OrganizationSignUpForm({
       router.push("/signup/success");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
+      setStatus("error");
     } finally {
       setIsLoading(false);
       setIsValidating(false);
@@ -300,7 +394,7 @@ export function OrganizationSignUpForm({
                     placeholder="acme"
                     required
                     value={subdomain}
-                    onChange={(e) => setSubdomain(e.target.value)}
+                    onChange={handleSubdomainChange}
                     className={cn(
                       "rounded-r-none",
                       subdomainValidation === "valid" && "border-green-500",
@@ -509,6 +603,25 @@ export function OrganizationSignUpForm({
                 </div>
               )}
 
+              {status === "pending_email" && !error && (
+                <div className="p-3 rounded-md bg-blue-50 border border-blue-200">
+                  <p className="text-sm text-blue-700 flex items-center">
+                    <span className="mr-2">📬</span>
+                    Check your inbox to confirm your email and finish setup.
+                  </p>
+                </div>
+              )}
+
+              {status === "needs_profile" && !error && (
+                <div className="p-3 rounded-md bg-amber-50 border border-amber-200">
+                  <p className="text-sm text-amber-700 flex items-center">
+                    <span className="mr-2">⏳</span>
+                    We are finalizing your organization setup. Please refresh in
+                    a few seconds.
+                  </p>
+                </div>
+              )}
+
               {success && (
                 <div className="p-3 rounded-md bg-green-50 border border-green-200">
                   <p className="text-sm text-green-700 flex items-center">
@@ -524,6 +637,7 @@ export function OrganizationSignUpForm({
                   "w-full transition-all",
                   success && "bg-green-600 hover:bg-green-700"
                 )}
+                aria-label="Create organization"
                 disabled={
                   isLoading || isValidating || subdomainValidation === "invalid"
                 }
