@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { resendEmailVerification } from "./actions";
+import { resendEmailVerification } from "@/app/actions";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -38,15 +38,9 @@ export default function ResendVerificationPage({
   useEffect(() => {
     const urlError = searchParams.get("error");
     const urlMessage = searchParams.get("message");
-    const urlEmail = searchParams.get("email");
 
     if (urlMessage) {
       setError(urlMessage);
-    }
-
-    // Pre-fill email if provided in URL
-    if (urlEmail) {
-      setEmail(decodeURIComponent(urlEmail));
     }
   }, [searchParams]);
 

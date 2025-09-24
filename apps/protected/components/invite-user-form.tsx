@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { inviteUserToOrganization } from "@/app/s/[subdomain]/(protected)/invite-user/actions";
+import { inviteUserToOrganization } from "@/app/actions";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,

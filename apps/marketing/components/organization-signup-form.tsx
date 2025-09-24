@@ -210,7 +210,6 @@ export function OrganizationSignUpForm({
             subdomain,
             role: "owner",
           },
-          emailRedirectTo: `https://${subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/confirm`,
         },
       });
 

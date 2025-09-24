@@ -1,6 +1,78 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { AuthApiError } from "@supabase/supabase-js";
+
+export interface ResendVerificationResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+export async function resendEmailVerification(
+  email: string,
+  password: string,
+  subdomain: string
+): Promise<ResendVerificationResponse> {
+  const supabase = await createClient();
+
+  // First, attempt to sign in to verify credentials
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (signInError) {
+    if (
+      signInError instanceof AuthApiError &&
+      signInError.message.includes("Email not confirmed")
+    ) {
+      // If email not confirmed, try to resend verification
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      });
+
+      if (resendError) {
+        return { success: false, message: resendError.message };
+      }
+      return {
+        success: true,
+        message:
+          "Verification email resent successfully! Please check your inbox.",
+      };
+    }
+    return { success: false, message: signInError.message };
+  }
+
+  return {
+    success: false,
+    message: "Email is already verified or login was successful.",
+  };
+}
+
+export interface LoginWithToastResponse {
+  success: boolean;
+  message?: string;
+  redirectTo?: string;
+}
+
+export async function loginWithToast(
+  email: string,
+  password: string
+): Promise<LoginWithToastResponse> {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  return { success: true, redirectTo: "/dashboard" };
+}
 
 export interface InviteUserResponse {
   success: boolean;
@@ -99,6 +171,43 @@ export async function inviteUserToOrganization(
     };
   } catch (error) {
     console.error("Invite user error:", error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface UpdatePasswordResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+export async function updatePassword(
+  password: string,
+  subdomain: string
+): Promise<UpdatePasswordResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { error } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (error) {
+      console.error("Password update error:", error);
+      return { success: false, message: error.message };
+    }
+
+    return {
+      success: true,
+      message:
+        "Password updated successfully! Please login with your new password.",
+    };
+  } catch (error) {
+    console.error("Update password error:", error);
     return {
       success: false,
       message:

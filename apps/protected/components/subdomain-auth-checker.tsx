@@ -13,7 +13,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [organizationName, setOrganizationName] = useState<string | null>(null);
+  const [organizationName, setOrganizationName] = useState<string>(subdomain);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,9 +40,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
         setIsAuthenticated(true);
         setUserEmail(claims.claims.email || null);
         setOrganizationName(
-          ((claims.claims as Record<string, unknown>)["company_name"] as
-            | string
-            | undefined) || subdomain
+          (claims.claims.company_name as string | undefined) || subdomain
         );
         setIsLoading(false);
       } catch (error) {
@@ -82,7 +80,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
   if (isAuthenticated && userEmail) {
     return (
       <OrganizationDashboard
-        organizationName={organizationName ?? subdomain}
+        organizationName={organizationName}
         subdomain={subdomain}
         userEmail={userEmail}
       />

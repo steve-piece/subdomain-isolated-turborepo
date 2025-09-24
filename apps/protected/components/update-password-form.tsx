@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { updatePassword } from "@/app/s/[subdomain]/auth/update-password/actions";
+import { updatePassword } from "@/app/actions";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
