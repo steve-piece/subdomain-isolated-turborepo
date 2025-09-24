@@ -12,11 +12,19 @@ import {
 import Link from "next/link";
 
 interface OrganizationDashboardProps {
+  /**
+   * Organization display name (prefer claims.company_name, fallback to subdomain)
+   */
+  organizationName: string;
+  /**
+   * Tenant subdomain used for clean URLs and sign-out context
+   */
   subdomain: string;
   userEmail: string;
 }
 
 export function OrganizationDashboard({
+  organizationName,
   subdomain,
   userEmail,
 }: OrganizationDashboardProps) {
@@ -26,7 +34,7 @@ export function OrganizationDashboard({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              {subdomain}
+              {organizationName}
             </h1>
             <p className="text-muted-foreground mt-1 flex items-center">
               👋 Welcome back,{" "}
@@ -50,7 +58,7 @@ export function OrganizationDashboard({
           <Card className="bg-gradient-to-r from-card to-card/50 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
-                🏢 {subdomain} Dashboard
+                🏢 {organizationName} Dashboard
               </CardTitle>
               <CardDescription className="text-base">
                 Manage your organization, team, and projects all in one place.

@@ -166,6 +166,7 @@ DECLARE
   user_role text;
   user_subdomain text;
   user_org_id text;
+  user_company_name text;
 BEGIN
   -- Extract claims from the event
   claims := event->'claims';
@@ -174,8 +175,9 @@ BEGIN
   SELECT 
     up.role::text, 
     t.subdomain,
-    up.org_id::text
-  INTO user_role, user_subdomain, user_org_id
+    up.org_id::text,
+    t.company_name
+  INTO user_role, user_subdomain, user_org_id, user_company_name
   FROM public.user_profiles up
   LEFT JOIN public.tenants t ON t.org_id = up.org_id
   WHERE up.uid = (event->>'user_id')::uuid
@@ -192,6 +194,11 @@ BEGIN
   
   IF user_org_id IS NOT NULL THEN
     claims := jsonb_set(claims, '{org_id}', to_jsonb(user_org_id));
+  END IF;
+
+  -- Include company_name to avoid extra lookups on the app server
+  IF user_company_name IS NOT NULL THEN
+    claims := jsonb_set(claims, '{company_name}', to_jsonb(user_company_name));
   END IF;
 
   -- Update the 'claims' object in the original event
@@ -469,6 +476,159 @@ COMMENT ON COLUMN public.user_profiles.org_id IS 'Direct reference to organizati
 COMMENT ON COLUMN public.organizations.address IS 'Standardized address using address_standardizer extension';
 COMMENT ON COLUMN public.organizations.metadata IS 'Organization metadata (industry, size, founding year, etc.)';
 COMMENT ON COLUMN public.organizations.owner_id IS 'References the user who owns this organization';
+
+-- =====================================================
+-- 💳 BILLING TABLES, VIEWS, FUNCTIONS, RLS
+-- =====================================================
+
+-- Subscription tiers (e.g., Free, Pro, Enterprise)
+CREATE TABLE IF NOT EXISTS public.subscription_tiers (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL UNIQUE,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Feature limits per tier
+CREATE TABLE IF NOT EXISTS public.feature_limits (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    tier_id uuid NOT NULL REFERENCES public.subscription_tiers(id) ON DELETE CASCADE,
+    feature_key text NOT NULL,
+    limit_per_period integer,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (tier_id, feature_key)
+);
+
+-- Organization subscription (current period)
+CREATE TABLE IF NOT EXISTS public.subscriptions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+    tier_id uuid NOT NULL REFERENCES public.subscription_tiers(id) ON DELETE RESTRICT,
+    period_start timestamptz NOT NULL,
+    period_end timestamptz NOT NULL,
+    status text NOT NULL CHECK (status IN ('active','trialing','past_due','canceled')),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Usage counters per feature per billing window (e.g., month)
+CREATE TABLE IF NOT EXISTS public.usage_counters (
+    org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+    feature_key text NOT NULL,
+    window_start timestamptz NOT NULL,
+    count integer NOT NULL DEFAULT 0,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (org_id, feature_key, window_start)
+);
+
+-- Entitlements view: resolves active subscription + feature limits
+CREATE OR REPLACE VIEW public.org_entitlements AS
+SELECT s.org_id, fl.feature_key, fl.limit_per_period
+FROM public.subscriptions s
+JOIN public.feature_limits fl ON fl.tier_id = s.tier_id
+WHERE s.status IN ('active','trialing')
+  AND now() >= s.period_start AND now() < s.period_end;
+
+-- Atomic check+increment RPC for usage limits
+CREATE OR REPLACE FUNCTION public.feature_increment_if_within_limit(p_org_id uuid, p_feature_key text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+DECLARE
+  v_limit integer;
+  v_window_start timestamptz := date_trunc('month', now());
+  v_current integer;
+BEGIN
+  SELECT fl.limit_per_period INTO v_limit
+  FROM public.subscriptions s
+  JOIN public.feature_limits fl ON fl.tier_id = s.tier_id AND fl.feature_key = p_feature_key
+  WHERE s.org_id = p_org_id
+    AND s.status IN ('active','trialing')
+    AND now() >= s.period_start AND now() < s.period_end
+  LIMIT 1;
+
+  -- If no entitlement, deny
+  IF v_limit IS NULL AND NOT EXISTS (
+      SELECT 1 FROM public.feature_limits fl2
+      JOIN public.subscriptions s2 ON s2.tier_id = fl2.tier_id
+      WHERE s2.org_id = p_org_id
+        AND s2.status IN ('active','trialing')
+        AND now() >= s2.period_start AND now() < s2.period_end
+        AND fl2.feature_key = p_feature_key
+    ) THEN
+    RETURN jsonb_build_object('allowed', false, 'remaining', 0);
+  END IF;
+
+  -- Ensure row exists
+  INSERT INTO public.usage_counters (org_id, feature_key, window_start, count)
+  VALUES (p_org_id, p_feature_key, v_window_start, 0)
+  ON CONFLICT DO NOTHING;
+
+  -- Read current count
+  SELECT count INTO v_current
+  FROM public.usage_counters
+  WHERE org_id = p_org_id AND feature_key = p_feature_key AND window_start = v_window_start
+  FOR UPDATE;
+
+  -- Unlimited case
+  IF v_limit IS NULL THEN
+    UPDATE public.usage_counters
+      SET count = v_current + 1, updated_at = now()
+      WHERE org_id = p_org_id AND feature_key = p_feature_key AND window_start = v_window_start;
+    RETURN jsonb_build_object('allowed', true, 'remaining', NULL);
+  END IF;
+
+  -- Limited case
+  IF v_current + 1 <= v_limit THEN
+    UPDATE public.usage_counters
+      SET count = v_current + 1, updated_at = now()
+      WHERE org_id = p_org_id AND feature_key = p_feature_key AND window_start = v_window_start;
+    RETURN jsonb_build_object('allowed', true, 'remaining', GREATEST(v_limit - (v_current + 1), 0));
+  ELSE
+    RETURN jsonb_build_object('allowed', false, 'remaining', 0);
+  END IF;
+END;
+$$;
+
+-- RLS for billing tables: scope by org, admin manage
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feature_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscription_tiers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.usage_counters ENABLE ROW LEVEL SECURITY;
+
+-- Read entitlements for members of the org
+CREATE POLICY "subscriptions_member_read" ON public.subscriptions
+  FOR SELECT TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.user_profiles up WHERE up.uid = auth.uid() AND up.org_id = subscriptions.org_id
+  ));
+
+CREATE POLICY "usage_member_read" ON public.usage_counters
+  FOR SELECT TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.user_profiles up WHERE up.uid = auth.uid() AND up.org_id = usage_counters.org_id
+  ));
+
+-- Admin manage
+CREATE POLICY "subscriptions_admin_manage" ON public.subscriptions
+  FOR ALL TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.user_profiles up WHERE up.uid = auth.uid() AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')
+  ));
+
+CREATE POLICY "usage_admin_manage" ON public.usage_counters
+  FOR ALL TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.user_profiles up WHERE up.uid = auth.uid() AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')
+  ));
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_subscriptions_org_period ON public.subscriptions(org_id, period_start, period_end);
+CREATE INDEX IF NOT EXISTS idx_feature_limits_tier_key ON public.feature_limits(tier_id, feature_key);
+CREATE INDEX IF NOT EXISTS idx_usage_counters_org_key_window ON public.usage_counters(org_id, feature_key, window_start);
 
 -- =====================================================
 -- 📋 EXAMPLE DATA (OPTIONAL)

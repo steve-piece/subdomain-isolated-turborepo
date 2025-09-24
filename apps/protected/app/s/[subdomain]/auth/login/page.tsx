@@ -1,4 +1,6 @@
 import { LoginForm } from "@/components/login-form";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function LoginPage({
   params,
@@ -6,6 +8,14 @@ export default async function LoginPage({
   params: Promise<{ subdomain: string }>;
 }) {
   const { subdomain } = await params;
+
+  const supabase = await createClient();
+  const { data: claims, error } = await supabase.auth.getClaims();
+
+  // If we have a valid session cookie and it belongs to this tenant, skip login
+  if (!error && claims && claims.claims.subdomain === subdomain) {
+    redirect("/dashboard"); // Clean URL (middleware will rewrite internally)
+  }
 
   return (
     <div className="flex h-screen w-full items-center justify-center px-4">
