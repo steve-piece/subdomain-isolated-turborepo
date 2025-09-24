@@ -33,7 +33,8 @@ CREATE TYPE public.user_role AS ENUM (
     'superadmin',  -- Organization owner with full control
     'admin',       -- Organization admin with management access
     'member',      -- Regular organization member
-    'view-only'    -- Read-only access
+    'view-only',   -- Read-only access
+    'owner'        -- Explicit owner role
 );
 
 -- =====================================================
@@ -48,6 +49,7 @@ CREATE TABLE public.organizations (
     website text,
     logo_url text,
     address text, -- Standardized using address_standardizer extension
+    subdomain text NOT NULL UNIQUE,
     settings jsonb DEFAULT '{}'::jsonb,
     metadata jsonb DEFAULT '{}'::jsonb, -- Industry, size, founding year, etc.
     owner_id uuid REFERENCES auth.users(id), -- Organization owner reference
@@ -57,21 +59,19 @@ CREATE TABLE public.organizations (
 
 -- Tenants table - Subdomain mapping to organizations (1:1 relationship)
 CREATE TABLE public.tenants (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    id uuid PRIMARY KEY REFERENCES public.organizations(id) ON DELETE CASCADE,
     subdomain text NOT NULL UNIQUE,
     company_name text NOT NULL, -- Duplicated for performance/caching
     searchable boolean NOT NULL DEFAULT true,
-    org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
     created_at timestamptz DEFAULT now()
 );
 
 -- User profiles - Enhanced user management with short IDs
 CREATE TABLE public.user_profiles (
-    user_id text PRIMARY KEY, -- Short ID (first 8 chars of UUID) for cross-table references  
-    uid uuid UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, -- Full UUID sync
-    org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE, -- Direct org reference
+    user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    org_id uuid REFERENCES public.organizations(id) ON DELETE CASCADE, -- Direct org reference (nullable until org is created)
     email text UNIQUE NOT NULL, -- Enforces one email = one user across all orgs
-    full_name text,
+    full_name text NOT NULL,
     role public.user_role NOT NULL DEFAULT 'superadmin', -- New users default to superadmin
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
@@ -109,7 +109,7 @@ DECLARE
 BEGIN
     SELECT up.org_id INTO org_id
     FROM public.user_profiles up
-    WHERE up.uid = auth.uid()
+    WHERE up.user_id = auth.uid()
     LIMIT 1;
     
     RETURN org_id;
@@ -128,7 +128,7 @@ BEGIN
     RETURN EXISTS (
         SELECT 1 
         FROM public.user_profiles 
-        WHERE uid = auth.uid() 
+        WHERE user_id = auth.uid() 
         AND role::text = required_role
     );
 END;
@@ -146,7 +146,7 @@ BEGIN
     RETURN EXISTS (
         SELECT 1 
         FROM public.user_profiles 
-        WHERE uid = auth.uid() 
+        WHERE user_id = auth.uid() 
         AND org_id = org_uuid
     );
 END;
@@ -180,7 +180,7 @@ BEGIN
   INTO user_role, user_subdomain, user_org_id, user_company_name
   FROM public.user_profiles up
   LEFT JOIN public.tenants t ON t.org_id = up.org_id
-  WHERE up.uid = (event->>'user_id')::uuid
+  WHERE up.user_id = (event->>'user_id')::uuid
   LIMIT 1;
 
   -- Add custom claims to the existing claims object
@@ -225,15 +225,14 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   -- Create user profile with superadmin role for new signups
-  -- Uses new user_id (first 8 chars of UUID) and uid (full UUID)
-  INSERT INTO public.user_profiles (user_id, uid, email, role)
+  INSERT INTO public.user_profiles (user_id, email, role, full_name)
   VALUES (
-    substring(NEW.id::text from 1 for 8),
-    NEW.id, 
+    NEW.id,
     COALESCE(NEW.email, ''),
-    'superadmin'::user_role
+    'superadmin'::user_role,
+    COALESCE((NEW.raw_user_meta_data->>'full_name')::text, (NEW.raw_user_meta_data->>'name')::text, '')
   )
-  ON CONFLICT (uid) DO NOTHING;
+  ON CONFLICT (user_id) DO NOTHING;
   
   RETURN NEW;
 END;
@@ -258,7 +257,7 @@ BEGIN
     UPDATE public.user_profiles
        SET email = COALESCE(NEW.email, email),
            updated_at = now()
-     WHERE uid = NEW.id;
+     WHERE user_id = NEW.id;
   END IF;
   RETURN NEW;
 END;
@@ -330,7 +329,7 @@ CREATE POLICY "organizations_member_read" ON public.organizations
     USING (
         EXISTS (
             SELECT 1 FROM public.user_profiles up
-            WHERE up.uid = auth.uid() AND up.org_id = id
+            WHERE up.user_id = auth.uid() AND up.org_id = id
         )
     );
 
@@ -340,7 +339,7 @@ CREATE POLICY "organizations_admin_write" ON public.organizations
     USING (
         EXISTS (
             SELECT 1 FROM public.user_profiles up
-            WHERE up.uid = auth.uid() 
+            WHERE up.user_id = auth.uid() 
                 AND up.org_id = id 
                 AND up.role IN ('admin', 'superadmin')
         )
@@ -361,7 +360,7 @@ CREATE POLICY "tenants_admin_insert" ON public.tenants
     WITH CHECK (
         EXISTS (
             SELECT 1 FROM public.user_profiles up
-            WHERE up.uid = auth.uid()
+            WHERE up.user_id = auth.uid()
               AND up.org_id = tenants.org_id
               AND up.role IN ('admin', 'superadmin')
         )
@@ -373,7 +372,7 @@ CREATE POLICY "tenants_admin_update" ON public.tenants
     USING (
         EXISTS (
             SELECT 1 FROM public.user_profiles up
-            WHERE up.uid = auth.uid()
+            WHERE up.user_id = auth.uid()
               AND up.org_id = tenants.org_id
               AND up.role IN ('admin', 'superadmin')
         )
@@ -381,7 +380,7 @@ CREATE POLICY "tenants_admin_update" ON public.tenants
     WITH CHECK (
         EXISTS (
             SELECT 1 FROM public.user_profiles up
-            WHERE up.uid = auth.uid()
+            WHERE up.user_id = auth.uid()
               AND up.org_id = tenants.org_id
               AND up.role IN ('admin', 'superadmin')
         )
@@ -399,6 +398,29 @@ CREATE POLICY "tenants_admin_delete" ON public.tenants
         )
     );
 
+-- Permissive initial inserts to support signup bootstrap (can be tightened later)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'organizations' AND policyname = 'organizations_auth_insert'
+  ) THEN
+    CREATE POLICY organizations_auth_insert ON public.organizations
+      FOR INSERT TO authenticated
+      WITH CHECK (true);
+  END IF;
+END$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'tenants' AND policyname = 'tenants_auth_insert_initial'
+  ) THEN
+    CREATE POLICY tenants_auth_insert_initial ON public.tenants
+      FOR INSERT TO authenticated
+      WITH CHECK (true);
+  END IF;
+END$$;
+
 -- =====================================================
 -- User Profiles Policies
 -- =====================================================
@@ -406,13 +428,13 @@ CREATE POLICY "tenants_admin_delete" ON public.tenants
 -- Users can read their own profile
 CREATE POLICY "profiles_self_read" ON public.user_profiles
     FOR SELECT TO public, anon, authenticated
-    USING (uid = auth.uid());
+    USING (user_id = auth.uid());
 
 -- Users can update their own profile (limited fields)
 CREATE POLICY "profiles_self_update" ON public.user_profiles
     FOR UPDATE TO authenticated
-    USING (uid = auth.uid())
-    WITH CHECK (uid = auth.uid());
+    USING (user_id = auth.uid())
+    WITH CHECK (user_id = auth.uid());
 
 -- Users can insert their own profile (signup flow)
 CREATE POLICY "profiles_self_insert" ON public.user_profiles
@@ -425,7 +447,7 @@ CREATE POLICY "profiles_org_admin_read" ON public.user_profiles
     USING (
         EXISTS (
             SELECT 1 FROM public.user_profiles admin
-            WHERE admin.uid = auth.uid() 
+            WHERE admin.user_id = auth.uid() 
                 AND admin.org_id = user_profiles.org_id
                 AND admin.role IN ('admin', 'superadmin')
         )
@@ -437,7 +459,7 @@ CREATE POLICY "profiles_org_admin_manage" ON public.user_profiles
     USING (
         EXISTS (
             SELECT 1 FROM public.user_profiles admin
-            WHERE admin.uid = auth.uid() 
+            WHERE admin.user_id = auth.uid() 
                 AND admin.org_id = user_profiles.org_id
                 AND admin.role IN ('admin', 'superadmin')
         )
@@ -448,7 +470,7 @@ CREATE POLICY "profiles_org_admin_manage" ON public.user_profiles
 -- =====================================================
 
 -- Create indexes for frequently queried columns
-CREATE INDEX IF NOT EXISTS idx_user_profiles_uid ON public.user_profiles(uid);
+-- removed legacy uid index
 CREATE INDEX IF NOT EXISTS idx_user_profiles_org_id ON public.user_profiles(org_id);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON public.user_profiles(email);
 CREATE INDEX IF NOT EXISTS idx_tenants_subdomain ON public.tenants(subdomain);

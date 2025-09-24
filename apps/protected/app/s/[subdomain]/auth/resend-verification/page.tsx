@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { resendEmailVerification } from "@/app/actions";
+import { resendEmailVerification } from "./actions";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -38,9 +38,15 @@ export default function ResendVerificationPage({
   useEffect(() => {
     const urlError = searchParams.get("error");
     const urlMessage = searchParams.get("message");
-    
+    const urlEmail = searchParams.get("email");
+
     if (urlMessage) {
       setError(urlMessage);
+    }
+
+    // Pre-fill email if provided in URL
+    if (urlEmail) {
+      setEmail(decodeURIComponent(urlEmail));
     }
   }, [searchParams]);
 
@@ -52,10 +58,10 @@ export default function ResendVerificationPage({
 
     try {
       const result = await resendEmailVerification(email, password, subdomain);
-      
+
       if (result.success) {
         setSuccess(result.message);
-        
+
         // Clear form
         setEmail("");
         setPassword("");
@@ -68,7 +74,9 @@ export default function ResendVerificationPage({
         setError(result.message);
       }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An unexpected error occurred");
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +106,7 @@ export default function ResendVerificationPage({
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                
+
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>
                   <Input
@@ -109,7 +117,8 @@ export default function ResendVerificationPage({
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <p className="text-sm text-muted-foreground">
-                    We need to verify your credentials before sending a new verification email
+                    We need to verify your credentials before sending a new
+                    verification email
                   </p>
                 </div>
 
@@ -135,7 +144,10 @@ export default function ResendVerificationPage({
 
               <div className="mt-4 text-center text-sm">
                 Already verified?{" "}
-                <Link href="/auth/login" className="underline underline-offset-4">
+                <Link
+                  href="/auth/login"
+                  className="underline underline-offset-4"
+                >
                   Sign in
                 </Link>
               </div>

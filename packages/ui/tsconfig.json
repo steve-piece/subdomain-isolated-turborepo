@@ -2,10 +2,24 @@
   "extends": "@workspace/typescript-config/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "noEmit": true,
+    "allowJs": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
     "paths": {
       "@workspace/ui/*": ["./src/*"]
     }
   },
-  "include": ["."],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules/**/*",
+    "dist/**/*",
+    "*.config.js",
+    "*.config.mjs",
+    "*.config.ts",
+    "**/*.config.js",
+    "**/*.config.mjs",
+    "**/*.config.ts"
+  ]
 }

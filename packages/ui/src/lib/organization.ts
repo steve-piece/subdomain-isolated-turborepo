@@ -3,31 +3,37 @@
  */
 
 export interface Organization {
-  id: string
-  name: string
-  subdomain: string
-  created_at: string
-  updated_at: string
+  id: string;
+  company_name: string;
+  subdomain: string;
+  owner_id: string;
+  settings?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface OrganizationMember {
-  id: string
-  user_id: string
-  organization_id: string
-  role: 'owner' | 'admin' | 'member'
-  email: string
-  created_at: string
+  id: string;
+  user_id: string;
+  organization_id: string;
+  role: "owner" | "admin" | "member";
+  email: string;
+  created_at: string;
 }
 
 /**
  * Checks if the current user has permission for an action
  */
-export function hasPermission(userRole: OrganizationMember['role'], requiredRole: OrganizationMember['role']): boolean {
-  const roleHierarchy: Record<OrganizationMember['role'], number> = {
-    'member': 1,
-    'admin': 2,
-    'owner': 3
-  }
-  
-  return roleHierarchy[userRole] >= roleHierarchy[requiredRole]
+export function hasPermission(
+  userRole: OrganizationMember["role"],
+  requiredRole: OrganizationMember["role"]
+): boolean {
+  const roleHierarchy: Record<OrganizationMember["role"], number> = {
+    member: 1,
+    admin: 2,
+    owner: 3,
+  };
+
+  return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
 }

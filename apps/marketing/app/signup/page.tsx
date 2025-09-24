@@ -1,4 +1,4 @@
-import { OrganizationSignUpForm } from '@/components/organization-signup-form'
+import { OrganizationSignUpForm } from "@/components/organization-signup-form";
 
 export default function Page() {
   return (
@@ -7,5 +7,5 @@ export default function Page() {
         <OrganizationSignUpForm />
       </div>
     </div>
-  )
+  );
 }

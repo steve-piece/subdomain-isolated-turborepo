@@ -30,7 +30,16 @@ export default async function DashboardPage({
       claims.claims.email ||
       "Unknown User";
 
-    return <OrganizationDashboard subdomain={subdomain} userEmail={userName} />;
+    const organizationName =
+      claims.claims.company_name ?? claims.claims.subdomain;
+
+    return (
+      <OrganizationDashboard
+        organizationName={organizationName}
+        subdomain={subdomain}
+        userEmail={userName}
+      />
+    );
   } catch (error) {
     console.error("Dashboard auth error:", error);
     redirect("/auth/login");

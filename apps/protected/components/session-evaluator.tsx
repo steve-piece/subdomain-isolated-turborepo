@@ -16,12 +16,16 @@ export function SessionEvaluator() {
         const subdomain = extractSubdomainFromHostname(hostname);
 
         // If no subdomain, redirect to marketing site
+        // Note: This should normally be handled by middleware, but kept as fallback
         if (!subdomain) {
           const isDevelopment = process.env.NODE_ENV === "development";
           const marketingUrl = isDevelopment
             ? "http://localhost:3002"
             : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`;
 
+          console.log(
+            "SessionEvaluator: No subdomain detected, redirecting to marketing site"
+          );
           window.location.href = marketingUrl;
           return;
         }

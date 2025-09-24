@@ -1,36 +1,50 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { extractSubdomainFromHostname } from '@workspace/ui/lib/subdomains'
+import { NextResponse, type NextRequest } from "next/server";
+import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
 
 export async function middleware(request: NextRequest) {
-  const url = request.nextUrl.clone()
-  const hostname = request.headers.get('host')
-  
+  const url = request.nextUrl.clone();
+  const hostname = request.headers.get("host");
+
   // Extract subdomain from hostname using utility function
-  const subdomain = extractSubdomainFromHostname(hostname || '')
-  
+  const subdomain = extractSubdomainFromHostname(hostname || "");
+
   // If accessing via subdomain, rewrite to subdomain route
   if (subdomain) {
     // Only rewrite if not already in the /s/ structure and not an API/static route
-    if (!url.pathname.startsWith('/s/') && !url.pathname.startsWith('/api/') && !url.pathname.startsWith('/_next/')) {
+    if (
+      !url.pathname.startsWith("/s/") &&
+      !url.pathname.startsWith("/api/") &&
+      !url.pathname.startsWith("/_next/")
+    ) {
       // Create internal rewrite URL
-      const rewriteUrl = url.clone()
-      rewriteUrl.pathname = `/s/${subdomain}${url.pathname}`
-      
+      const rewriteUrl = url.clone();
+      rewriteUrl.pathname = `/s/${subdomain}${url.pathname}`;
+
       // This creates an internal rewrite that doesn't change the URL the user sees
-      return NextResponse.rewrite(rewriteUrl)
+      return NextResponse.rewrite(rewriteUrl);
     }
-    
+
     // If URL already contains /s/subdomain, prevent double subdomain by redirecting to clean URL
     if (url.pathname.startsWith(`/s/${subdomain}`)) {
-      const cleanPath = url.pathname.replace(`/s/${subdomain}`, '') || '/'
-      const redirectUrl = url.clone()
-      redirectUrl.pathname = cleanPath
-      return NextResponse.redirect(redirectUrl)
+      const cleanPath = url.pathname.replace(`/s/${subdomain}`, "") || "/";
+      const redirectUrl = url.clone();
+      redirectUrl.pathname = cleanPath;
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
+  // If no subdomain, redirect to marketing site
+  if (!subdomain) {
+    const isDevelopment = process.env.NODE_ENV === "development";
+    const marketingUrl = isDevelopment
+      ? "http://localhost:3002"
+      : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`;
+
+    return NextResponse.redirect(new URL(marketingUrl));
+  }
+
   // Pass through without session update to keep middleware Edge-compatible
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
@@ -42,6 +56,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
-}
+};

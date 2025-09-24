@@ -19,7 +19,7 @@ import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { createOrganizationAfterSignup } from "@/app/actions";
+import { verifyTenant, createOrganizationRpc } from "@/app/actions";
 
 export function OrganizationSignUpForm({
   className,
@@ -74,59 +74,48 @@ export function OrganizationSignUpForm({
       setSubdomainValidation(null);
       return;
     }
-
     if (subdomain.length < 3) {
       setSubdomainValidation("invalid");
       return;
     }
-
     if (!isValidSubdomain(subdomain)) {
       setSubdomainValidation("invalid");
       return;
     }
-
     setSubdomainValidation("valid");
   }, [subdomain]);
 
-  // Auto-generate subdomain from organization name
-  // Validation functions
+  // Field validators
   const validateField = (
     fieldName: keyof typeof fieldErrors,
     value: string
   ) => {
-    let error: string | null = null;
-
+    let err: string | null = null;
     switch (fieldName) {
       case "organizationName":
-        if (value.trim().length < 2) {
-          error = "Organization name must be at least 2 characters";
-        }
+        if (value.trim().length < 2)
+          err = "Organization name must be at least 2 characters";
         break;
       case "userName":
-        if (value.trim().length < 2) {
-          error = "Full name must be at least 2 characters";
-        }
+        if (value.trim().length < 2)
+          err = "Full name must be at least 2 characters";
         break;
       case "email":
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          error = "Please enter a valid email address";
+        {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value))
+            err = "Please enter a valid email address";
         }
         break;
       case "password":
-        if (value.length < 6) {
-          error = "Password must be at least 6 characters";
-        }
+        if (value.length < 6) err = "Password must be at least 6 characters";
         break;
       case "repeatPassword":
-        if (value !== password) {
-          error = "Passwords do not match";
-        }
+        if (value !== password) err = "Passwords do not match";
         break;
     }
-
-    setFieldErrors((prev) => ({ ...prev, [fieldName]: error }));
-    return error === null;
+    setFieldErrors((prev) => ({ ...prev, [fieldName]: err }));
+    return err === null;
   };
 
   const handleFieldBlur = (
@@ -142,51 +131,29 @@ export function OrganizationSignUpForm({
   ) => {
     const name = e.target.value;
     setOrganizationName(name);
-
-    // Clear error when user starts typing again
-    if (touchedFields.organizationName) {
-      validateField("organizationName", name);
-    }
-
-    // Generate subdomain suggestion using utility function
+    if (touchedFields.organizationName) validateField("organizationName", name);
     const suggestion = generateSubdomainSuggestion(name);
-
     setSubdomain(suggestion);
   };
 
   const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     setUserName(name);
-
-    // Clear error when user starts typing again
-    if (touchedFields.userName) {
-      validateField("userName", name);
-    }
+    if (touchedFields.userName) validateField("userName", name);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const email = e.target.value;
-    setEmail(email);
-
-    // Clear error when user starts typing again
-    if (touchedFields.email) {
-      validateField("email", email);
-    }
+    const value = e.target.value;
+    setEmail(value);
+    if (touchedFields.email) validateField("email", value);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const pwd = e.target.value;
     setPassword(pwd);
-
-    // Clear error when user starts typing again
-    if (touchedFields.password) {
-      validateField("password", pwd);
-    }
-
-    // Revalidate repeat password if it was already touched
-    if (touchedFields.repeatPassword) {
+    if (touchedFields.password) validateField("password", pwd);
+    if (touchedFields.repeatPassword)
       validateField("repeatPassword", repeatPassword);
-    }
   };
 
   const handleRepeatPasswordChange = (
@@ -194,25 +161,22 @@ export function OrganizationSignUpForm({
   ) => {
     const pwd = e.target.value;
     setRepeatPassword(pwd);
-
-    // Clear error when user starts typing again
-    if (touchedFields.repeatPassword) {
-      validateField("repeatPassword", pwd);
-    }
+    if (touchedFields.repeatPassword) validateField("repeatPassword", pwd);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
+    const supabase = createClient();
+
+    // Basic client checks
     if (password !== repeatPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
-
     if (!isValidSubdomain(subdomain)) {
       setError(
         "Subdomain must be 3-63 characters and contain only letters, numbers, and hyphens"
@@ -222,13 +186,20 @@ export function OrganizationSignUpForm({
     }
 
     try {
-      // First, check if subdomain is available
+      // Check subdomain availability via server action
       setIsValidating(true);
-      // TODO: Add subdomain availability check API call here
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API call
+      const verification = await verifyTenant(subdomain);
       setIsValidating(false);
+      if (verification.error) {
+        throw new Error(verification.error);
+      }
+      if (verification.exists) {
+        throw new Error(
+          "This subdomain is already taken. Please choose another."
+        );
+      }
 
-      // Create user account
+      // Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -236,7 +207,7 @@ export function OrganizationSignUpForm({
           data: {
             full_name: userName,
             organization_name: organizationName,
-            subdomain: subdomain,
+            subdomain,
             role: "owner",
           },
           emailRedirectTo: `https://${subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/confirm`,
@@ -245,17 +216,18 @@ export function OrganizationSignUpForm({
 
       if (authError) throw authError;
 
-      // Create organization record in database
-      if (authData.user) {
-        const orgResult = await createOrganizationAfterSignup(
-          authData.user.id,
-          organizationName,
+      // Check if we have a session (required for organization creation)
+      const { data: sessionRes } = await supabase.auth.getSession();
+      const hasSession = Boolean(sessionRes?.session);
+
+      if (hasSession && authData.user) {
+        // Create organization using RPC (requires authenticated session)
+        const orgResult = await createOrganizationRpc({
+          companyName: organizationName,
           subdomain,
-          email
-        );
+        });
 
         if (!orgResult.success) {
-          // If organization creation fails, we should handle this gracefully
           console.error("Organization creation failed:", orgResult.error);
           setError(
             `Account created but organization setup failed: ${orgResult.error}`
@@ -263,6 +235,9 @@ export function OrganizationSignUpForm({
           setIsLoading(false);
           return;
         }
+      } else {
+        // No session yet - email confirmation required
+        console.log("No session after signup - email confirmation required");
       }
 
       // Show success state briefly before redirect
@@ -270,8 +245,8 @@ export function OrganizationSignUpForm({
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       router.push("/signup/success");
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
       setIsValidating(false);
@@ -353,7 +328,9 @@ export function OrganizationSignUpForm({
                 >
                   {subdomainValidation === "invalid" && subdomain
                     ? "Subdomain must be 3-63 characters, letters, numbers, and hyphens only"
-                    : `Your team will access the app at ${subdomain || "subdomain"}.${process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com"}`}
+                    : `Your team will access the app at ${subdomain || "subdomain"}.${
+                        process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com"
+                      }`}
                 </p>
               </div>
 
@@ -537,7 +514,7 @@ export function OrganizationSignUpForm({
                 <div className="p-3 rounded-md bg-green-50 border border-green-200">
                   <p className="text-sm text-green-700 flex items-center">
                     <span className="mr-2">✓</span>
-                    Organization created successfully! Redirecting...
+                    Organization created successfully. Redirecting...
                   </p>
                 </div>
               )}
@@ -556,7 +533,7 @@ export function OrganizationSignUpForm({
                   "Checking availability..."
                 ) : isLoading ? (
                   <span className="flex items-center">
-                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
+                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
                     Creating organization...
                   </span>
                 ) : success ? (

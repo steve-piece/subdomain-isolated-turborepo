@@ -25,6 +25,105 @@ export interface CreateOrganizationResponse {
 }
 
 /**
+ * Insert organization using RLS (requires authenticated session)
+ */
+export async function createOrganizationRls(input: {
+  companyName: string;
+  subdomain: string;
+}): Promise<CreateOrganizationResponse> {
+  try {
+    const supabase = await createClient();
+
+    // Must have an authenticated user for RLS to allow inserts
+    const { data: userRes, error: authError } = await supabase.auth.getUser();
+    if (!userRes?.user || authError) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const companyName = input.companyName.trim();
+    const sub = input.subdomain.toLowerCase().trim();
+
+    const { data: organization, error: orgError } = await supabase
+      .from("organizations")
+      .insert([
+        {
+          company_name: companyName,
+          subdomain: sub,
+          owner_id: userRes.user.id,
+          settings: {},
+          metadata: {},
+        },
+      ])
+      .select()
+      .single();
+
+    if (orgError) {
+      return {
+        success: false,
+        error: `Failed to create organization: ${orgError.message}`,
+      };
+    }
+
+    const { error: tenantError } = await supabase
+      .from("tenants")
+      .insert([
+        {
+          id: organization.id,
+          company_name: companyName,
+          searchable: true,
+        },
+      ])
+      .select()
+      .single();
+
+    if (tenantError) {
+      return {
+        success: false,
+        error: `Failed to create tenant mapping: ${tenantError.message}`,
+      };
+    }
+
+    return { success: true, message: "Organization created" };
+  } catch (e) {
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Create organization using RPC function (requires authenticated session)
+ */
+export async function createOrganizationRpc(input: {
+  companyName: string;
+  subdomain: string;
+}): Promise<CreateOrganizationResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data: orgId, error } = await supabase.rpc(
+      "create_org_for_current_user",
+      {
+        p_company_name: input.companyName,
+        p_subdomain: input.subdomain,
+      }
+    );
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, message: "Organization created successfully" };
+  } catch (e) {
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Create organization and tenant mapping after successful user signup
  */
 export async function createOrganizationAfterSignup(
@@ -36,12 +135,24 @@ export async function createOrganizationAfterSignup(
   try {
     const supabase = await createClient();
 
+    // Verify the current user matches the userId being passed
+    const { data: user, error: authError } = await supabase.auth.getUser();
+    if (!user?.user || authError) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    if (user.user.id !== userId) {
+      return { success: false, error: "Invalid user context" };
+    }
+
     // Create organization record
     // Note: owner_id will be set after user profile is created (since it references user_profiles.user_id)
     const { data: organization, error: orgError } = await supabase
       .from("organizations")
       .insert({
         company_name: organizationName,
+        subdomain: subdomain.toLowerCase(),
+        owner_id: userId,
         settings: {},
         metadata: {},
       })
@@ -56,12 +167,11 @@ export async function createOrganizationAfterSignup(
       };
     }
 
-    // Create tenant mapping (subdomain -> organization)
+    // Create tenant mapping (id matches organization.id; subdomain sourced from org via trigger)
     const { data: tenant, error: tenantError } = await supabase
       .from("tenants")
       .insert({
-        subdomain: subdomain.toLowerCase(),
-        org_id: organization.id,
+        id: organization.id,
         company_name: organizationName,
       })
       .select()
@@ -75,39 +185,7 @@ export async function createOrganizationAfterSignup(
       };
     }
 
-    // Create user profile with new structure (direct org_id reference)
-    const shortUserId = userId.toString().substring(0, 8); // First 8 chars as new primary key
-    const { error: profileError } = await supabase
-      .from("user_profiles")
-      .insert({
-        user_id: shortUserId,
-        uid: userId, // Full UUID for auth.users reference
-        org_id: organization.id, // Direct reference to organization
-        role: "superadmin",
-        email: userEmail,
-      });
-
-    if (profileError) {
-      console.error("User profile creation error:", profileError);
-      return {
-        success: false,
-        error: `Failed to create user profile: ${profileError.message}`,
-      };
-    }
-
-    // Update organization.owner_id to reference the user's short ID
-    const { error: ownerUpdateError } = await supabase
-      .from("organizations")
-      .update({ owner_id: shortUserId })
-      .eq("id", organization.id);
-
-    if (ownerUpdateError) {
-      console.error("Owner ID update error:", ownerUpdateError);
-      return {
-        success: false,
-        error: `Failed to set organization owner: ${ownerUpdateError.message}`,
-      };
-    }
+    // owner_id already set on insert above; no follow-up update required
 
     return {
       success: true,
@@ -157,7 +235,7 @@ export async function searchTenants(
     console.log("Session status:", {
       hasSession: !!session?.session,
       sessionError: sessionError?.message,
-      userId: session?.session?.user?.id?.substring(0, 8) + "...",
+      userId: session?.session?.user?.id,
     });
 
     console.log("Attempting to query tenants_public...");
