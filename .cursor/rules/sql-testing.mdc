@@ -1,0 +1,170 @@
+---
+alwaysApply: false
+---
+
+# @sql-testing - SQL Migration Testing and Validation Checklist
+
+## Comprehensive SQL Migration Quality Assurance
+
+### **Core Principle: Database Reliability and Security**
+
+This checklist ensures transaction safety, security compliance, performance optimization, and seamless integration with modern application stacks.
+
+---
+
+## 🔒 1. Transaction Management & Safety
+
+- [ ] **Transaction Wrapper** - Every migration wrapped in `BEGIN;` and `COMMIT;`
+- [ ] **Error Handling** - Rollback strategy documented
+- [ ] **Atomic Operations** - Related changes grouped in one transaction
+- [ ] **Dependency Validation** - Clear migration order and dependencies
+
+```sql
+BEGIN;
+
+-- Migration content here
+
+DO $$
+BEGIN
+    RAISE NOTICE 'Migration completed successfully: [MIGRATION_NAME]';
+END $$;
+
+COMMIT;
+```
+
+````
+
+- [ ] **Idempotency** - Use `IF NOT EXISTS` / `IF EXISTS`
+- [ ] **Repeatable Execution** - Safe to run multiple times
+- [ ] **Rollback Plan** - Explicit rollback strategy
+
+---
+
+## 🛡️ 2. Security & Authentication
+
+- [ ] **SECURITY DEFINER** - For privileged functions
+- [ ] **SET search_path** - Restrict search path
+- [ ] **Function Volatility** - Explicit (`IMMUTABLE`, `STABLE`, or `VOLATILE`)
+- [ ] **Input Validation** - Validate and sanitize parameters
+- [ ] **SQL Injection Prevention** - Parameterized queries only
+- [ ] **Parameter Naming** - No conflicts with return columns
+
+```sql
+CREATE OR REPLACE FUNCTION schema.function_name(param_input text)
+RETURNS TABLE(result text)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+STABLE
+AS $$
+BEGIN
+    -- Implementation
+END;
+$$;
+```
+
+- [ ] **Row Level Security** - Enabled on all tables
+- [ ] **Policies** - SELECT, INSERT, UPDATE, DELETE covered for all roles
+- [ ] **View Security** - Use `WITH (security_invoker = on)`
+
+---
+
+## ⚡ 3. Performance & Indexing
+
+- [ ] **Primary Keys** - Every table
+- [ ] **Foreign Key Indexes** - All FKs indexed
+- [ ] **Query Pattern Indexes** - Match actual queries
+- [ ] **Composite / Partial Indexes** - As needed
+- [ ] **Constraint Optimization** - Unique, check, and FK constraints efficient
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_table_col ON schema.table(col);
+```
+
+---
+
+## 📚 4. Documentation & Comments
+
+- [ ] **Migration Header** - Purpose, dependencies, impact
+- [ ] **COMMENT ON** - Functions, tables, columns, schemas
+
+```sql
+COMMENT ON TABLE schema.table_name IS 'Purpose of this table';
+COMMENT ON FUNCTION schema.function_name IS 'Purpose and usage';
+```
+
+---
+
+## 🔧 5. PostgreSQL Syntax & Compatibility
+
+- [ ] **Array Literals** - Use `ARRAY[]`
+- [ ] **JSONB Defaults** - Use `'{}'` or `'[]'`
+- [ ] **UUID Defaults** - Use `gen_random_uuid()`
+- [ ] **Timestamps** - Use `now()`
+- [ ] **Parameter Naming** - Avoid naming conflicts
+- [ ] **Return Type Matching** - Ensure correct data types
+
+---
+
+## ✅ 6. Data Integrity & Validation
+
+- [ ] **NOT NULL** - Required fields
+- [ ] **CHECK Constraints** - Validation rules
+- [ ] **Default Values** - Defined and sensible
+- [ ] **ENUMs** - For fixed lists
+- [ ] **Referential Integrity** - Proper foreign keys and cascade rules
+
+```sql
+CREATE TYPE schema.status_enum AS ENUM ('active', 'inactive');
+
+CREATE TABLE IF NOT EXISTS schema.table_name (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    status schema.status_enum NOT NULL DEFAULT 'active',
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+```
+
+---
+
+## 🔗 7. Integration Patterns
+
+- [ ] **Realtime Configuration** - Add tables to publication only if required
+- [ ] **Auth Integration** - Proper JWT / role mapping
+- [ ] **Usage Tracking / Audit Logging** - Where required
+
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE schema.table_name;
+```
+
+---
+
+## 🔌 8. Application Layer Integration
+
+- [ ] **API Compatibility** - Return JSON-compatible types
+- [ ] **Error Handling** - Clear codes/messages
+- [ ] **No Legacy Patterns** - No FDWs, no deprecated features
+- [ ] **Configuration** - No hardcoded values
+
+---
+
+## 📋 SQL Testing Checklist Usage
+
+- [ ] **Pre-Migration Validation** - Validate safety, syntax, and dependencies
+- [ ] **Execution Order** - Ensure objects are created before dependents
+- [ ] **Post-Migration Testing** - Rollback test, RLS test, performance test
+- [ ] **Production Readiness** - Security audit, benchmarks, rollback plan, monitoring
+
+```bash
+"@sql-testing Review migration for transaction safety, security, and performance"
+"@sql-testing Validate PostgreSQL syntax and compatibility"
+"@sql-testing Confirm integration patterns and policies"
+```
+
+---
+
+_This rule ensures SQL migrations meet professional engineering standards across projects with emphasis on reliability, security, performance, and maintainability._
+
+```
+
+```
+````

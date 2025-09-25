@@ -2,10 +2,9 @@
 -- 🗄️ SUBDOMAIN MULTI-TENANT DATABASE SETUP SCRIPT (IDEMPOTENT)
 -- =====================================================
 --
--- This script aligns with the current project schema that uses a short user ID
--- (8-char text) as the organization owner reference and is safe to run multiple
--- times. It creates missing objects and updates safe defaults without breaking
--- existing data.
+-- This script aligns with the current project schema using UUID for user_id/owner_id.
+-- It is safe to run multiple times: creates missing objects, updates safe defaults.
+-- Owner-specific signup handled by handle_owner_signup trigger; no general profile creation.
 -- =====================================================
 
 -- =====================================================
@@ -58,12 +57,21 @@ BEGIN
 END;
 $$;
 
+-- Drop conflicting general profile functions and triggers (if exist)
+DROP FUNCTION IF EXISTS public.handle_new_auth_user();
+DROP FUNCTION IF EXISTS public.handle_new_user();
+DROP TRIGGER IF EXISTS handle_new_auth_user ON auth.users;
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+-- Drop old org signup function/trigger
+DROP FUNCTION IF EXISTS public.create_org_from_signup();
+DROP TRIGGER IF EXISTS create_org_on_signup ON auth.users;
+
 -- =====================================================
 -- 📊 CORE TABLES (create if missing; do not alter existing)
 -- =====================================================
 
--- Note: We avoid circular FKs during initial table creation. The FK from
--- organizations.owner_id -> user_profiles.user_id is added later via ALTER.
+-- Note: Avoid circular FKs during initial creation. FK from organizations.owner_id -> user_profiles.user_id added later.
 
 CREATE TABLE IF NOT EXISTS public.organizations (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -75,7 +83,7 @@ CREATE TABLE IF NOT EXISTS public.organizations (
   subdomain text NOT NULL UNIQUE,
   settings jsonb DEFAULT '{}'::jsonb,
   metadata jsonb DEFAULT '{}'::jsonb, -- Industry, size, founding year, etc.
-  owner_id uuid, -- Owner is the same id as auth.users(id)
+  owner_id uuid, -- References auth.users(id) via user_profiles
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -84,21 +92,20 @@ CREATE TABLE IF NOT EXISTS public.tenants (
   id uuid PRIMARY KEY REFERENCES public.organizations(id) ON DELETE CASCADE,
   subdomain text NOT NULL UNIQUE,
   company_name text NOT NULL,
-  searchable boolean NOT NULL DEFAULT false,
   created_at timestamptz DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public.user_profiles (
-  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, -- Same id as auth.users(id)
-  org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  org_id uuid REFERENCES public.organizations(id) ON DELETE CASCADE, -- Nullable for pre-org profiles
   email text UNIQUE NOT NULL,
   full_name text,
-  role public.user_role NOT NULL DEFAULT 'superadmin',
+  role public.user_role NOT NULL DEFAULT 'member', -- Default 'member' for non-owners
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Relax NOT NULL on user_profiles.org_id to allow profile creation before org linkage
+-- Relax NOT NULL on user_profiles.org_id if set (allow pre-org linkage)
 DO $$
 BEGIN
   IF EXISTS (
@@ -110,92 +117,7 @@ BEGIN
 END;
 $$;
 
--- Ensure tenants.searchable default is false (idempotent)
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'tenants' AND column_name = 'searchable'
-  ) THEN
-    EXECUTE 'ALTER TABLE public.tenants ALTER COLUMN searchable SET DEFAULT false';
-  END IF;
-END;
-$$;
-
--- =====================================================
--- 🔄 LEGACY SCHEMA MIGRATION (safe/idempotent)
--- - Migrate short-id model to UUID user_id aligned with auth.users(id)
--- - Update organizations.owner_id to UUID and remap from user_profiles.uid
--- =====================================================
-
--- 1) If legacy columns exist, remap organizations.owner_id to the full UUID via user_profiles.uid
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema='public' AND table_name='user_profiles' AND column_name='uid'
-  ) THEN
-    -- Drop FK temporarily if present to allow type change and remap
-    IF EXISTS (
-      SELECT 1 FROM pg_constraint c
-      JOIN pg_class t ON t.oid = c.conrelid
-      JOIN pg_namespace n ON n.oid = t.relnamespace
-      WHERE n.nspname='public' AND t.relname='organizations' AND c.conname='organizations_owner_id_fkey'
-    ) THEN
-      ALTER TABLE public.organizations DROP CONSTRAINT organizations_owner_id_fkey;
-    END IF;
-
-    -- Remap owner_id (currently text short-id) to the full UUID using user_profiles.uid
-    IF EXISTS (
-      SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='organizations' AND column_name='owner_id'
-    ) THEN
-      -- Only perform remap when owner_id is TEXT (legacy)
-      IF EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_schema='public' AND table_name='organizations' AND column_name='owner_id' AND data_type='text'
-      ) THEN
-        UPDATE public.organizations o
-        SET owner_id = up.uid
-        FROM public.user_profiles up
-        WHERE o.owner_id IS NOT NULL
-          AND o.owner_id = up.user_id::text; -- legacy match by short-id text
-
-        -- Ensure owner_id column type is UUID
-        ALTER TABLE public.organizations
-          ALTER COLUMN owner_id TYPE uuid USING owner_id::uuid;
-      END IF;
-    END IF;
-
-    -- Promote user_profiles.user_id to UUID equal to auth.users(id)
-    -- Create a temp UUID column if needed and migrate values from uid
-    IF NOT EXISTS (
-      SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='user_profiles' AND column_name='user_id' AND data_type='uuid'
-    ) THEN
-      -- If user_id exists as non-uuid, create a temp UUID column and backfill
-      IF EXISTS (
-        SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='user_profiles' AND column_name='user_id'
-      ) THEN
-        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS user_id_uuid uuid;
-        UPDATE public.user_profiles SET user_id_uuid = uid WHERE user_id_uuid IS NULL;
-        -- Drop old PK if any, then drop the legacy user_id and rename
-        ALTER TABLE public.user_profiles DROP CONSTRAINT IF EXISTS user_profiles_pkey;
-        ALTER TABLE public.user_profiles DROP COLUMN IF EXISTS user_id;
-        ALTER TABLE public.user_profiles RENAME COLUMN user_id_uuid TO user_id;
-        ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id);
-      ELSE
-        -- No user_id column at all; just add it from uid
-        ALTER TABLE public.user_profiles ADD COLUMN user_id uuid;
-        UPDATE public.user_profiles SET user_id = uid WHERE user_id IS NULL;
-        ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id);
-      END IF;
-      -- Drop legacy uid column now that user_id is UUID
-      ALTER TABLE public.user_profiles DROP COLUMN IF EXISTS uid;
-    END IF;
-  END IF;
-END;
-$$;
-
--- Add missing FK organizations.owner_id -> public.user_profiles(user_id)
+-- Add missing FK organizations.owner_id -> user_profiles.user_id
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -203,14 +125,11 @@ BEGIN
     FROM pg_constraint c
     JOIN pg_class t ON t.oid = c.conrelid
     JOIN pg_namespace n ON n.oid = t.relnamespace
-    WHERE n.nspname = 'public' AND t.relname = 'organizations' AND c.conname = 'organizations_owner_id_fkey'
-  ) AND EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'organizations' AND column_name = 'owner_id'
+    WHERE n.nspname = 'public' AND t.relname = 'organizations' AND c.conname LIKE '%owner_id_fkey'
   ) THEN
     ALTER TABLE public.organizations
       ADD CONSTRAINT organizations_owner_id_fkey
-      FOREIGN KEY (owner_id) REFERENCES public.user_profiles(user_id);
+      FOREIGN KEY (owner_id) REFERENCES public.user_profiles(user_id) ON DELETE SET NULL;
   END IF;
 END;
 $$;
@@ -219,20 +138,18 @@ $$;
 -- 📋 VIEW (idempotent)
 -- =====================================================
 
+DROP VIEW IF EXISTS public.tenants_public;
 CREATE OR REPLACE VIEW public.tenants_public AS
 SELECT
   subdomain,
   company_name
-FROM public.tenants
-WHERE searchable = true;
+FROM public.tenants;
 
 ALTER VIEW public.tenants_public SET (security_invoker = true);
 
 -- =====================================================
 -- ⚙️ UTILITY FUNCTIONS (OR REPLACE)
 -- =====================================================
-
--- Removed unused function: get_user_org_id
 
 CREATE OR REPLACE FUNCTION public.user_has_role(required_role text)
 RETURNS boolean
@@ -268,7 +185,7 @@ BEGIN
 END;
 $$;
 
--- Custom Access Token Hook, aligns with short-id model
+-- Custom Access Token Hook (aligns with UUID model)
 CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -280,7 +197,7 @@ DECLARE
   claims jsonb;
   user_role text;
   user_subdomain text;
-  user_org_id text;
+  user_org_id uuid;
   user_company_name text;
 BEGIN
   claims := event->'claims';
@@ -288,7 +205,7 @@ BEGIN
   SELECT
     up.role::text,
     t.subdomain,
-    up.org_id::text,
+    up.org_id,
     t.company_name
   INTO user_role, user_subdomain, user_org_id, user_company_name
   FROM public.user_profiles up
@@ -325,28 +242,7 @@ BEGIN
 END;
 $$;
 
--- Auto-profile creation on new auth user
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.user_profiles (user_id, email, role, full_name)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.email, ''),
-    'superadmin'::user_role,
-    COALESCE(
-      (NEW.raw_user_meta_data->>'full_name')::text,
-      (NEW.raw_user_meta_data->>'company_name')::text,
-      COALESCE(NEW.email, ''),
-      'Unknown User'
-    )
-  )
-  ON CONFLICT (user_id) DO NOTHING;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Prevent uid changes on user_profiles
+-- Prevent user_id changes on user_profiles
 CREATE OR REPLACE FUNCTION public.prevent_user_id_change()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -357,7 +253,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Keep user_profiles.email in sync with auth.users.email
+-- Sync user_profiles.email with auth.users.email
 CREATE OR REPLACE FUNCTION public.sync_user_email()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -372,17 +268,88 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- 🔐 CUSTOM CLAIMS FUNCTION PERMISSIONS
+-- 🏢 ORGANIZATION CREATION FUNCTION (idempotent)
 -- =====================================================
 
-GRANT EXECUTE ON FUNCTION public.custom_access_token_hook TO supabase_auth_admin;
-GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
-REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, anon, public;
+-- Standalone function for atomic owner signup: Creates profile (owner role), organization, tenant, and links org_id
+CREATE OR REPLACE FUNCTION public.handle_owner_signup(
+  p_user_id uuid,
+  p_raw_user_meta_data jsonb
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+VOLATILE
+AS $$
+DECLARE
+  v_company_name text := COALESCE(p_raw_user_meta_data->>'company_name', '');
+  v_subdomain    text := LOWER(TRIM(COALESCE(p_raw_user_meta_data->>'subdomain', '')));
+  v_full_name    text := COALESCE(p_raw_user_meta_data->>'full_name', '');
+  v_user_role    text := COALESCE(p_raw_user_meta_data->>'user_role', 'member');
+  v_org_id       uuid;
+  v_email        text;
+BEGIN
+  -- Fetch user email for profile
+  SELECT email INTO v_email FROM auth.users WHERE id = p_user_id;
+
+  -- Only process if user_role = 'owner' and required metadata provided
+  IF v_user_role = 'owner' AND v_company_name <> '' AND v_subdomain <> '' AND v_subdomain ~ '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' THEN
+    -- Step 0: Verify user doesn't already own an organization
+    IF EXISTS (SELECT 1 FROM public.organizations WHERE owner_id = p_user_id) THEN
+      RAISE NOTICE 'User % already owns an organization, skipping signup', p_user_id;
+      RETURN NULL;
+    END IF;
+
+    -- Step 1: Create owner profile (org_id NULL temp)
+    INSERT INTO public.user_profiles (user_id, email, full_name, role)
+    VALUES (p_user_id, COALESCE(v_email, ''), v_full_name, 'owner'::public.user_role);
+
+    -- Step 2: Create organization
+    INSERT INTO public.organizations (company_name, subdomain, owner_id)
+    VALUES (v_company_name, v_subdomain, p_user_id)
+    RETURNING id INTO v_org_id;
+
+    -- Step 3: Create tenant (no searchable column)
+    INSERT INTO public.tenants (id, subdomain, company_name)
+    VALUES (v_org_id, v_subdomain, v_company_name);
+
+    -- Step 4: Link org_id to profile
+    UPDATE public.user_profiles 
+    SET org_id = v_org_id 
+    WHERE user_id = p_user_id;
+
+    RAISE NOTICE 'Standalone owner signup completed: Org ID % for user %', v_org_id, p_user_id;
+
+    RETURN v_org_id;
+  END IF;
+
+  -- No action taken (invalid metadata): Return NULL
+  RETURN NULL;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE NOTICE 'Signup failed for user %: %', p_user_id, SQLERRM;
+    RETURN NULL;
+END;
+$$;
+
+-- Add documentation comment
+COMMENT ON FUNCTION public.handle_owner_signup(uuid, jsonb) IS 'Standalone function for atomic owner signup: Creates profile (owner role), organization, tenant, and links org_id. Call with user_id and raw_user_meta_data after auth.signup. Returns org_id if successful (validated metadata), NULL otherwise. SECURITY DEFINER.';
+
+-- Secure: Revoke broad access
+REVOKE ALL ON FUNCTION public.handle_owner_signup(uuid, jsonb) FROM PUBLIC, anon, authenticated, service_role;
+
+-- Grant execute to authenticated (for app calls, e.g., Server Actions)
+GRANT EXECUTE ON FUNCTION public.handle_owner_signup(uuid, jsonb) TO authenticated;
 
 -- =====================================================
 -- 🔄 TRIGGERS (idempotent)
 -- =====================================================
 
+-- Note: No triggers needed - handle_owner_signup is called directly from application code
+
+-- Audit triggers
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_organizations_updated_at') THEN
@@ -418,17 +385,6 @@ $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'on_auth_user_created') THEN
-    CREATE TRIGGER on_auth_user_created
-      AFTER INSERT ON auth.users
-      FOR EACH ROW
-      EXECUTE FUNCTION public.handle_new_user();
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'sync_email_on_auth_update') THEN
     CREATE TRIGGER sync_email_on_auth_update
       AFTER UPDATE ON auth.users
@@ -447,322 +403,126 @@ ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
--- RLS POLICIES (create if missing)
+-- RLS POLICIES (create if missing; drop legacy)
 -- =====================================================
 
--- Clean out legacy policies that conflict with new owner/service rules (idempotent)
+-- Clean legacy policies
 DO $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_member_read') THEN
-    DROP POLICY "organizations_member_read" ON public.organizations;
+  -- Organizations legacy
+  DROP POLICY IF EXISTS "organizations_member_read" ON public.organizations;
+  DROP POLICY IF EXISTS "organizations_admin_write" ON public.organizations;
+  DROP POLICY IF EXISTS "organizations_service_all" ON public.organizations;
+  DROP POLICY IF EXISTS "organizations_owner_all" ON public.organizations;
+
+  -- User profiles legacy
+  DROP POLICY IF EXISTS "profiles_org_admin_manage" ON public.user_profiles;
+  DROP POLICY IF EXISTS "profiles_self_all" ON public.user_profiles;
+
+  -- Tenants legacy
+  DROP POLICY IF EXISTS "tenants_owner_all" ON public.tenants;
+  DROP POLICY IF EXISTS "tenants_anon_select_searchable" ON public.tenants;
+  DROP POLICY IF EXISTS "tenants_admin_insert" ON public.tenants;
+  DROP POLICY IF EXISTS "tenants_admin_update" ON public.tenants;
+  DROP POLICY IF EXISTS "tenants_admin_delete" ON public.tenants;
+END;
+$$;
+
+-- Organizations: Service full access (operation-specific)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_service_select') THEN
+    CREATE POLICY "organizations_service_select" ON public.organizations FOR SELECT TO service_role, postgres USING (true);
   END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_admin_write') THEN
-    DROP POLICY "organizations_admin_write" ON public.organizations;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_service_insert') THEN
+    CREATE POLICY "organizations_service_insert" ON public.organizations FOR INSERT TO service_role, postgres WITH CHECK (true);
   END IF;
-  -- Drop legacy consolidated policies to replace with operation-specific ones
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_service_all') THEN
-    DROP POLICY "organizations_service_all" ON public.organizations;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_service_update') THEN
+    CREATE POLICY "organizations_service_update" ON public.organizations FOR UPDATE TO service_role, postgres USING (true) WITH CHECK (true);
   END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_org_admin_manage') THEN
-    DROP POLICY "profiles_org_admin_manage" ON public.user_profiles;
-  END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='subscriptions' AND policyname='subscriptions_admin_manage') THEN
-    DROP POLICY "subscriptions_admin_manage" ON public.subscriptions;
-  END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='usage_counters' AND policyname='usage_admin_manage') THEN
-    DROP POLICY "usage_admin_manage" ON public.usage_counters;
-  END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_owner_all') THEN
-    DROP POLICY "organizations_owner_all" ON public.organizations;
-  END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_owner_all') THEN
-    DROP POLICY "tenants_owner_all" ON public.tenants;
-  END IF;
-  IF EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_self_all') THEN
-    DROP POLICY "profiles_self_all" ON public.user_profiles;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_service_delete') THEN
+    CREATE POLICY "organizations_service_delete" ON public.organizations FOR DELETE TO service_role, postgres USING (true);
   END IF;
 END;
 $$;
 
--- Organizations: service/postgres full access (operation-specific)
+-- Organizations: Owner access
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_service_select'
-  ) THEN
-    CREATE POLICY "organizations_service_select" ON public.organizations
-      FOR SELECT TO service_role, postgres
-      USING (true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_owner_select') THEN
+    CREATE POLICY "organizations_owner_select" ON public.organizations FOR SELECT TO authenticated USING (owner_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_owner_insert') THEN
+    CREATE POLICY "organizations_owner_insert" ON public.organizations FOR INSERT TO authenticated WITH CHECK (owner_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_owner_update') THEN
+    CREATE POLICY "organizations_owner_update" ON public.organizations FOR UPDATE TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='organizations_owner_delete') THEN
+    CREATE POLICY "organizations_owner_delete" ON public.organizations FOR DELETE TO authenticated USING (owner_id = auth.uid());
   END IF;
 END;
 $$;
 
+-- Tenants: Public SELECT for view (base table policy enables view access)
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_service_insert'
-  ) THEN
-    CREATE POLICY "organizations_service_insert" ON public.organizations
-      FOR INSERT TO service_role, postgres
-      WITH CHECK (true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='public_select_tenants_for_view') THEN
+    CREATE POLICY "public_select_tenants_for_view" ON public.tenants FOR SELECT TO anon, authenticated USING (true);
   END IF;
 END;
 $$;
 
+-- Tenants: Owners manage
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_service_update'
-  ) THEN
-    CREATE POLICY "organizations_service_update" ON public.organizations
-      FOR UPDATE TO service_role, postgres
-      USING (true)
-      WITH CHECK (true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='tenants_owner_select') THEN
+    CREATE POLICY "tenants_owner_select" ON public.tenants FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.organizations o WHERE o.id = tenants.id AND o.owner_id = auth.uid()));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='tenants_owner_insert') THEN
+    CREATE POLICY "tenants_owner_insert" ON public.tenants FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM public.organizations o WHERE o.id = tenants.id AND o.owner_id = auth.uid()));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='tenants_owner_update') THEN
+    CREATE POLICY "tenants_owner_update" ON public.tenants FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM public.organizations o WHERE o.id = tenants.id AND o.owner_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM public.organizations o WHERE o.id = tenants.id AND o.owner_id = auth.uid()));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='tenants_owner_delete') THEN
+    CREATE POLICY "tenants_owner_delete" ON public.tenants FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM public.organizations o WHERE o.id = tenants.id AND o.owner_id = auth.uid()));
   END IF;
 END;
 $$;
 
+-- User profiles: Self access
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_service_delete'
-  ) THEN
-    CREATE POLICY "organizations_service_delete" ON public.organizations
-      FOR DELETE TO service_role, postgres
-      USING (true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_self_read') THEN
+    CREATE POLICY "profiles_self_read" ON public.user_profiles FOR SELECT TO authenticated, anon USING (user_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_self_insert') THEN
+    CREATE POLICY "profiles_self_insert" ON public.user_profiles FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_self_update') THEN
+    CREATE POLICY "profiles_self_update" ON public.user_profiles FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_self_delete') THEN
+    CREATE POLICY "profiles_self_delete" ON public.user_profiles FOR DELETE TO authenticated USING (user_id = auth.uid());
   END IF;
 END;
 $$;
 
+-- User profiles: Org admin manage (operation-specific)
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_owner_update'
-  ) THEN
-    CREATE POLICY "organizations_owner_update" ON public.organizations
-      FOR UPDATE TO authenticated
-      USING (owner_id = (select auth.uid()))
-      WITH CHECK (owner_id = (select auth.uid()));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_org_admin_select') THEN
+    CREATE POLICY "profiles_org_admin_select" ON public.user_profiles FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles admin WHERE admin.user_id = auth.uid() AND admin.org_id = user_profiles.org_id AND admin.role IN ('admin', 'superadmin')));
   END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_owner_delete'
-  ) THEN
-    CREATE POLICY "organizations_owner_delete" ON public.organizations
-      FOR DELETE TO authenticated
-      USING (owner_id = (select auth.uid()));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_org_admin_insert') THEN
+    CREATE POLICY "profiles_org_admin_insert" ON public.user_profiles FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM public.user_profiles admin WHERE admin.user_id = auth.uid() AND admin.org_id = user_profiles.org_id AND admin.role IN ('admin', 'superadmin')));
   END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_anon_select_searchable'
-  ) THEN
-    CREATE POLICY "tenants_anon_select_searchable" ON public.tenants
-      FOR SELECT TO anon
-      USING (searchable = true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_org_admin_update') THEN
+    CREATE POLICY "profiles_org_admin_update" ON public.user_profiles FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles admin WHERE admin.user_id = auth.uid() AND admin.org_id = user_profiles.org_id AND admin.role IN ('admin', 'superadmin'))) WITH CHECK (EXISTS (SELECT 1 FROM public.user_profiles admin WHERE admin.user_id = auth.uid() AND admin.org_id = user_profiles.org_id AND admin.role IN ('admin', 'superadmin')));
   END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_admin_insert'
-  ) THEN
-    CREATE POLICY "tenants_admin_insert" ON public.tenants
-      FOR INSERT TO authenticated
-      WITH CHECK (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles up
-          WHERE up.user_id = (select auth.uid())
-            AND up.org_id = tenants.id
-            AND up.role IN ('admin', 'superadmin')
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_admin_update'
-  ) THEN
-    CREATE POLICY "tenants_admin_update" ON public.tenants
-      FOR UPDATE TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles up
-          WHERE up.user_id = (select auth.uid())
-            AND up.org_id = tenants.id
-            AND up.role IN ('admin', 'superadmin')
-        )
-      )
-      WITH CHECK (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles up
-          WHERE up.user_id = (select auth.uid())
-            AND up.org_id = tenants.id
-            AND up.role IN ('admin', 'superadmin')
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_admin_delete'
-  ) THEN
-    CREATE POLICY "tenants_admin_delete" ON public.tenants
-      FOR DELETE TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles up
-          WHERE up.user_id = (select auth.uid())
-            AND up.org_id = tenants.id
-            AND up.role IN ('admin', 'superadmin')
-        )
-      );
-  END IF;
-END;
-$$;
-
--- User profiles: self read for authenticated and anon (adjusted roles)
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_self_read'
-  ) THEN
-    DROP POLICY "profiles_self_read" ON public.user_profiles;
-  END IF;
-  CREATE POLICY "profiles_self_read" ON public.user_profiles
-    FOR SELECT TO authenticated, anon
-    USING (user_id = (select auth.uid()));
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_self_update'
-  ) THEN
-    CREATE POLICY "profiles_self_update" ON public.user_profiles
-      FOR UPDATE TO authenticated
-      USING (user_id = (select auth.uid()))
-      WITH CHECK (user_id = (select auth.uid()));
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_org_admin_read'
-  ) THEN
-    CREATE POLICY "profiles_org_admin_read" ON public.user_profiles
-      FOR SELECT TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles admin
-          WHERE admin.user_id = (select auth.uid())
-            AND admin.org_id = user_profiles.org_id
-            AND admin.role IN ('admin', 'superadmin')
-        )
-      );
-  END IF;
-END;
-$$;
-
--- User profiles: org admins manage (operation-specific)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_org_admin_select'
-  ) THEN
-    CREATE POLICY "profiles_org_admin_select" ON public.user_profiles
-      FOR SELECT TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles admin
-          WHERE admin.user_id = (select auth.uid())
-            AND admin.org_id = user_profiles.org_id
-            AND admin.role IN ('admin', 'superadmin')
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_org_admin_insert'
-  ) THEN
-    CREATE POLICY "profiles_org_admin_insert" ON public.user_profiles
-      FOR INSERT TO authenticated
-      WITH CHECK (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles admin
-          WHERE admin.user_id = (select auth.uid())
-            AND admin.org_id = user_profiles.org_id
-            AND admin.role IN ('admin', 'superadmin')
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_org_admin_update'
-  ) THEN
-    CREATE POLICY "profiles_org_admin_update" ON public.user_profiles
-      FOR UPDATE TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles admin
-          WHERE admin.user_id = (select auth.uid())
-            AND admin.org_id = user_profiles.org_id
-            AND admin.role IN ('admin', 'superadmin')
-        )
-      )
-      WITH CHECK (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles admin
-          WHERE admin.user_id = (select auth.uid())
-            AND admin.org_id = user_profiles.org_id
-            AND admin.role IN ('admin', 'superadmin')
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_org_admin_delete'
-  ) THEN
-    CREATE POLICY "profiles_org_admin_delete" ON public.user_profiles
-      FOR DELETE TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.user_profiles admin
-          WHERE admin.user_id = (select auth.uid())
-            AND admin.org_id = user_profiles.org_id
-            AND admin.role IN ('admin', 'superadmin')
-        )
-      );
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='profiles_org_admin_delete') THEN
+    CREATE POLICY "profiles_org_admin_delete" ON public.user_profiles FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles admin WHERE admin.user_id = auth.uid() AND admin.org_id = user_profiles.org_id AND admin.role IN ('admin', 'superadmin')));
   END IF;
 END;
 $$;
@@ -777,7 +537,7 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON public.user_profiles(email
 CREATE INDEX IF NOT EXISTS idx_tenants_subdomain ON public.tenants(subdomain);
 CREATE INDEX IF NOT EXISTS idx_organizations_owner_id ON public.organizations(owner_id);
 
--- Remove duplicate/legacy unused indexes if present (advisor remediation)
+-- Remove duplicate/legacy indexes
 DROP INDEX IF EXISTS public.user_profiles_org_id_idx;
 DROP INDEX IF EXISTS public.idx_user_profiles_uid;
 DROP INDEX IF EXISTS public.tenants_subdomain_idx;
@@ -790,10 +550,6 @@ DROP INDEX IF EXISTS public.tenants_company_name_trgm;
 -- =====================================================
 
 GRANT SELECT ON public.tenants_public TO anon, public;
-
--- =====================================================
--- 🛠️ ADVISOR REMEDIATIONS (security/performance)
--- =====================================================
 
 -- =====================================================
 -- 💳 BILLING TABLES, VIEWS, FUNCTIONS, RLS (idempotent)
@@ -842,7 +598,7 @@ FROM public.subscriptions s
 JOIN public.feature_limits fl ON fl.tier_id = s.tier_id
 WHERE s.status IN ('active','trialing')
   AND now() >= s.period_start AND now() < s.period_end;
--- Ensure internal-only semantics: use invoker security and no public grants
+
 ALTER VIEW public.org_entitlements SET (security_invoker = true);
 REVOKE SELECT ON public.org_entitlements FROM anon, public;
 
@@ -908,150 +664,44 @@ ALTER TABLE public.feature_limits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscription_tiers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.usage_counters ENABLE ROW LEVEL SECURITY;
 
+-- Billing policies (org member read, admin manage)
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='subscriptions' AND policyname='subscriptions_member_read'
-  ) THEN
-    CREATE POLICY "subscriptions_member_read" ON public.subscriptions
-      FOR SELECT TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = subscriptions.org_id
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='subscriptions_member_read') THEN
+    CREATE POLICY "subscriptions_member_read" ON public.subscriptions FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = subscriptions.org_id));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='usage_member_read') THEN
+    CREATE POLICY "usage_member_read" ON public.usage_counters FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = usage_counters.org_id));
   END IF;
 END;
 $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='usage_counters' AND policyname='usage_member_read'
-  ) THEN
-    CREATE POLICY "usage_member_read" ON public.usage_counters
-      FOR SELECT TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = usage_counters.org_id
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='subscriptions_admin_select') THEN
+    CREATE POLICY "subscriptions_admin_select" ON public.subscriptions FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')));
   END IF;
-END;
-$$;
-
--- Subscriptions: org admins manage (operation-specific)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='subscriptions' AND policyname='subscriptions_admin_select'
-  ) THEN
-    CREATE POLICY "subscriptions_admin_select" ON public.subscriptions
-      FOR SELECT TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='subscriptions_admin_insert') THEN
+    CREATE POLICY "subscriptions_admin_insert" ON public.subscriptions FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')));
   END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='subscriptions' AND policyname='subscriptions_admin_insert'
-  ) THEN
-    CREATE POLICY "subscriptions_admin_insert" ON public.subscriptions
-      FOR INSERT TO authenticated
-      WITH CHECK (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='subscriptions_admin_update') THEN
+    CREATE POLICY "subscriptions_admin_update" ON public.subscriptions FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin'))) WITH CHECK (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')));
   END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='subscriptions' AND policyname='subscriptions_admin_update'
-  ) THEN
-    CREATE POLICY "subscriptions_admin_update" ON public.subscriptions
-      FOR UPDATE TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')
-      ))
-      WITH CHECK (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='subscriptions_admin_delete') THEN
+    CREATE POLICY "subscriptions_admin_delete" ON public.subscriptions FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')));
   END IF;
-END;
-$$;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='subscriptions' AND policyname='subscriptions_admin_delete'
-  ) THEN
-    CREATE POLICY "subscriptions_admin_delete" ON public.subscriptions
-      FOR DELETE TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = subscriptions.org_id AND up.role IN ('admin','superadmin')
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='usage_admin_select') THEN
+    CREATE POLICY "usage_admin_select" ON public.usage_counters FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')));
   END IF;
-END;
-$$;
-
--- Usage counters: org admins manage (operation-specific)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='usage_counters' AND policyname='usage_admin_select'
-  ) THEN
-    CREATE POLICY "usage_admin_select" ON public.usage_counters
-      FOR SELECT TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='usage_admin_insert') THEN
+    CREATE POLICY "usage_admin_insert" ON public.usage_counters FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')));
   END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='usage_counters' AND policyname='usage_admin_insert'
-  ) THEN
-    CREATE POLICY "usage_admin_insert" ON public.usage_counters
-      FOR INSERT TO authenticated
-      WITH CHECK (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='usage_admin_update') THEN
+    CREATE POLICY "usage_admin_update" ON public.usage_counters FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin'))) WITH CHECK (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')));
   END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='usage_counters' AND policyname='usage_admin_update'
-  ) THEN
-    CREATE POLICY "usage_admin_update" ON public.usage_counters
-      FOR UPDATE TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')
-      ))
-      WITH CHECK (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')
-      ));
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='usage_counters' AND policyname='usage_admin_delete'
-  ) THEN
-    CREATE POLICY "usage_admin_delete" ON public.usage_counters
-      FOR DELETE TO authenticated
-      USING (EXISTS (
-        SELECT 1 FROM public.user_profiles up WHERE up.user_id = (select auth.uid()) AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')
-      ));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='usage_admin_delete') THEN
+    CREATE POLICY "usage_admin_delete" ON public.usage_counters FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.user_id = auth.uid() AND up.org_id = usage_counters.org_id AND up.role IN ('admin','superadmin')));
   END IF;
 END;
 $$;
@@ -1061,230 +711,22 @@ CREATE INDEX IF NOT EXISTS idx_feature_limits_tier_key ON public.feature_limits(
 CREATE INDEX IF NOT EXISTS idx_usage_counters_org_key_window ON public.usage_counters(org_id, feature_key, window_start);
 
 -- =====================================================
--- 🏢 ORGANIZATION CREATION RPC (for signup flow)
+-- 🏢 ORGANIZATION CREATION RPC (updated, no searchable)
 -- =====================================================
 
-CREATE OR REPLACE FUNCTION public.create_org_for_current_user(
-  p_company_name text,
-  p_subdomain text
-) RETURNS uuid
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-DECLARE
-  v_org_id uuid;
-  v_email text;
-  v_full_name text;
-  v_profile_linked integer;
-BEGIN
-  -- Require authenticated user
-  IF auth.uid() IS NULL THEN
-    RAISE EXCEPTION 'Authentication required';
-  END IF;
-
-  -- Ensure a profile exists for the current user (handle trigger delays)
-  INSERT INTO public.user_profiles (user_id, email, full_name, role)
-  SELECT
-    auth.uid(),
-    COALESCE(u.email, ''),
-    COALESCE(
-      u.raw_user_meta_data ->> 'full_name',
-      u.raw_user_meta_data ->> 'company_name',
-      u.email,
-      'Unknown User'
-    ),
-    'superadmin'::public.user_role
-  FROM auth.users u
-  WHERE u.id = auth.uid()
-  ON CONFLICT (user_id) DO NOTHING;
-
-  -- Pull latest profile and ensure email/name not null
-  SELECT email,
-         full_name
-  INTO v_email, v_full_name
-  FROM public.user_profiles
-  WHERE user_id = auth.uid();
-
-  IF v_email IS NULL OR length(trim(v_email)) = 0 OR v_full_name IS NULL OR length(trim(v_full_name)) = 0 THEN
-    SELECT
-      COALESCE(u.email, ''),
-      COALESCE(
-        u.raw_user_meta_data ->> 'full_name',
-        u.raw_user_meta_data ->> 'company_name',
-        u.email,
-        'Unknown User'
-      )
-    INTO v_email, v_full_name
-    FROM auth.users u
-    WHERE u.id = auth.uid();
-
-    UPDATE public.user_profiles
-    SET email = COALESCE(v_email, email, ''),
-        full_name = COALESCE(v_full_name, full_name, 'Unknown User'),
-        updated_at = now()
-    WHERE user_id = auth.uid();
-  END IF;
-
-  -- Create organization owned by the current user
-  INSERT INTO public.organizations (company_name, subdomain, owner_id, settings, metadata)
-  VALUES (p_company_name, lower(p_subdomain), auth.uid(), '{}'::jsonb, '{}'::jsonb)
-  RETURNING id INTO v_org_id;
-
-  -- Create tenant (id = org id). Keep searchable false until admins enable discoverability.
-  INSERT INTO public.tenants (id, subdomain, company_name, searchable)
-  VALUES (v_org_id, lower(p_subdomain), p_company_name, false);
-
-  -- Link user profile to organization (owner)
-  UPDATE public.user_profiles
-  SET org_id = v_org_id,
-      role = COALESCE(role, 'superadmin'::public.user_role),
-      updated_at = now()
-  WHERE user_id = auth.uid();
-
-  GET DIAGNOSTICS v_profile_linked = ROW_COUNT;
-  IF v_profile_linked = 0 THEN
-    RAISE EXCEPTION 'User profile could not be linked to organization';
-  END IF;
-
-  RETURN v_org_id;
-END;
-$$;
-
--- Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION public.create_org_for_current_user(text, text) TO authenticated;
+-- Note: create_org_for_current_user function has been removed
+-- Use handle_owner_signup function instead (created via migration)
 
 -- =====================================================
--- 🔒 ADDITIONAL RLS POLICIES FOR SIGNUP FLOW
+-- 🔒 CUSTOM CLAIMS FUNCTION PERMISSIONS
 -- =====================================================
 
--- Organizations: owner policies (operation-specific)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_owner_select'
-  ) THEN
-    CREATE POLICY "organizations_owner_select" ON public.organizations
-      FOR SELECT TO authenticated
-      USING (owner_id = (select auth.uid()));
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='organizations' AND policyname='organizations_owner_insert'
-  ) THEN
-    CREATE POLICY "organizations_owner_insert" ON public.organizations
-      FOR INSERT TO authenticated
-      WITH CHECK (owner_id = (select auth.uid()));
-  END IF;
-END;
-$$;
-
--- Tenants: owner policies (operation-specific)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_owner_select'
-  ) THEN
-    CREATE POLICY "tenants_owner_select" ON public.tenants
-      FOR SELECT TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.organizations o
-          WHERE o.id = tenants.id AND o.owner_id = (select auth.uid())
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_owner_insert'
-  ) THEN
-    CREATE POLICY "tenants_owner_insert" ON public.tenants
-      FOR INSERT TO authenticated
-      WITH CHECK (
-        EXISTS (
-          SELECT 1 FROM public.organizations o
-          WHERE o.id = tenants.id AND o.owner_id = (select auth.uid())
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_owner_update'
-  ) THEN
-    CREATE POLICY "tenants_owner_update" ON public.tenants
-      FOR UPDATE TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.organizations o
-          WHERE o.id = tenants.id AND o.owner_id = (select auth.uid())
-        )
-      )
-      WITH CHECK (
-        EXISTS (
-          SELECT 1 FROM public.organizations o
-          WHERE o.id = tenants.id AND o.owner_id = (select auth.uid())
-        )
-      );
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='tenants' AND policyname='tenants_owner_delete'
-  ) THEN
-    CREATE POLICY "tenants_owner_delete" ON public.tenants
-      FOR DELETE TO authenticated
-      USING (
-        EXISTS (
-          SELECT 1 FROM public.organizations o
-          WHERE o.id = tenants.id AND o.owner_id = (select auth.uid())
-        )
-      );
-  END IF;
-END;
-$$;
-
--- User profiles: self policies (operation-specific)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_self_insert'
-  ) THEN
-    CREATE POLICY "profiles_self_insert" ON public.user_profiles
-      FOR INSERT TO authenticated
-      WITH CHECK (user_id = (select auth.uid()));
-  END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_profiles' AND policyname='profiles_self_delete'
-  ) THEN
-    CREATE POLICY "profiles_self_delete" ON public.user_profiles
-      FOR DELETE TO authenticated
-      USING (user_id = (select auth.uid()));
-  END IF;
-END;
-$$;
+GRANT EXECUTE ON FUNCTION public.custom_access_token_hook TO supabase_auth_admin;
+GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
+REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, anon, public;
 
 -- =====================================================
--- ✅ SETUP COMPLETE (IDEMPOTENT)
+-- 🔄 TRIGGERS (idempotent)
 -- =====================================================
 
 -- Enable the Custom Access Token Hook in Supabase dashboard:
@@ -1292,47 +734,6 @@ $$;
 --   Hook URL: pg-functions://postgres/public/custom_access_token_hook
 --   Status: Enabled
 
--- This script can be safely re-run. It only creates missing objects or applies
--- safe updates (e.g., OR REPLACE, IF NOT EXISTS) and aligns with short-id owner.
-
--- Ensure a user profile is created whenever a Supabase auth user signs up
-CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY INVOKER
-SET search_path = ''
-AS $$
-DECLARE
-  v_email text;
-  v_full_name text;
-BEGIN
-  v_email := NEW.email;
-  v_full_name := COALESCE(
-    NEW.raw_user_meta_data ->> 'full_name',
-    NEW.raw_user_meta_data ->> 'company_name',
-    NEW.email,
-    'Unknown User'
-  );
-
-  INSERT INTO public.user_profiles (user_id, email, full_name, role)
-  VALUES (
-    NEW.id,
-    COALESCE(v_email, ''),
-    COALESCE(v_full_name, COALESCE(v_email, ''), 'Unknown User'),
-    'superadmin'::public.user_role
-  )
-  ON CONFLICT (user_id) DO UPDATE
-    SET email = EXCLUDED.email,
-        full_name = EXCLUDED.full_name;
-
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS handle_new_auth_user on auth.users;
-CREATE TRIGGER handle_new_auth_user
-AFTER INSERT ON auth.users
-FOR EACH ROW
-EXECUTE FUNCTION public.handle_new_auth_user();
+-- This script can be safely re-run. No general profile creation for non-owners—add if needed.
 
 

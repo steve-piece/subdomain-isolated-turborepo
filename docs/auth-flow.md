@@ -8,7 +8,7 @@ A high-level walkthrough of the signup → email confirmation → protected app 
   - client UI handling validation, signup, and post-auth states.
 - `apps/marketing/app/actions.ts#createOrganizationRpc`
   - server action validating input, ensuring confirmed email, invoking the RPC.
-- `public.create_org_for_current_user` (PL/pgSQL)
+- `public.handle_owner_signup` (PL/pgSQL)
   - ensures profile existence, provisions `organizations` + `tenants`, links owner.
 - `apps/protected/components/require-tenant-auth.tsx`
   - server wrapper performing claims checks (subdomain + email confirmed).
@@ -35,7 +35,7 @@ sequenceDiagram
   participant MarketingUI as Marketing Sign-up Form
   participant SupabaseAuth as Supabase Auth
   participant ServerAction as createOrganizationRpc
-  participant RPC as create_org_for_current_user
+  participant RPC as handle_owner_signup
   participant DB as DB Tables
 
   User->>MarketingUI: Submit org + user info
@@ -47,7 +47,7 @@ sequenceDiagram
   alt Email not confirmed
     ServerAction-->>MarketingUI: { success: false, error: "Please confirm..." }
   else Email confirmed
-    ServerAction->>RPC: call create_org_for_current_user
+    ServerAction->>RPC: call handle_owner_signup
     RPC->>DB: Upsert user profile if missing
     RPC->>DB: Insert organization + tenant (searchable=false)
     RPC->>DB: Update user_profiles.org_id, ensure role

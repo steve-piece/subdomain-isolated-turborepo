@@ -1,8 +1,5 @@
 ---
-description: These rules apply across the repo to keep architecture, dependencies, and code style consistent.
-
-globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Global Standards for Subdomain-Isolated Turborepo

@@ -19,24 +19,17 @@ import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
-import {
-  verifyTenant,
-  createOrganizationRpc,
-  type CreateOrganizationResponse,
-  type VerifyTenantResponse,
-} from "@/app/actions";
+import { verifyTenant, type VerifyTenantResponse } from "@/app/actions";
 
 type VerifyTenantFn = (subdomain: string) => Promise<VerifyTenantResponse>;
 
 export interface OrganizationSignUpFormProps
   extends React.ComponentPropsWithoutRef<"div"> {
-  createOrgAction?: typeof createOrganizationRpc;
   verifyTenantAction?: VerifyTenantFn;
 }
 
 export function OrganizationSignUpForm({
   className,
-  createOrgAction = createOrganizationRpc,
   verifyTenantAction = verifyTenant,
   ...props
 }: OrganizationSignUpFormProps) {
@@ -264,6 +257,10 @@ export function OrganizationSignUpForm({
 
       // Sign up the user
       const normalizedSubdomain = subdomain.trim().toLowerCase();
+      const isDev = process.env.NODE_ENV !== "production";
+      const emailRedirectTo = isDev
+        ? `http://${normalizedSubdomain}.localhost:3003/auth/confirm`
+        : `https://${normalizedSubdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/confirm`;
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -271,10 +268,11 @@ export function OrganizationSignUpForm({
         options: {
           data: {
             full_name: userName,
-            organization_name: organizationName,
+            company_name: organizationName,
             subdomain: normalizedSubdomain,
-            role: "owner",
+            user_role: "owner",
           },
+          emailRedirectTo,
         },
       });
 
@@ -291,45 +289,9 @@ export function OrganizationSignUpForm({
         return;
       }
 
-      let orgResult: CreateOrganizationResponse | null = null;
-
       if (authData.user) {
-        setStatus("creating_org");
-        orgResult = await createOrgAction({
-          companyName: organizationName,
-          subdomain: normalizedSubdomain,
-        });
-
-        if (!orgResult.success) {
-          if (
-            orgResult.error ===
-            "Please confirm your email before creating an organization"
-          ) {
-            setStatus("pending_email");
-            setSuccess(true);
-            await new Promise((resolve) => setTimeout(resolve, 1200));
-            router.push("/signup/success");
-            return;
-          }
-
-          if (
-            orgResult.error ===
-            "User profile could not be linked to organization"
-          ) {
-            setStatus("needs_profile");
-            setError(
-              "We created your account but need a moment to finish setup. Please wait a few seconds and try again."
-            );
-            return;
-          }
-
-          console.error("Organization creation failed:", orgResult.error);
-          setError(
-            `Account created but organization setup failed: ${orgResult.error}`
-          );
-          setStatus("error");
-          return;
-        }
+        // No direct org creation here; database trigger inserts inactive org.
+        // Email verification will complete setup via /auth/confirm.
       }
 
       setStatus(null);
@@ -367,6 +329,7 @@ export function OrganizationSignUpForm({
                   type="text"
                   placeholder="Acme Inc"
                   required
+                  autoComplete="organization"
                   value={organizationName}
                   onChange={handleOrganizationNameChange}
                   onBlur={() =>
@@ -395,6 +358,7 @@ export function OrganizationSignUpForm({
                     type="text"
                     placeholder="acme"
                     required
+                    autoComplete="off"
                     value={subdomain}
                     onChange={handleSubdomainChange}
                     className={cn(
@@ -436,6 +400,7 @@ export function OrganizationSignUpForm({
                   type="text"
                   placeholder="John Smith"
                   required
+                  autoComplete="name"
                   value={userName}
                   onChange={handleUserNameChange}
                   onBlur={() => handleFieldBlur("userName", userName)}
@@ -459,6 +424,7 @@ export function OrganizationSignUpForm({
                   type="email"
                   placeholder="admin@acme.com"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={handleEmailChange}
                   onBlur={() => handleFieldBlur("email", email)}
@@ -482,6 +448,7 @@ export function OrganizationSignUpForm({
                     id="password"
                     type={showPassword ? "text" : "password"}
                     required
+                    autoComplete="new-password"
                     value={password}
                     onChange={handlePasswordChange}
                     onBlur={() => handleFieldBlur("password", password)}
@@ -543,6 +510,7 @@ export function OrganizationSignUpForm({
                     id="repeat-password"
                     type={showRepeatPassword ? "text" : "password"}
                     required
+                    autoComplete="new-password"
                     value={repeatPassword}
                     onChange={handleRepeatPasswordChange}
                     onBlur={() =>

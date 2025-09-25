@@ -1,6 +1,4 @@
 "use server";
-
-import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
 export interface TenantSearchResult {
@@ -17,86 +15,6 @@ export interface VerifyTenantResponse {
   exists: boolean;
   tenant: TenantSearchResult | null;
   error?: string;
-}
-
-export interface CreateOrganizationResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
-/**
- * Create organization using RPC function (requires authenticated session)
- */
-const createOrgInputSchema = z
-  .object({
-    companyName: z
-      .string()
-      .min(2, "Organization name must be at least 2 characters"),
-    subdomain: z
-      .string()
-      .min(3)
-      .max(63)
-      .regex(
-        /^[a-z0-9-]+$/,
-        "Subdomain must contain only lowercase letters, numbers, or hyphens"
-      ),
-  })
-  .strict();
-
-export async function createOrganizationRpc(input: {
-  companyName: string;
-  subdomain: string;
-}): Promise<CreateOrganizationResponse> {
-  try {
-    const parseResult = createOrgInputSchema.safeParse(input);
-    if (!parseResult.success) {
-      return {
-        success: false,
-        error: parseResult.error.errors[0]?.message || "Invalid input",
-      };
-    }
-
-    const supabase = await createClient();
-
-    const { data: claimsData, error: claimsError } =
-      await supabase.auth.getClaims();
-
-    if (claimsError || !claimsData) {
-      return {
-        success: false,
-        error: "Authentication required",
-      };
-    }
-
-    const emailConfirmed = claimsData.claims?.email_confirmed === true;
-
-    if (!emailConfirmed) {
-      return {
-        success: false,
-        error: "Please confirm your email before creating an organization",
-      };
-    }
-
-    const { companyName, subdomain } = parseResult.data;
-
-    const { error } = await supabase.rpc("create_org_for_current_user", {
-      p_company_name: companyName,
-      p_subdomain: subdomain,
-    });
-
-    if (error) {
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, message: "Organization created successfully" };
-  } catch (e) {
-    console.error("createOrganizationRpc error", e);
-    return {
-      success: false,
-      error: e instanceof Error ? e.message : "Unknown error",
-    };
-  }
 }
 
 /**
@@ -256,30 +174,26 @@ export async function verifyTenant(
     // Check if tenant exists with exact subdomain match using secure view
     const normalizedSubdomain = subdomain.trim().toLowerCase();
 
-    const {
-      data: tenant,
-      error,
-      status,
-    } = await supabase
+    const { data: tenant, error } = await supabase
       .from("tenants_public")
       .select("subdomain, company_name")
       .eq("subdomain", normalizedSubdomain)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      if (status === 406 || status === 404 || error.code === "PGRST116") {
-        // No rows returned - tenant doesn't exist
-        return {
-          exists: false,
-          tenant: null,
-        };
-      }
-
       console.error("Supabase error:", error);
       return {
         exists: false,
         tenant: null,
         error: "Failed to verify tenant",
+      };
+    }
+
+    // maybeSingle returns null when no row is found, which is the expected behavior
+    if (!tenant) {
+      return {
+        exists: false,
+        tenant: null,
       };
     }
 
