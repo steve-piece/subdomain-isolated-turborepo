@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/auth/update-password/page.tsx 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { UpdatePasswordForm } from "@/components/update-password-form";

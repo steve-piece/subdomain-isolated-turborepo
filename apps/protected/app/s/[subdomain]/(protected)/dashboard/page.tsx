@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/(protected)/dashboard/page.tsx 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { OrganizationDashboard } from "@/components/organization-dashboard";

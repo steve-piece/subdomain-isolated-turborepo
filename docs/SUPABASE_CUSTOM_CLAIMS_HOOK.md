@@ -1,3 +1,4 @@
+<!-- docs/SUPABASE_CUSTOM_CLAIMS_HOOK.md -->
 # Supabase Custom Access Token Hook & Claims Guide
 
 This guide consolidates the setup, configuration, and troubleshooting steps for Supabase's Custom Access Token (JWT) Claims hook used in this project.

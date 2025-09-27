@@ -1,3 +1,4 @@
+// apps/marketing/app/login/page.tsx 
 import { SubdomainLookupForm } from "@/components/subdomain-lookup-form";
 
 export default function LoginPage() {

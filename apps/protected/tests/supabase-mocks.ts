@@ -1,3 +1,4 @@
+// apps/protected/tests/supabase-mocks.ts 
 import { vi } from "vitest";
 
 export function setupSupabaseRouterMocks() {

@@ -1,3 +1,4 @@
+<!-- docs/EMAIL_VERIFICATION_SETUP.md -->
 # Email Verification Setup - Supabase Dashboard Configuration
 
 This guide covers the **manual configuration steps** required in your Supabase Dashboard to enable email verification for our subdomain multi-tenant architecture.

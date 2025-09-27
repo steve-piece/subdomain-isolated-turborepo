@@ -1,3 +1,4 @@
+// apps/protected/components/require-usage-auth.tsx 
 /**
  * Server wrapper that gates a feature by subscription entitlements and usage.
  *

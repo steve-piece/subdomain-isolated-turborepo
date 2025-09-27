@@ -1,3 +1,4 @@
+// apps/protected/tests/require-tenant-auth.test.tsx 
 import React from "react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import RequireTenantAuth from "@/components/require-tenant-auth";

@@ -1,3 +1,4 @@
+<!-- .cursor/rules/actions.mdc -->
 ---
 globs: actions.ts,route.ts
 alwaysApply: false

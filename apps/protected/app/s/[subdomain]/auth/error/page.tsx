@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/auth/error/page.tsx 
 import { Card, CardContent, CardHeader, CardTitle } from '@workspace/ui/components/card'
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ error: string }> }) {

@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/auth/reset-password/page.tsx 
 import { ForgotPasswordForm } from "@/components/forgot-password-form"
 
 export default async function ResetPasswordPage({

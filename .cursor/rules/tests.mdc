@@ -1,3 +1,4 @@
+<!-- .cursor/rules/tests.mdc -->
 ---
 globs: *.test.ts,*.spec.ts
 alwaysApply: false

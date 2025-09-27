@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/page.tsx 
 import { SubdomainAuthChecker } from "@/components/subdomain-auth-checker"
 
 export default async function SubdomainPage({

@@ -1,3 +1,4 @@
+<!-- README.md -->
 # Subdomain-Isolated Turborepo
 
 A multi-tenant Turborepo built with Next.js 15, featuring custom subdomains for each tenant and a shared UI component library.

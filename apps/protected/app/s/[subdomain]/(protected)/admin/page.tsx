@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/(protected)/admin/page.tsx 
 import RequireTenantAuth from "@/components/require-tenant-auth";
 import { Button } from "@workspace/ui/components/button";
 import {

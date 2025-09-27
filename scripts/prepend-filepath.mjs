@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// scripts/prepend-filepath.mjs 
 import { exec } from "child_process";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";

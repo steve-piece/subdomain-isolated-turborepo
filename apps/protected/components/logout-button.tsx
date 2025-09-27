@@ -1,3 +1,4 @@
+// apps/protected/components/logout-button.tsx 
 "use client";
 
 import { Button } from "@workspace/ui/components/button";

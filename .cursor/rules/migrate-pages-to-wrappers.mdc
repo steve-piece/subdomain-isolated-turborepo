@@ -1,3 +1,4 @@
+<!-- .cursor/rules/migrate-pages-to-wrappers.mdc -->
 ---
 description: Step-by-step migration from code-in-page to wrapper + layout structure
 globs:

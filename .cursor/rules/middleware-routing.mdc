@@ -1,3 +1,4 @@
+<!-- .cursor/rules/middleware-routing.mdc -->
 ---
 globs: apps/protected/middleware.ts
 alwaysApply: false

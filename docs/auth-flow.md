@@ -1,3 +1,4 @@
+<!-- docs/auth-flow.md -->
 # Auth Flow Overview
 
 A high-level walkthrough of the signup → email confirmation → protected app access flow, with the primary components, database touchpoints, and RLS enforcement clarified.

@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/auth/confirm/page.tsx 
 import { redirect } from "next/navigation";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { confirmEmailAndBootstrap } from "../../../../actions";

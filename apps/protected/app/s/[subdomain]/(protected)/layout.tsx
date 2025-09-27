@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/(protected)/layout.tsx 
 /**
  * Route-group layout that protects all nested routes under (protected)
  * by enforcing tenant auth once at the layout boundary.

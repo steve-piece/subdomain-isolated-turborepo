@@ -1,3 +1,4 @@
+<!-- .cursor/rules/migrations.mdc -->
 ---
 globs: *.sql
 alwaysApply: false

@@ -1,3 +1,4 @@
+<!-- .cursor/rules/components.mdc -->
 ---
 globs: *.tsx
 alwaysApply: false

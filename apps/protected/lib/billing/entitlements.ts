@@ -1,3 +1,4 @@
+// apps/protected/lib/billing/entitlements.ts 
 /**
  * Entitlements helpers used on the server:
  * - getOrgEntitlements: returns feature keys and limits for the org's active subscription

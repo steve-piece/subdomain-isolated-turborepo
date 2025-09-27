@@ -1,3 +1,4 @@
+// apps/protected/app/s/[subdomain]/(protected)/invite-user/page.tsx 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { InviteUserForm } from "@/components/invite-user-form";

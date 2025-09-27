@@ -1,3 +1,4 @@
+<!-- .cursor/rules/auth-claims.mdc -->
 ---
 globs: apps/protected**/*
 alwaysApply: false

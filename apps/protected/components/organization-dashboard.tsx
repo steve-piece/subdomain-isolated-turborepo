@@ -1,3 +1,4 @@
+// apps/protected/components/organization-dashboard.tsx 
 "use client";
 
 import { LogoutButton } from "@/components/logout-button";

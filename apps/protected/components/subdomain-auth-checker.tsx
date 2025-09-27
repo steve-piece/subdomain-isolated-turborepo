@@ -1,3 +1,4 @@
+// apps/protected/components/subdomain-auth-checker.tsx 
 "use client";
 
 import React, { useEffect, useState } from "react";

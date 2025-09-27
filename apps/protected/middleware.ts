@@ -1,3 +1,4 @@
+// apps/protected/middleware.ts 
 import { NextResponse, type NextRequest } from "next/server";
 import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
 
