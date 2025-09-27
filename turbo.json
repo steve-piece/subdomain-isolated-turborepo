@@ -19,9 +19,12 @@
         "POSTGRES_USER",
         "POSTGRES_PASSWORD",
         "POSTGRES_DATABASE",
-        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY",
         "POSTGRES_HOST",
-        "SUPABASE_ANON_KEY"
+        "SUPABASE_ANON_KEY",
+        "RESEND_API_KEY",
+        "EMAIL_DOMAIN",
+        "SUPPORT_EMAIL"
       ]
     },
     "lint": {

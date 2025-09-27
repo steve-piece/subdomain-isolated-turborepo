@@ -1,3 +1,4 @@
+<!-- transition.md -->
 Of course. Here is a sequential, step-by-step plan to implement the new authentication flow, including validation tests and steps to remove old functionality.
 
 This plan integrates the goals from `auth.md` with the technical details from your existing plan. We will proceed by first updating the database schema and logic, then adjusting the application code, and finally, testing the complete flow before cleaning up deprecated code.

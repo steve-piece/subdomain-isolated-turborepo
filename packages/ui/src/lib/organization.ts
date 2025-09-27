@@ -1,3 +1,4 @@
+// packages/ui/src/lib/organization.ts 
 /**
  * Utility functions for handling organization and subdomain logic
  */

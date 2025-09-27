@@ -1,3 +1,4 @@
+// packages/ui/src/lib/billing.ts 
 /**
  * Shared billing and subscription types used across apps
  */

@@ -1,3 +1,4 @@
+// packages/ui/src/lib/subdomains.ts 
 /**
  * Validates a subdomain string
  */
