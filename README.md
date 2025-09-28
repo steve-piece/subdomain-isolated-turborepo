@@ -1,4 +1,5 @@
 <!-- README.md -->
+
 # Subdomain-Isolated Turborepo
 
 A multi-tenant Turborepo built with Next.js 15, featuring custom subdomains for each tenant and a shared UI component library.
@@ -147,7 +148,7 @@ Verified schema (example project via Supabase MCP):
 
 - ✅ Node.js 20 or later
 - ✅ pnpm (recommended package manager)
-- ✅ Vercel account (for deployment)
+- ✅ Vercel account (for deployment) - Seperate Projects per app
 - ✅ Supabase account (for authentication)
 
 ### 📋 Local Development Setup
