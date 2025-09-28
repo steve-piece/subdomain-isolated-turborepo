@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm build --filter=protected",
+  "devCommand": "pnpm dev --filter=protected",
+  "installCommand": "pnpm install --ignore-scripts",
+  "framework": null,
+  "outputDirectory": "apps/protected/.next",
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "apps/protected/app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
