@@ -9,7 +9,10 @@ interface LogoutButtonProps {
   subdomain: string;
 }
 
-export function LogoutButton({ subdomain: _subdomain }: LogoutButtonProps) {
+export function LogoutButton({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subdomain: _subdomain,
+}: LogoutButtonProps) {
   const router = useRouter();
 
   const handleLogout = async () => {

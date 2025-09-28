@@ -20,53 +20,44 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const supabase = createClient();
+      const supabase = createClient();
 
-        // Get claims for fast, local authentication + tenant verification
-        const { data: claimsData, error: claimsError } =
-          await supabase.auth.getClaims();
+      // Get claims for fast, local authentication + tenant verification
+      const { data: claimsData, error: claimsError } =
+        await supabase.auth.getClaims();
 
-        if (claimsError || !claimsData) {
-          // No valid session - redirect to login
-          router.replace("/auth/login");
-          return;
-        }
-
-        const emailConfirmed = claimsData.claims?.email_confirmed === true;
-
-        if (!emailConfirmed) {
-          router.replace("/auth/login?error=email_unconfirmed");
-          return;
-        }
-
-        // Verify user belongs to this specific subdomain/organization
-        const claimSubdomain = (
-          claimsData.claims?.subdomain as string | undefined
-        )?.toLowerCase();
-        if (claimSubdomain !== subdomain.toLowerCase()) {
-          router.replace("/auth/login?error=unauthorized");
-          return;
-        }
-
-        // User is authenticated and authorized for this tenant
-        setIsAuthenticated(true);
-        setUserEmail((claimsData.claims?.email as string | undefined) || null);
-        setOrganizationName(
-          (claimsData.claims?.company_name as string | undefined) || subdomain
-        );
-        setIsLoading(false);
-      } catch (error) {
-        Sentry.captureException(error);
-        Sentry.logger.error("subdomain_auth_check_error", {
-          message: error instanceof Error ? error.message : "Unknown error",
-        });
-        // On error, redirect to login
-        router.replace("/auth/login");
+      if (claimsError || !claimsData) {
+        // No valid session - redirect to login
+        router.replace("/auth/login?reason=no_session");
+        return;
       }
+
+      // Verify user belongs to this specific subdomain/organization
+      const claimSubdomain = (
+        claimsData.claims?.subdomain as string | undefined
+      )?.toLowerCase();
+      if (claimSubdomain !== subdomain.toLowerCase()) {
+        router.replace("/auth/login?error=unauthorized");
+        return;
+      }
+
+      // User is authenticated and authorized for this tenant
+      setIsAuthenticated(true);
+      setUserEmail((claimsData.claims?.email as string | undefined) || null);
+      setOrganizationName(
+        (claimsData.claims?.company_name as string | undefined) || subdomain
+      );
+      setIsLoading(false);
     };
 
-    checkAuth();
+    checkAuth().catch((error) => {
+      Sentry.captureException(error);
+      Sentry.logger.error("subdomain_auth_check_error", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        subdomain,
+      });
+      router.replace("/auth/login?error=auth_check_failed");
+    });
   }, [subdomain, router]);
 
   // Show loading state while checking authentication

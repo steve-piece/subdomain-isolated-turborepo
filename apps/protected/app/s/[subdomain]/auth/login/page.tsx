@@ -1,21 +1,43 @@
-// apps/protected/app/s/[subdomain]/auth/login/page.tsx 
+// apps/protected/app/s/[subdomain]/auth/login/page.tsx
 import { LoginForm } from "@/components/login-form";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function LoginPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ subdomain: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { subdomain } = await params;
+  const search = await searchParams;
 
   const supabase = await createClient();
   const { data: claims, error } = await supabase.auth.getClaims();
 
   // If we have a valid session cookie and it belongs to this tenant, skip login
-  if (!error && claims && claims.claims.subdomain === subdomain) {
-    redirect("/dashboard"); // Clean URL (middleware will rewrite internally)
+  if (
+    !error &&
+    claims &&
+    claims.claims.subdomain === subdomain &&
+    claims.claims.email_confirmed === true
+  ) {
+    // Check if this is a first-time login or new organization
+    const isFirstLogin = search.first_login === "true";
+    const isNewOrg = search.new_org === "true";
+
+    let dashboardUrl = "/dashboard";
+    const params = new URLSearchParams();
+
+    if (isFirstLogin) params.set("welcome", "true");
+    if (isNewOrg) params.set("new_organization", "true");
+
+    if (params.toString()) {
+      dashboardUrl += `?${params.toString()}`;
+    }
+
+    redirect(dashboardUrl);
   }
 
   return (

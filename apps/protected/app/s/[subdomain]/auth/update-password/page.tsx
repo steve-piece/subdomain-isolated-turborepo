@@ -1,5 +1,14 @@
 // apps/protected/app/s/[subdomain]/auth/update-password/page.tsx
 import { createClient } from "@/lib/supabase/server";
+import { UpdatePasswordForm } from "@/components/update-password-form";
+import { Button } from "@workspace/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 import Link from "next/link";
 
 interface UpdatePasswordPageProps {

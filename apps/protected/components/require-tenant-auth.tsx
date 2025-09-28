@@ -1,4 +1,4 @@
-// apps/protected/components/require-tenant-auth.tsx 
+// apps/protected/components/require-tenant-auth.tsx
 /**
  * Server wrapper that checks the user's JWT claims from cookies and ensures:
  * - The user has a valid session
@@ -11,8 +11,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import React, { type ReactNode } from "react";
+import * as Sentry from "@sentry/nextjs";
 
-type AppRole = "superadmin" | "admin" | "member" | "view-only";
+type AppRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
 
 export type TenantClaims = {
   claims: {
@@ -37,31 +38,26 @@ export default async function RequireTenantAuth({
   /** Render-prop children receive validated JWT claims */
   children: (claims: TenantClaims) => ReactNode;
 }) {
-  // Build a server-scoped Supabase client that reads the request cookies
   const supabase = await createClient();
-
-  // Decode the JWT locally (no network hop) and read our custom claims
   const { data: claims, error } = await supabase.auth.getClaims();
 
-  // No session or decode error: send the user to login (clean URL)
-  if (error || !claims) redirect("/auth/login");
-
-  if (claims.claims.email_confirmed !== true) {
-    redirect("/auth/login?error=email_unconfirmed");
+  if (error || !claims) {
+    Sentry.logger.warn("require_tenant_auth_missing_claims", {
+      subdomain,
+      hasClaims: Boolean(claims),
+      errorMessage: error?.message,
+    });
+    redirect("/auth/login?reason=no_session");
   }
 
-  // Ensure the JWT belongs to the same tenant as the route
   if (claims.claims.subdomain !== subdomain) {
     redirect("/auth/login?error=unauthorized");
   }
 
-  // If roles are required, verify the user's role is allowed
   const role = (claims.claims.user_role ?? "member") as AppRole;
   if (allowedRoles && !allowedRoles.includes(role)) {
     redirect("/dashboard?error=insufficient_permissions");
   }
 
-  // All good: render the protected UI and provide the validated claims.
-  // company_name is now included directly in the JWT via the custom claims hook.
   return <>{children(claims as unknown as TenantClaims)}</>;
 }

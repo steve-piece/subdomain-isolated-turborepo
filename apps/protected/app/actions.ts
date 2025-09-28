@@ -3,7 +3,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
-import { AuthApiError, type EmailOtpType } from "@supabase/supabase-js";
+import { type EmailOtpType } from "@supabase/supabase-js";
 
 export interface ResendVerificationResponse {
   success: boolean;
@@ -13,6 +13,7 @@ export interface ResendVerificationResponse {
 
 export async function resendEmailVerification(
   email: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _subdomain: string
 ): Promise<ResendVerificationResponse> {
   const supabase = await createClient();
@@ -93,8 +94,8 @@ export async function inviteUserToOrganization(
       return { success: false, message: "Unauthorized: Invalid tenant" };
     }
 
-    // Verify user has permission to invite (admin or superadmin only)
-    if (!["admin", "superadmin"].includes(claims.claims.user_role)) {
+    // Verify user has permission to invite (owner, admin, or superadmin only)
+    if (!["owner", "admin", "superadmin"].includes(claims.claims.user_role)) {
       return {
         success: false,
         message: "Insufficient permissions to invite users",
@@ -184,7 +185,8 @@ export interface UpdatePasswordResponse {
 
 export async function updatePassword(
   password: string,
-  subdomain: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _subdomain: string
 ): Promise<UpdatePasswordResponse> {
   try {
     const supabase = await createClient();
@@ -273,13 +275,13 @@ export async function confirmEmailAndBootstrap(
     try {
       let attempts = 0;
       // small retry loop to wait for session
-      // eslint-disable-next-line no-await-in-loop
       while (attempts < 3) {
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData?.session) {
           // Only bootstrap for owner signups based on auth.users user_metadata
-          const role = (sessionData.session.user.user_metadata as any)
-            ?.user_role;
+          const role = (
+            sessionData.session.user.user_metadata as Record<string, unknown>
+          )?.user_role;
           if (role === "owner") {
             await supabase.rpc("bootstrap_organization", {
               p_user_id: sessionData.session.user.id,

@@ -11,43 +11,48 @@ export default async function DashboardPage({
 }) {
   const { subdomain } = await params;
 
+  const supabase = await createClient();
+  let claims;
+
   try {
-    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getClaims();
 
-    // Get claims for fast, local authentication + tenant verification
-    const { data: claims, error } = await supabase.auth.getClaims();
-
-    // If no claims or auth error, redirect to login
-    if (!claims || error) {
-      redirect("/auth/login");
+    if (!data || error) {
+      Sentry.logger.warn("dashboard_missing_claims", {
+        subdomain,
+        hasData: Boolean(data),
+        errorMessage: error?.message,
+      });
+      redirect("/auth/login?reason=no_session");
     }
 
-    // Verify user belongs to this specific subdomain/organization
-    if (claims.claims.subdomain !== subdomain) {
-      redirect("/auth/login?error=unauthorized");
-    }
-
-    const userName =
-      claims.claims.user_metadata?.full_name ||
-      claims.claims.email ||
-      "Unknown User";
-
-    const organizationName =
-      claims.claims.company_name ?? claims.claims.subdomain;
-
-    return (
-      <OrganizationDashboard
-        organizationName={organizationName}
-        subdomain={subdomain}
-        userEmail={userName}
-      />
-    );
+    claims = data;
   } catch (error) {
     Sentry.captureException(error);
-    Sentry.logger.error("dashboard_auth_error", {
+    Sentry.logger.error("dashboard_claims_fetch_error", {
       message: error instanceof Error ? error.message : "Unknown error",
       subdomain,
     });
-    return redirect("/auth/login");
+    throw error;
   }
+
+  if (claims.claims.subdomain !== subdomain) {
+    redirect("/auth/login?error=unauthorized");
+  }
+
+  const userName =
+    claims.claims.user_metadata?.full_name ||
+    claims.claims.email ||
+    "Unknown User";
+
+  const organizationName =
+    claims.claims.company_name ?? claims.claims.subdomain;
+
+  return (
+    <OrganizationDashboard
+      organizationName={organizationName}
+      subdomain={subdomain}
+      userEmail={userName}
+    />
+  );
 }

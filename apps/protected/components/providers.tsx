@@ -1,8 +1,9 @@
-// apps/protected/components/providers.tsx 
-"use client"
+// apps/protected/components/providers.tsx
+"use client";
 
-import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import * as React from "react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ToastProvider } from "@workspace/ui/components/toast";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       enableColorScheme
     >
-      {children}
+      <ToastProvider>{children}</ToastProvider>
     </NextThemesProvider>
-  )
+  );
 }

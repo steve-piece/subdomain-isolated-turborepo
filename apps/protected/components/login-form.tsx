@@ -26,6 +26,7 @@ interface LoginFormProps {
 
 // Client component because it handles form state, user input, and navigation.
 export function LoginForm({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subdomain: _subdomain,
   className,
   ...props
@@ -66,25 +67,34 @@ export function LoginForm({
     setError(null);
 
     try {
-      // Email/password sign-in via Supabase Auth.
-      // If credentials are valid, Supabase will set the session cookie in the browser.
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
 
-      // Optional: After sign-in, you could fetch and verify tenant claims client-side.
-      // We rely on server-side checks and middleware for correctness and clean URLs.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      // Use a CLEAN URL so middleware can rewrite to internal structure.
-      // Avoid exposing /s/${subdomain} in the UI.
+      const emailConfirmed =
+        session?.user?.email_confirmed_at ||
+        (session?.user?.user_metadata as Record<string, unknown>)
+          ?.email_confirmed === true;
+
+      if (!emailConfirmed) {
+        await supabase.auth.signOut();
+        setError("Please confirm your email before logging in.");
+        router.push(
+          "/auth/resend-verification?error=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in."
+        );
+        return;
+      }
+
       router.push("/dashboard");
     } catch (error: unknown) {
-      // Show the error message in a friendly alert box in the UI.
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      // Always clear the loading state so the button becomes clickable again.
       setIsLoading(false);
     }
   };

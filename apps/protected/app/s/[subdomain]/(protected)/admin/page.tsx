@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/(protected)/admin/page.tsx 
+// apps/protected/app/s/[subdomain]/(protected)/admin/page.tsx
 import RequireTenantAuth from "@/components/require-tenant-auth";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -20,7 +20,7 @@ export default async function AdminPage({
   return (
     <RequireTenantAuth
       subdomain={subdomain}
-      allowedRoles={["admin", "superadmin"]}
+      allowedRoles={["owner", "admin", "superadmin"]}
     >
       {() => (
         <div className="flex h-screen w-full flex-col">

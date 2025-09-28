@@ -1,6 +1,15 @@
 // apps/protected/app/s/[subdomain]/auth/accept-invitation/page.tsx
 import { createClient } from "@/lib/supabase/server";
+import { Button } from "@workspace/ui/components/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@workspace/ui/components/card";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 interface AcceptInvitationPageProps {
   params: Promise<{ subdomain: string }>;

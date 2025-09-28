@@ -1,4 +1,4 @@
-// apps/protected/components/require-usage-auth.tsx 
+// apps/protected/components/require-usage-auth.tsx
 /**
  * Server wrapper that gates a feature by subscription entitlements and usage.
  *
@@ -17,7 +17,7 @@ import {
 } from "@/lib/billing/entitlements";
 import type { ReactNode } from "react";
 
-type AppRole = "superadmin" | "admin" | "member" | "view-only";
+type AppRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
 
 export default async function RequireUsageAuth({
   subdomain,

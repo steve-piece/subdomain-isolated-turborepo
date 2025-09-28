@@ -1,7 +1,8 @@
-// apps/protected/components/organization-dashboard.tsx 
+// apps/protected/components/organization-dashboard.tsx
 "use client";
 
 import { LogoutButton } from "@/components/logout-button";
+import { RoleProtectedAction } from "@/components/role-protected-action";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -125,12 +126,18 @@ export function OrganizationDashboard({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Link href="/invite-user">
-                  <Button className="w-full justify-start" size="lg">
-                    <span className="mr-2">👤</span>
-                    Invite Team Members
-                  </Button>
-                </Link>
+                <RoleProtectedAction
+                  subdomain={subdomain}
+                  allowedRoles={["owner", "admin", "superadmin"]}
+                  fallbackMessage="Only owners and admins can invite team members"
+                >
+                  <Link href="/invite-user">
+                    <Button className="w-full justify-start" size="lg">
+                      <span className="mr-2">👤</span>
+                      Invite Team Members
+                    </Button>
+                  </Link>
+                </RoleProtectedAction>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
@@ -139,14 +146,20 @@ export function OrganizationDashboard({
                   <span className="mr-2">📁</span>
                   Create New Project
                 </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  size="lg"
+                <RoleProtectedAction
+                  subdomain={subdomain}
+                  allowedRoles={["owner", "admin", "superadmin"]}
+                  fallbackMessage="Only owners and admins can access organization settings"
                 >
-                  <span className="mr-2">⚙️</span>
-                  Organization Settings
-                </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    size="lg"
+                  >
+                    <span className="mr-2">⚙️</span>
+                    Organization Settings
+                  </Button>
+                </RoleProtectedAction>
               </CardContent>
             </Card>
 

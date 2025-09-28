@@ -1,4 +1,4 @@
-// apps/protected/components/update-password-form.tsx 
+// apps/protected/components/update-password-form.tsx
 "use client";
 
 import { useState } from "react";
@@ -228,7 +228,9 @@ export function UpdatePasswordForm({ subdomain }: UpdatePasswordFormProps) {
               <ul className="list-disc list-inside space-y-1">
                 <li>Password must be at least 6 characters long</li>
                 <li>Use a combination of letters, numbers, and symbols</li>
-                <li>Choose something unique that you haven't used before</li>
+                <li>
+                  Choose something unique that you haven&apos;t used before
+                </li>
               </ul>
             </div>
 
