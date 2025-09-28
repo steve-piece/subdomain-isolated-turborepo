@@ -1,7 +1,8 @@
-// apps/protected/app/s/[subdomain]/(protected)/dashboard/page.tsx 
+// apps/protected/app/s/[subdomain]/(protected)/dashboard/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { OrganizationDashboard } from "@/components/organization-dashboard";
+import * as Sentry from "@sentry/nextjs";
 
 export default async function DashboardPage({
   params,
@@ -42,7 +43,11 @@ export default async function DashboardPage({
       />
     );
   } catch (error) {
-    console.error("Dashboard auth error:", error);
-    redirect("/auth/login");
+    Sentry.captureException(error);
+    Sentry.logger.error("dashboard_auth_error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      subdomain,
+    });
+    return redirect("/auth/login");
   }
 }

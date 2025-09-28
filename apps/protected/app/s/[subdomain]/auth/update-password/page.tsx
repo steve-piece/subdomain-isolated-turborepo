@@ -1,15 +1,5 @@
-// apps/protected/app/s/[subdomain]/auth/update-password/page.tsx 
+// apps/protected/app/s/[subdomain]/auth/update-password/page.tsx
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { UpdatePasswordForm } from "@/components/update-password-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
 
 interface UpdatePasswordPageProps {
@@ -117,7 +107,7 @@ export default async function UpdatePasswordPage({
 
   const { data, error: verifyError } = await supabase.auth.verifyOtp({
     token_hash,
-    type: "recovery" as any,
+    type: "recovery",
   });
 
   // Handle expired or invalid token

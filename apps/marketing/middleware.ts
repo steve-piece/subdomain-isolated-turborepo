@@ -1,9 +1,17 @@
-// apps/marketing/middleware.ts 
-import { updateSession } from '@/lib/supabase/middleware'
-import { type NextRequest } from 'next/server'
+// apps/marketing/middleware.ts
+import { updateSession } from "@/lib/supabase/middleware";
+import { type NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  Sentry.logger.debug("marketing_middleware_request", {
+    url: request.url,
+  });
+  const response = await updateSession(request);
+  Sentry.logger.debug("marketing_middleware_response", {
+    redirected: response.headers.get("location") !== null,
+  });
+  return response;
 }
 
 export const config = {
@@ -16,6 +24,6 @@ export const config = {
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
-}
+};

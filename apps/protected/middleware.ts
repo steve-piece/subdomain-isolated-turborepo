@@ -1,13 +1,21 @@
-// apps/protected/middleware.ts 
+// apps/protected/middleware.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
+import * as Sentry from "@sentry/nextjs";
 
 export async function middleware(request: NextRequest) {
+  Sentry.logger.debug("protected_middleware_request", {
+    url: request.url,
+    hostname: request.headers.get("host"),
+  });
   const url = request.nextUrl.clone();
   const hostname = request.headers.get("host");
 
   // Extract subdomain from hostname using utility function
   const subdomain = extractSubdomainFromHostname(hostname || "");
+  Sentry.logger.debug("protected_middleware_subdomain", {
+    subdomain,
+  });
 
   // If accessing via subdomain, rewrite to subdomain route
   if (subdomain) {
@@ -20,7 +28,10 @@ export async function middleware(request: NextRequest) {
       // Create internal rewrite URL
       const rewriteUrl = url.clone();
       rewriteUrl.pathname = `/s/${subdomain}${url.pathname}`;
-
+      Sentry.logger.info("protected_middleware_rewrite", {
+        from: url.pathname,
+        to: rewriteUrl.pathname,
+      });
       // This creates an internal rewrite that doesn't change the URL the user sees
       return NextResponse.rewrite(rewriteUrl);
     }
@@ -30,6 +41,9 @@ export async function middleware(request: NextRequest) {
       const cleanPath = url.pathname.replace(`/s/${subdomain}`, "") || "/";
       const redirectUrl = url.clone();
       redirectUrl.pathname = cleanPath;
+      Sentry.logger.info("protected_middleware_cleanup_redirect", {
+        to: redirectUrl.pathname,
+      });
       return NextResponse.redirect(redirectUrl);
     }
   }
@@ -40,11 +54,17 @@ export async function middleware(request: NextRequest) {
     const marketingUrl = isDevelopment
       ? "http://localhost:3002"
       : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`;
+    Sentry.logger.info("protected_middleware_marketing_redirect", {
+      marketingUrl,
+    });
 
     return NextResponse.redirect(new URL(marketingUrl));
   }
 
   // Pass through without session update to keep middleware Edge-compatible
+  Sentry.logger.debug("protected_middleware_next", {
+    url: request.url,
+  });
   return NextResponse.next();
 }
 

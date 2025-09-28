@@ -6,16 +6,35 @@ alwaysApply: true
 
 THE FOLLOWING VARIABLES AND THEIR NAMING CONVENTIONS SHOULD BE USED AS FOLLOWS:
 
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY -> Public API key for Supabase. This is the key that will be used to access the Supabase database. **REPLACED THE DEPRECATED ANON KEY**
-SUPABASE_SECRET_KEY -> Supabase secret key. This is the secret key that will be used to access the Supabase database. **REPLACED THE DEPRECATED SERVICE ROLE KEY**
-SUPABASE_URL -> Supabase URL. This is the URL that will be used to access the Supabase database.
-NEXT_PUBLIC_MARKETING_DOMAIN -> apps/marketing app domain name. These are the public pages associated with our turborepo.
-NEXT_PUBLIC_APP_DOMAIN -> apps/protected app domain name. These are the protected pages associated with our turborepo. All organizations are given a subdomain upon signup (FULLY ISOLATED ORGANIZATIONS BY SUBDOMAIN), and this variable is saved in the user metadata along with their organization name.
-EMAIL_DOMAIN -> email domain name. This is the domain name that will be used to send emails that is configured in Resend.
-RESEND_API_KEY -> Resend API key. This is the API key that will be used to send emails that is configured in Resend.
-SENDER_EMAIL -> Sender email address. This is the email address that will be used to send emails that is configured in Resend. Use default fallback value of "support@auth.voltguardai.com" if not set.
-SUPPORT_EMAIL -> Support email address. This is the email address that will be used in email templates if a user needs to contact support. Use default fallback value of "support@auth.voltguardai.com" if not set.
+## Supabase Variables
 
-RESEND_ENABLE_INVITATION_EMAILS=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
-RESEND_ENABLE_WELCOME_EMAILS=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
-RESEND_VERIFY_EMAILS=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY` -> **Private Variable** -> Public API key for Supabase. This is the key that will be used to access the Supabase database. **REPLACED THE DEPRECATED ANON KEY**
+`SUPABASE_SECRET_KEY` -> **Private Variable** -> Supabase secret key. This is the secret key that will be used to access the Supabase database. **REPLACED THE DEPRECATED SERVICE ROLE KEY**
+`SUPABASE_SERVICE_ROLE_KEY` -> **Private Variable** -> Supabase service role key. Only used for auth hook send-email and send-custom-email.
+`SUPABASE_URL` ->="https://qnbqrlpvokzgtfevnuzv.supabase.co" -> Supabase URL. This is the URL that will be used to access the Supabase database.
+
+## Domain Variables
+
+`NEXT_PUBLIC_MARKETING_DOMAIN`="bask-app.com" -> apps/marketing app domain name. These are the public pages associated with our turborepo.
+`NEXT_PUBLIC_APP_DOMAIN`="ghostwrite.app"-> apps/protected app domain name. These are the protected pages associated with our turborepo. All organizations are given a subdomain upon signup (FULLY ISOLATED ORGANIZATIONS BY SUBDOMAIN), and this variable is saved in the user metadata along with their organization name.
+`EMAIL_DOMAIN`="auth.voltguardai.com" -> Email domain name. This is the domain setup with Resend in the resend.com domain settings.
+
+## Resend Email Variables
+
+`SENDER_EMAIL`="support@auth.voltguardai.com" -> Sender email address. This is the email address that will be used to send emails that is configured in Resend.
+`SUPPORT_EMAIL`="support@auth.voltguardai.com" -> Support email address. This is the email address that will be used in email templates if a user needs to contact support.
+`RESEND_API_KEY`= **Private Variable** -> Resend API key. This is the API key that will be used to send emails that is configured in Resend.
+`RESEND_ENABLE_INVITATION_EMAILS`=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
+`RESEND_ENABLE_WELCOME_EMAILS`=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
+`RESEND_VERIFY_EMAILS`=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
+
+## Sentry Variables
+
+SENTRY_DSN= **Private Variable** -> Sentry DSN. This is the DSN that will be used to send errors to Sentry.
+SENTRY_AUTH_TOKEN= **Private Variable** -> Sentry Auth token. This is the Auth token that will be used to send errors to Sentry.
+
+## Checkly Variables
+
+CHECKLY_API_KEY= **Private Variable** -> Checkly API key. This is the API key that will be used to check the health of the application.
+
+\*\*

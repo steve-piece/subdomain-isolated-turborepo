@@ -8,7 +8,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { renderAsync } from "npm:@react-email/components@0.0.22";
 import * as React from "npm:react@18.3.1";
 import { Resend } from "npm:resend@4.0.0";
-import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
+import { Webhook } from "npm:standardwebhooks@1.0.0";
 
 import { SignupConfirmationEmail } from "./_templates/signup-confirmation-email.tsx";
 import { PasswordResetEmail } from "./_templates/password-reset-email.tsx";
@@ -43,6 +43,18 @@ type EmailActionType =
   | "email_change"
   | "reauthenticate";
 
+type NormalizedMetadata = {
+  subdomain?: string;
+  organization_name?: string;
+  company_name?: string;
+  invited_by_name?: string;
+  invited_by_email?: string;
+  user_role?: string;
+  full_name?: string;
+  email?: string;
+  [key: string]: string | undefined;
+};
+
 interface HookPayload {
   user: {
     email: string;
@@ -66,10 +78,8 @@ interface ResolvedEmail {
   text?: string;
 }
 
-function mapMetadata(
-  metadata?: Record<string, unknown>
-): Record<string, string> {
-  const result: Record<string, string> = {};
+function mapMetadata(metadata?: Record<string, unknown>): NormalizedMetadata {
+  const result: NormalizedMetadata = {};
   if (!metadata) return result;
   for (const [key, value] of Object.entries(metadata)) {
     if (typeof value === "string") {
@@ -96,18 +106,33 @@ function buildConfirmationUrl(
   siteUrl?: string,
   subdomain?: string
 ): string | undefined {
-  if (redirectTo) return redirectTo;
-
-  const base =
-    subdomain && appDomain
+  const baseCandidate =
+    redirectTo ??
+    (subdomain && appDomain
       ? `https://${subdomain}.${appDomain}`
       : (siteUrl ??
-        (marketingDomain ? `https://${marketingDomain}` : undefined));
+        (marketingDomain ? `https://${marketingDomain}` : undefined)));
 
-  if (!base) return undefined;
+  if (!baseCandidate) return undefined;
 
-  const confirmationUrl = new URL(base);
-  confirmationUrl.pathname = "/auth/confirm";
+  let confirmationUrl: URL;
+  try {
+    confirmationUrl = new URL(baseCandidate);
+  } catch (error) {
+    console.warn(
+      "send-email hook: invalid redirect base, falling back",
+      JSON.stringify({
+        baseCandidate,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    );
+    return undefined;
+  }
+
+  if (!redirectTo) {
+    confirmationUrl.pathname = "/auth/confirm";
+  }
+
   confirmationUrl.searchParams.set("token_hash", tokenHash);
   confirmationUrl.searchParams.set("type", action);
   return confirmationUrl.toString();
@@ -234,7 +259,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
@@ -244,6 +269,17 @@ Deno.serve(async (req) => {
 
   try {
     const event = webhookVerifier.verify(payload, headers) as HookPayload;
+
+    console.info(
+      "send-email hook: verified payload",
+      JSON.stringify({
+        emailActionType: event.email_data.email_action_type,
+        userEmail: event.user.email,
+        redirectTo: event.email_data.redirect_to,
+        siteUrl: event.email_data.site_url,
+        metadata: event.email_data.data,
+      })
+    );
 
     const resolvedEmail = resolveEmail(event);
 
@@ -263,6 +299,14 @@ Deno.serve(async (req) => {
     if (sendResult.error) {
       throw sendResult.error;
     }
+
+    console.info(
+      "send-email hook: email dispatched",
+      JSON.stringify({
+        subject: resolvedEmail.subject,
+        messageId: sendResult.data?.id,
+      })
+    );
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

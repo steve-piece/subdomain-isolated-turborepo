@@ -14,7 +14,7 @@ marketing and protected apps **and** in Supabase project secrets:
 - `RESEND_API_KEY`
 - `SUPPORT_EMAIL` (defaults to `support@auth.voltguardai.com` if unset)
 - `SENDER_EMAIL` (defaults to `support@auth.voltguardai.com` if unset)
-- `SUPABASE_SECRET_KEY` (uploaded as Supabase secret for Edge Functions)
+- `SUPABASE_SERVICE_ROLE_KEY` (uploaded as Supabase secret for Edge Functions)
 - Hook secret: `SEND_EMAIL_HOOK_SECRET` (format `v1,whsec_<secret>`)
 
 The Supabase CLI command below uploads the `.env` used by the Edge Functions:

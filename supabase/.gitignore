@@ -1,0 +1,4 @@
+# Ignore TypeScript compiler artifacts generated for Supabase functions
+**/*.tsbuildinfo
+node_modules
+

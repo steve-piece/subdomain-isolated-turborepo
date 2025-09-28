@@ -1,10 +1,11 @@
-// apps/protected/components/subdomain-auth-checker.tsx 
+// apps/protected/components/subdomain-auth-checker.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { OrganizationDashboard } from "../components/organization-dashboard";
+import * as Sentry from "@sentry/nextjs";
 
 interface SubdomainAuthCheckerProps {
   subdomain: string;
@@ -56,7 +57,10 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
         );
         setIsLoading(false);
       } catch (error) {
-        console.error("Auth check error:", error);
+        Sentry.captureException(error);
+        Sentry.logger.error("subdomain_auth_check_error", {
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
         // On error, redirect to login
         router.replace("/auth/login");
       }

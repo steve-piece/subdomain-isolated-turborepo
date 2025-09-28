@@ -1,12 +1,12 @@
-// apps/protected/components/session-evaluator.tsx 
+// apps/protected/components/session-evaluator.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
+import * as Sentry from "@sentry/nextjs";
 
 export function SessionEvaluator() {
-  const [isEvaluating, setIsEvaluating] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,22 +24,21 @@ export function SessionEvaluator() {
             ? "http://localhost:3002"
             : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`;
 
-          console.log(
-            "SessionEvaluator: No subdomain detected, redirecting to marketing site"
-          );
+          Sentry.logger.warn("session_evaluator_no_subdomain", {
+            marketingUrl,
+          });
           window.location.href = marketingUrl;
           return;
         }
 
         // If there is a subdomain, this should have been handled by middleware
         // This is an edge case - redirect to root to trigger middleware
-        console.warn(
-          "SessionEvaluator running with subdomain - this should not happen"
-        );
+        Sentry.logger.warn("session_evaluator_with_subdomain", {
+          subdomain,
+        });
         router.replace("/");
       } catch (error) {
-        console.error("Session evaluation error:", error);
-        // On error, redirect to marketing for safety
+        Sentry.captureException(error);
         const isDevelopment = process.env.NODE_ENV === "development";
         const marketingUrl = isDevelopment
           ? "http://localhost:3002"

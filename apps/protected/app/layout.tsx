@@ -1,8 +1,18 @@
-// apps/protected/app/layout.tsx 
+// apps/protected/app/layout.tsx
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import * as Sentry from "@sentry/nextjs";
+import type { Metadata } from "next";
+
+export function generateMetadata(): Metadata {
+  return {
+    other: {
+      ...Sentry.getTraceData(),
+    },
+  };
+}
 
 const fontSans = Geist({
   subsets: ["latin"],

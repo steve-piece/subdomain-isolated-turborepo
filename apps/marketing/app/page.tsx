@@ -1,6 +1,7 @@
-// apps/marketing/app/page.tsx 
+// apps/marketing/app/page.tsx
 import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
+import { SentryTestButton } from "@/components/sentry-test-button";
 
 export default function Page() {
   return (
@@ -30,6 +31,13 @@ export default function Page() {
             {process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com"}
           </p>
         </div>
+
+        {/* Show Sentry test component only in development */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-12">
+            <SentryTestButton />
+          </div>
+        )}
       </div>
     </div>
   );

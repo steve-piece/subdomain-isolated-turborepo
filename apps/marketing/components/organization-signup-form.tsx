@@ -259,7 +259,7 @@ export function OrganizationSignUpForm({
       // Sign up the user
       const normalizedSubdomain = subdomain.trim().toLowerCase();
       const isDev = process.env.NODE_ENV !== "production";
-      const emailRedirectTo = isDev
+      const marketingRedirect = isDev
         ? `http://${normalizedSubdomain}.localhost:3003/auth/confirm`
         : `https://${normalizedSubdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/confirm`;
 
@@ -274,8 +274,10 @@ export function OrganizationSignUpForm({
             subdomain: normalizedSubdomain,
             subdomain_url: `https://${normalizedSubdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
             user_role: "owner",
+            redirect_to: marketingRedirect,
+            site_url: marketingRedirect,
           },
-          emailRedirectTo,
+          emailRedirectTo: marketingRedirect,
         },
       });
 

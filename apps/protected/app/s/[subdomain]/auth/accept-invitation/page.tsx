@@ -1,14 +1,5 @@
-// apps/protected/app/s/[subdomain]/auth/accept-invitation/page.tsx 
+// apps/protected/app/s/[subdomain]/auth/accept-invitation/page.tsx
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
 
 interface AcceptInvitationPageProps {
@@ -106,7 +97,7 @@ export default async function AcceptInvitationPage({
 
   const { data, error: verifyError } = await supabase.auth.verifyOtp({
     token_hash,
-    type: "invite" as any,
+    type: "invite",
   });
 
   if (verifyError) {
@@ -164,7 +155,7 @@ export default async function AcceptInvitationPage({
               <div className="p-3 rounded-md bg-green-50 border border-green-200">
                 <p className="text-sm text-green-700 flex items-center">
                   <span className="mr-2">✅</span>
-                  You've successfully joined the organization!
+                  You&apos;ve successfully joined the organization!
                 </p>
               </div>
               <Link href="/dashboard">

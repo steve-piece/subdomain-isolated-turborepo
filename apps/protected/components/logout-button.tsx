@@ -1,4 +1,4 @@
-// apps/protected/components/logout-button.tsx 
+// apps/protected/components/logout-button.tsx
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
@@ -9,7 +9,7 @@ interface LogoutButtonProps {
   subdomain: string;
 }
 
-export function LogoutButton({ subdomain }: LogoutButtonProps) {
+export function LogoutButton({ subdomain: _subdomain }: LogoutButtonProps) {
   const router = useRouter();
 
   const handleLogout = async () => {

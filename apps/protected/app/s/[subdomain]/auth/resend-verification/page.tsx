@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/resend-verification/page.tsx 
+// apps/protected/app/s/[subdomain]/auth/resend-verification/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -25,7 +25,6 @@ export default function ResendVerificationPage({
 }: ResendVerificationPageProps) {
   const [subdomain, setSubdomain] = useState<string>("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +39,9 @@ export default function ResendVerificationPage({
     const urlError = searchParams.get("error");
     const urlMessage = searchParams.get("message");
 
-    if (urlMessage) {
+    if (urlError) {
+      setError(urlError);
+    } else if (urlMessage) {
       setError(urlMessage);
     }
   }, [searchParams]);
@@ -52,14 +53,13 @@ export default function ResendVerificationPage({
     setSuccess(null);
 
     try {
-      const result = await resendEmailVerification(email, password, subdomain);
+      const result = await resendEmailVerification(email, subdomain);
 
       if (result.success) {
         setSuccess(result.message);
 
         // Clear form
         setEmail("");
-        setPassword("");
 
         // Redirect to login after a delay
         setTimeout(() => {
@@ -84,7 +84,7 @@ export default function ResendVerificationPage({
           <CardHeader>
             <CardTitle className="text-2xl">Resend Verification</CardTitle>
             <CardDescription>
-              Enter your login details to receive a new verification email
+              Enter your email address to receive a new verification email
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,21 +100,6 @@ export default function ResendVerificationPage({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    We need to verify your credentials before sending a new
-                    verification email
-                  </p>
                 </div>
 
                 {error && (

@@ -1,23 +1,33 @@
-// apps/marketing/app/layout.tsx 
-import { Geist, Geist_Mono } from "next/font/google"
+// apps/marketing/app/layout.tsx
+import { Geist, Geist_Mono } from "next/font/google";
 
-import "@workspace/ui/globals.css"
-import { Providers } from "@/components/providers"
+import "@workspace/ui/globals.css";
+import { Providers } from "@/components/providers";
+import * as Sentry from "@sentry/nextjs";
+import type { Metadata } from "next";
+
+export function generateMetadata(): Metadata {
+  return {
+    other: {
+      ...Sentry.getTraceData(),
+    },
+  };
+}
 
 const fontSans = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
-})
+});
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-})
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -27,5 +37,5 @@ export default function RootLayout({
         <Providers>{children}</Providers>
       </body>
     </html>
-  )
+  );
 }

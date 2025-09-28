@@ -1,6 +1,7 @@
-// apps/protected/app/actions.ts 
+// apps/protected/app/actions.ts
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { AuthApiError, type EmailOtpType } from "@supabase/supabase-js";
 
@@ -12,43 +13,33 @@ export interface ResendVerificationResponse {
 
 export async function resendEmailVerification(
   email: string,
-  password: string,
-  subdomain: string
+  _subdomain: string
 ): Promise<ResendVerificationResponse> {
   const supabase = await createClient();
 
-  // First, attempt to sign in to verify credentials
-  const { error: signInError } = await supabase.auth.signInWithPassword({
+  // Directly resend verification email without requiring password
+  const { error: resendError } = await supabase.auth.resend({
+    type: "signup",
     email,
-    password,
   });
 
-  if (signInError) {
-    if (
-      signInError instanceof AuthApiError &&
-      signInError.message.includes("Email not confirmed")
-    ) {
-      // If email not confirmed, try to resend verification
-      const { error: resendError } = await supabase.auth.resend({
-        type: "signup",
-        email,
+  if (resendError) {
+    Sentry.withScope((scope) => {
+      scope.setTag("auth.flow", "resend_verification");
+      scope.setUser({ email });
+      scope.setContext("resend_verification", {
+        message: resendError.message,
+        status: resendError.status,
       });
-
-      if (resendError) {
-        return { success: false, message: resendError.message };
-      }
-      return {
-        success: true,
-        message:
-          "Verification email resent successfully! Please check your inbox.",
-      };
-    }
-    return { success: false, message: signInError.message };
+      scope.setLevel("warning");
+      Sentry.captureException(resendError);
+    });
+    return { success: false, message: resendError.message };
   }
 
   return {
-    success: false,
-    message: "Email is already verified or login was successful.",
+    success: true,
+    message: "Verification email resent successfully! Please check your inbox.",
   };
 }
 
@@ -162,7 +153,10 @@ export async function inviteUserToOrganization(
     );
 
     if (inviteError) {
-      console.error("Invite error:", inviteError);
+      Sentry.logger.error("invite_user_error", {
+        message: inviteError.message,
+        status: inviteError.status,
+      });
       return { success: false, message: inviteError.message };
     }
 
@@ -171,7 +165,9 @@ export async function inviteUserToOrganization(
       message: `Invitation sent successfully to ${email}`,
     };
   } catch (error) {
-    console.error("Invite user error:", error);
+    Sentry.logger.error("invite_user_exception", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     return {
       success: false,
       message:
@@ -198,7 +194,9 @@ export async function updatePassword(
     });
 
     if (error) {
-      console.error("Password update error:", error);
+      Sentry.logger.error("update_password_error", {
+        message: error.message,
+      });
       return { success: false, message: error.message };
     }
 
@@ -208,7 +206,9 @@ export async function updatePassword(
         "Password updated successfully! Please login with your new password.",
     };
   } catch (error) {
-    console.error("Update password error:", error);
+    Sentry.logger.error("update_password_exception", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
     return {
       success: false,
       message:
@@ -238,6 +238,17 @@ export async function confirmEmailAndBootstrap(
     });
 
     if (error) {
+      Sentry.withScope((scope) => {
+        scope.setTag("auth.flow", "verify_otp");
+        scope.setContext("verify_otp", {
+          type,
+          subdomain,
+          message: error.message,
+          tokenHashPrefix: token_hash.slice(0, 8),
+        });
+        scope.setLevel("warning");
+        Sentry.captureException(error);
+      });
       // Token expired or invalid
       if (
         error.message.toLowerCase().includes("expired") ||
@@ -278,11 +289,18 @@ export async function confirmEmailAndBootstrap(
           break;
         }
         attempts++;
-        // eslint-disable-next-line no-await-in-loop
         await new Promise((r) => setTimeout(r, 300));
       }
     } catch {
       // Non-fatal: bootstrap can be retried later from app UI
+      Sentry.withScope((scope) => {
+        scope.setTag("auth.flow", "bootstrap_organization");
+        scope.setContext("bootstrap_organization", {
+          subdomain,
+        });
+        scope.setLevel("info");
+        Sentry.captureMessage("bootstrap_organization_retry_skipped");
+      });
     }
 
     return {
@@ -292,6 +310,14 @@ export async function confirmEmailAndBootstrap(
         "/auth/login?verified=true&message=Email verified successfully! Please login with your details.",
     };
   } catch (err) {
+    Sentry.withScope((scope) => {
+      scope.setTag("auth.flow", "confirm_email_bootstrap");
+      scope.setContext("confirm_email_bootstrap", {
+        type,
+        subdomain,
+      });
+      Sentry.captureException(err);
+    });
     return {
       success: false,
       message:

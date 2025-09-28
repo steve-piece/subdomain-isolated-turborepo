@@ -1,4 +1,4 @@
-// apps/marketing/components/subdomain-lookup-form.tsx 
+// apps/marketing/components/subdomain-lookup-form.tsx
 "use client";
 
 import { cn } from "@workspace/ui/lib/utils";
@@ -20,6 +20,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 export function SubdomainLookupForm({
   className,
@@ -47,7 +48,10 @@ export function SubdomainLookupForm({
         const result = await searchTenants(searchTerm);
 
         if (result.error) {
-          console.error("Search error:", result.error);
+          Sentry.logger.error("subdomain_lookup_error", {
+            message: result.error,
+            query: searchTerm,
+          });
           setSearchResults([]);
           setError(result.error);
         } else {
@@ -58,7 +62,10 @@ export function SubdomainLookupForm({
         setShowDropdown(true);
         setHasSearched(true);
       } catch (error) {
-        console.error("Search error:", error);
+        Sentry.captureException(error);
+        Sentry.logger.error("subdomain_lookup_exception", {
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
         setSearchResults([]);
         setShowDropdown(true);
         setHasSearched(true);
@@ -116,6 +123,10 @@ export function SubdomainLookupForm({
       const result = await searchTenants(searchValue);
 
       if (result.error) {
+        Sentry.logger.error("subdomain_lookup_error", {
+          message: result.error,
+          query: searchValue,
+        });
         setError(result.error);
         setIsLoading(false);
         return;
@@ -153,6 +164,10 @@ export function SubdomainLookupForm({
         setError("No organizations found matching your search");
       }
     } catch (error: unknown) {
+      Sentry.captureException(error);
+      Sentry.logger.error("subdomain_lookup_exception", {
+        message: error instanceof Error ? error.message : "An error occurred",
+      });
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);

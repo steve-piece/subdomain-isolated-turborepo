@@ -1,4 +1,4 @@
-// apps/protected/components/login-form.tsx 
+// apps/protected/components/login-form.tsx
 "use client";
 
 import { cn } from "@workspace/ui/lib/utils";
@@ -26,7 +26,7 @@ interface LoginFormProps {
 
 // Client component because it handles form state, user input, and navigation.
 export function LoginForm({
-  subdomain,
+  subdomain: _subdomain,
   className,
   ...props
 }: LoginFormProps & React.ComponentPropsWithoutRef<"div">) {

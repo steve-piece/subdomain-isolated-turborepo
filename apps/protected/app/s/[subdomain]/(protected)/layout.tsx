@@ -1,9 +1,10 @@
-// apps/protected/app/s/[subdomain]/(protected)/layout.tsx 
+// apps/protected/app/s/[subdomain]/(protected)/layout.tsx
 /**
  * Route-group layout that protects all nested routes under (protected)
  * by enforcing tenant auth once at the layout boundary.
  */
 import RequireTenantAuth from "@/components/require-tenant-auth";
+import * as Sentry from "@sentry/nextjs";
 
 export default async function ProtectedLayout({
   children,
@@ -24,17 +25,17 @@ export default async function ProtectedLayout({
         };
 
         if (!claims.claims.org_id) {
-          console.warn(
-            "RequireTenantAuth missing org_id for user",
-            sanitizedClaimSummary
-          );
+          Sentry.logger.warn("require_tenant_auth_missing_org_id", {
+            subdomain,
+            sanitizedClaimSummary,
+          });
         }
 
         if (!claims.claims.user_role) {
-          console.warn(
-            "RequireTenantAuth missing user_role for user",
-            sanitizedClaimSummary
-          );
+          Sentry.logger.warn("require_tenant_auth_missing_user_role", {
+            subdomain,
+            sanitizedClaimSummary,
+          });
         }
 
         return children;

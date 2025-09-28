@@ -1,9 +1,10 @@
-// apps/protected/app/s/[subdomain]/(protected)/invite-user/page.tsx 
+// apps/protected/app/s/[subdomain]/(protected)/invite-user/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { InviteUserForm } from "@/components/invite-user-form";
 import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 
 interface InviteUserPageProps {
   params: Promise<{ subdomain: string }>;
@@ -33,8 +34,12 @@ export default async function InviteUserPage({ params }: InviteUserPageProps) {
       redirect("/dashboard?error=insufficient_permissions");
     }
   } catch (error) {
-    console.error("Invite user auth error:", error);
-    redirect("/auth/login");
+    Sentry.captureException(error);
+    Sentry.logger.error("invite_user_page_error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      subdomain,
+    });
+    return redirect("/auth/login");
   }
 
   return (

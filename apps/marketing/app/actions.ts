@@ -1,6 +1,7 @@
-// apps/marketing/app/actions.ts 
+// apps/marketing/app/actions.ts
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import * as Sentry from "@sentry/nextjs";
 
 export interface TenantSearchResult {
   subdomain: string;
@@ -31,19 +32,19 @@ export async function searchTenants(
   }
 
   try {
-    console.log("=== SEARCH TENANTS DEBUG START ===");
+    Sentry.logger.info("tenant_search_started", {
+      queryLength: trimmedQuery.length,
+    });
 
-    // Debug environment variables
-    console.log("Environment Check:", {
+    Sentry.logger.debug("tenant_search_env_vars", {
       hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY,
-      urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + "...",
+      urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30),
       keyPrefix:
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY?.substring(
           0,
           30
-        ) + "...",
-      query: query,
+        ),
     });
 
     const supabase = await createClient();
@@ -51,31 +52,32 @@ export async function searchTenants(
     // Check current session
     const { data: session, error: sessionError } =
       await supabase.auth.getSession();
-    console.log("Session status:", {
+    Sentry.logger.debug("tenant_search_session_status", {
       hasSession: !!session?.session,
       sessionError: sessionError?.message,
       userId: session?.session?.user?.id,
     });
 
-    console.log("Attempting to query tenants_public...");
+    Sentry.logger.info("tenant_search_query_attempt", {
+      table: "tenants_public",
+    });
 
     // First, try a simple count query to test basic access
     const { count: tenantCount, error: countError } = await supabase
       .from("tenants_public")
       .select("*", { count: "exact", head: true });
 
-    console.log("Access test result:", {
+    Sentry.logger.debug("tenant_search_access_test_result", {
       count: tenantCount,
       countError: countError?.message,
     });
 
     if (countError) {
-      console.error("CRITICAL: Cannot access tenants_public view:", {
+      Sentry.logger.error("tenant_search_access_denied", {
         code: countError.code,
         message: countError.message,
         details: countError.details,
         hint: countError.hint,
-        fullError: countError,
       });
 
       // Provide more specific error message
@@ -97,6 +99,10 @@ export async function searchTenants(
     const wildcardQuery = `%${escapedQuery}%`;
     const searchCondition = `subdomain.ilike.${wildcardQuery},company_name.ilike.${wildcardQuery}`;
 
+    Sentry.logger.debug("tenant_search_query", {
+      query: searchCondition,
+    });
+
     const { data: tenants, error } = await supabase
       .from("tenants_public")
       .select("subdomain, company_name")
@@ -104,24 +110,13 @@ export async function searchTenants(
       .order("company_name")
       .limit(5);
 
-    console.log("Search query result:", {
+    Sentry.logger.info("tenant_search_results", {
       resultCount: tenants?.length || 0,
-      firstResult: tenants?.[0],
-      error: error
-        ? {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-          }
-        : null,
-      queryUsed: searchCondition,
+      firstResult: tenants?.[0]?.subdomain,
     });
 
-    console.log("=== SEARCH TENANTS DEBUG END ===");
-
     if (error) {
-      console.error("Supabase search error:", {
+      Sentry.logger.error("tenant_search_error", {
         code: error.code,
         message: error.message,
         details: error.details,
@@ -143,7 +138,7 @@ export async function searchTenants(
       tenants: mappedTenants,
     };
   } catch (error) {
-    console.error("Search tenants catch error:", {
+    Sentry.logger.error("tenant_search_exception", {
       name: error instanceof Error ? error.name : "Unknown",
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -182,7 +177,9 @@ export async function verifyTenant(
       .maybeSingle();
 
     if (error) {
-      console.error("Supabase error:", error);
+      Sentry.logger.error("tenant_verify_error", {
+        message: error.message,
+      });
       return {
         exists: false,
         tenant: null,
@@ -206,7 +203,9 @@ export async function verifyTenant(
       },
     };
   } catch (error) {
-    console.error("Verify tenant error:", error);
+    Sentry.logger.error("tenant_verify_exception", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     return {
       exists: false,
       tenant: null,

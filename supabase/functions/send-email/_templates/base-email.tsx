@@ -1,7 +1,7 @@
 import * as React from "npm:react@18.3.1";
 
 export interface BaseEmailProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   previewText?: string;
 }
 
