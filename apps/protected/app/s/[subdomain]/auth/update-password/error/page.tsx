@@ -11,12 +11,15 @@ import {
 import { Button } from "@workspace/ui/components/button";
 
 interface UpdatePasswordErrorPageProps {
+  params: Promise<{ subdomain: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function UpdatePasswordErrorPage({
+  params,
   searchParams,
 }: UpdatePasswordErrorPageProps) {
+  const { subdomain } = await params;
   const query = await searchParams;
   const messageParam = query.message;
   const message = Array.isArray(messageParam) ? messageParam[0] : messageParam;
@@ -27,7 +30,9 @@ export default async function UpdatePasswordErrorPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Password reset failed</CardTitle>
-            <CardDescription>We couldn't update your password.</CardDescription>
+            <CardDescription>
+              We couldn&amp;t update your password.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {message && (
@@ -41,13 +46,13 @@ export default async function UpdatePasswordErrorPage({
           </CardContent>
           <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
-              href="/auth/reset-password"
+              href={`/s/${subdomain}/auth/reset-password`}
               className="text-sm text-muted-foreground underline underline-offset-4"
             >
               Request new reset link
             </Link>
             <Button asChild>
-              <Link href="/auth/login">Back to login</Link>
+              <Link href={`/s/${subdomain}/auth/login`}>Back to login</Link>
             </Button>
           </CardFooter>
         </Card>

@@ -12,6 +12,7 @@ import {
 import { Button } from "@workspace/ui/components/button";
 
 interface EmailChangeErrorPageProps {
+  params: Promise<{ subdomain: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -47,8 +48,10 @@ function resolveCopy(reasonParam?: string | string[]) {
 }
 
 export default async function EmailChangeErrorPage({
+  params,
   searchParams,
 }: EmailChangeErrorPageProps) {
+  const { subdomain } = await params;
   const query = await searchParams;
   const messageParam = query.message;
   const resolved = resolveCopy(query.reason);
@@ -73,13 +76,13 @@ export default async function EmailChangeErrorPage({
           </CardContent>
           <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
-              href="/auth/resend-verification?reason=email_change"
+              href={`/s/${subdomain}/auth/resend-verification?reason=email_change`}
               className="text-sm text-muted-foreground underline underline-offset-4"
             >
               Need another confirmation email?
             </Link>
             <Button asChild>
-              <Link href="/auth/login">{action ?? fallbackAction}</Link>
+              <Link href={`/s/${subdomain}/auth/login`}>Back to login</Link>
             </Button>
           </CardFooter>
         </Card>

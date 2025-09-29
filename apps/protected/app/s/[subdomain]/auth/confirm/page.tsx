@@ -38,10 +38,17 @@ export default async function ConfirmPage({
     redirect("/auth/login");
   }
 
-  const redirectHint =
-    typeof query.redirect_to === "string"
-      ? decodeURIComponent(query.redirect_to)
-      : undefined;
+  let redirectHint: string | undefined;
+  if (typeof query.redirect_to === "string") {
+    try {
+      redirectHint = decodeURIComponent(query.redirect_to);
+    } catch (error) {
+      console.error("Failed to decode redirect_to parameter:", error);
+      redirectHint = undefined;
+    }
+  } else {
+    redirectHint = undefined;
+  }
 
   const result = await handleAuthConfirmation(
     tokenHash,

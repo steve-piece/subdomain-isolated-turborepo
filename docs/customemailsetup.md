@@ -1,3 +1,4 @@
+<!-- docs/customemailsetup.md -->
 <!-- docs/CUSTOM_EMAIL_SETUP.md -->
 
 # Custom Email Delivery Setup

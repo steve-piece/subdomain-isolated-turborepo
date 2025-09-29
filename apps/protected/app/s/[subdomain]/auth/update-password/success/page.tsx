@@ -10,7 +10,14 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 
-export default async function UpdatePasswordSuccessPage() {
+interface UpdatePasswordSuccessPageProps {
+  params: Promise<{ subdomain: string }>;
+}
+
+export default async function UpdatePasswordSuccessPage({
+  params,
+}: UpdatePasswordSuccessPageProps) {
+  const { subdomain } = await params;
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
@@ -28,7 +35,7 @@ export default async function UpdatePasswordSuccessPage() {
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full">
-              <Link href="/auth/login">Sign in</Link>
+              <Link href={`/s/${subdomain}/auth/login`}>Sign in</Link>
             </Button>
           </CardFooter>
         </Card>

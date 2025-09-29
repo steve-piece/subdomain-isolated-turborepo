@@ -31,22 +31,26 @@ export function RoleProtectedAction({
   messages,
 }: RoleProtectedActionProps) {
   const { addToast } = useToast();
+
+  // Create centralized messages object to be reused consistently
+  const centralizedMessages = messages ?? {
+    no_session: fallbackMessage || "Please sign in to access this content",
+    wrong_subdomain:
+      fallbackMessage || "You don't have access to this organization",
+    insufficient_role: (failure) =>
+      fallbackMessage ||
+      `This action requires ${allowedRoles.join(
+        " or "
+      )} permissions. Your current role: ${failure.actual ?? "unknown"}`,
+    error: fallbackMessage || "Authentication check failed",
+  };
+
   const access = useTenantAccess({
     subdomain,
     allowedRoles,
     navigate: (path) => window.location.replace(path),
     showToast: false,
-    messages: messages ?? {
-      no_session: fallbackMessage || "Please sign in to access this content",
-      wrong_subdomain:
-        fallbackMessage || "You don't have access to this organization",
-      insufficient_role: (failure) =>
-        fallbackMessage ||
-        `This action requires ${allowedRoles.join(
-          " or "
-        )} permissions. Your current role: ${failure.actual ?? "unknown"}`,
-      error: fallbackMessage || "Authentication check failed",
-    },
+    messages: centralizedMessages,
     createClient,
     onDenied: (failure: GuardFailure) => {
       if (
@@ -55,7 +59,7 @@ export function RoleProtectedAction({
       ) {
         const message = resolveGuardMessage(
           failure,
-          undefined,
+          centralizedMessages,
           fallbackMessage ||
             `This action requires ${allowedRoles.join(
               " or "
@@ -75,21 +79,21 @@ export function RoleProtectedAction({
       e.preventDefault();
       e.stopPropagation();
 
-      let currentRole = "unknown";
-      if (
-        access.state === "denied" &&
-        access.failure.reason === "insufficient_role"
-      ) {
-        currentRole = access.failure.actual ?? "unknown";
+      if (access.state === "denied") {
+        const message = resolveGuardMessage(
+          access.failure,
+          centralizedMessages,
+          fallbackMessage ||
+            `This action requires ${allowedRoles.join(
+              " or "
+            )} permissions. Your current role: ${
+              access.failure.reason === "insufficient_role"
+                ? (access.failure.actual ?? "unknown")
+                : "unknown"
+            }`
+        );
+        addToast(message, "warning", 5000);
       }
-
-      const message =
-        fallbackMessage ||
-        `This action requires ${allowedRoles.join(
-          " or "
-        )} permissions. Your current role: ${currentRole}`;
-
-      addToast(message, "warning", 5000);
       return;
     }
   };

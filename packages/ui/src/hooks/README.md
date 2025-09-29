@@ -1,3 +1,4 @@
+<!-- packages/ui/src/hooks/README.md -->
 # Hooks
 
 ## `useTenantAccess`

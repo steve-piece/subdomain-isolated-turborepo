@@ -1,3 +1,4 @@
+// apps/protected/lib/utils/get-redirect-url.ts 
 export function getRedirectUrl(path: string, subdomain?: string): string {
   console.log("🔍 getRedirectUrl - Called with:", {
     path,

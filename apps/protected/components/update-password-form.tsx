@@ -1,3 +1,4 @@
+// apps/protected/components/update-password-form.tsx 
 "use client";
 
 import React from "react";
@@ -12,16 +13,22 @@ import {
 } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 interface UpdatePasswordFormProps
   extends React.ComponentPropsWithoutRef<"div"> {
   className?: string;
+  subdomain?: string;
+  isResetFlow?: boolean;
+  userEmail?: string;
 }
 
 export function UpdatePasswordForm({
   className,
+  subdomain,
+  isResetFlow = false,
+  userEmail,
   ...props
 }: UpdatePasswordFormProps) {
   const [password, setPassword] = useState("");
@@ -29,91 +36,18 @@ export function UpdatePasswordForm({
   const [isLoading, setIsLoading] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<string>("Checking session...");
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Log all URL parameters
+  // Simplified authentication check - server-side already handled OTP verification for reset flows
   useEffect(() => {
-    const tokenHash = searchParams.get("token_hash");
-    const type = searchParams.get("type");
-    const accessToken = searchParams.get("access_token");
-    const refreshToken = searchParams.get("refresh_token");
-
-    console.log("🔍 UpdatePasswordForm - URL Parameters:", {
-      tokenHash: tokenHash ? `${tokenHash.slice(0, 20)}...` : null,
-      type,
-      accessToken: accessToken ? `${accessToken.slice(0, 10)}...` : null,
-      refreshToken: refreshToken ? `${refreshToken.slice(0, 10)}...` : null,
-      fullUrl: window.location.href,
-    });
-  }, [searchParams]);
-
-  // ✅ CORRECT: For password reset, verify OTP FIRST
-  useEffect(() => {
-    const handleAuth = async () => {
+    const checkSession = async () => {
       try {
-        console.log("🔍 UpdatePasswordForm - Starting authentication check...");
+        console.log("🔍 UpdatePasswordForm - Checking session...", {
+          isResetFlow,
+          userEmail,
+          subdomain,
+        });
+
         const supabase = createClient();
-
-        // Check if this is a password reset flow (OTP tokens in URL)
-        const tokenHash = searchParams.get("token_hash");
-        const type = searchParams.get("type");
-
-        if (tokenHash && type) {
-          // This is a password reset - verify OTP first to establish session
-          console.log(
-            "🔄 UpdatePasswordForm - Password reset flow detected, verifying OTP..."
-          );
-          setSessionInfo("🔄 Verifying reset token...");
-
-          try {
-            const { data, error: verifyError } = await supabase.auth.verifyOtp({
-              token_hash: tokenHash,
-              type: type as any,
-            });
-
-            if (verifyError) {
-              console.error(
-                "🚨 UpdatePasswordForm - OTP verification failed:",
-                verifyError
-              );
-              setSessionInfo("❌ Reset token verification failed");
-              setError(`Reset Token Invalid: ${verifyError.message}`);
-              return;
-            }
-
-            if (!data.user) {
-              console.error(
-                "🚨 UpdatePasswordForm - OTP verified but no user returned"
-              );
-              setSessionInfo("❌ Reset token verification failed");
-              setError("Reset token verification failed - no user found");
-              return;
-            }
-
-            console.log(
-              "✅ UpdatePasswordForm - OTP verification successful:",
-              data.user.id
-            );
-            setSessionInfo(`✅ Reset token verified for: ${data.user.email}`);
-            setError(null);
-            return;
-          } catch (otpError) {
-            console.error(
-              "🚨 UpdatePasswordForm - OTP verification error:",
-              otpError
-            );
-            setSessionInfo("❌ Reset token verification error");
-            setError(
-              `Reset Token Error: ${otpError instanceof Error ? otpError.message : "Unknown error"}`
-            );
-            return;
-          }
-        }
-
-        // No OTP tokens - check for existing session (regular authenticated flow)
-        console.log(
-          "🔍 UpdatePasswordForm - No reset tokens, checking existing session..."
-        );
         const {
           data: { session },
           error: sessionError,
@@ -138,37 +72,49 @@ export function UpdatePasswordForm({
 
         if (!session) {
           console.warn("⚠️ UpdatePasswordForm - No active session found");
-          setSessionInfo(
-            "❌ No active session - please login or use password reset"
-          );
-          setError(
-            "No active session found. Please login or use the password reset link from your email."
-          );
+          if (isResetFlow) {
+            // For reset flows, this shouldn't happen since server-side verified OTP
+            setSessionInfo("❌ Reset session not established");
+            setError(
+              "Reset session not established. Please try the reset link again."
+            );
+          } else {
+            // For regular flows, user needs to login
+            setSessionInfo("❌ No active session - please login");
+            setError("No active session found. Please login first.");
+          }
           return;
         }
 
-        setSessionInfo(`✅ Active session: ${session.user.email}`);
+        // Session established successfully
+        const displayEmail = userEmail || session.user.email;
+        setSessionInfo(
+          isResetFlow
+            ? `✅ Reset verified for: ${displayEmail}`
+            : `✅ Active session: ${displayEmail}`
+        );
         console.log(
-          "✅ UpdatePasswordForm - Active session found for:",
-          session.user.email
+          "✅ UpdatePasswordForm - Session ready for password update:",
+          {
+            userId: session.user.id,
+            email: displayEmail,
+            isResetFlow,
+          }
         );
         setError(null);
       } catch (error) {
-        console.error(
-          "🚨 UpdatePasswordForm - Error during authentication:",
-          error
-        );
+        console.error("🚨 UpdatePasswordForm - Session check error:", error);
         setSessionInfo(
-          `Authentication Error: ${error instanceof Error ? error.message : "Unknown error"}`
+          `Session Check Error: ${error instanceof Error ? error.message : "Unknown error"}`
         );
         setError(
-          `Authentication Error: ${error instanceof Error ? error.message : "Unknown error"}`
+          `Session Check Error: ${error instanceof Error ? error.message : "Unknown error"}`
         );
       }
     };
 
-    handleAuth();
-  }, [searchParams]);
+    checkSession();
+  }, [isResetFlow, userEmail, subdomain]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,7 +155,15 @@ export function UpdatePasswordForm({
       console.log(
         "✅ UpdatePasswordForm - Password updated successfully, redirecting..."
       );
-      router.push("/protected");
+
+      // Redirect based on flow type
+      if (isResetFlow) {
+        router.push(
+          "/auth/login?message=Password updated successfully! Please login with your new password."
+        );
+      } else {
+        router.push("/protected");
+      }
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "An error occurred";
@@ -227,9 +181,13 @@ export function UpdatePasswordForm({
     <div className={className} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+          <CardTitle className="text-2xl">
+            {isResetFlow ? "Reset Your Password" : "Update Your Password"}
+          </CardTitle>
           <CardDescription>
-            Please enter your new password below.
+            {isResetFlow
+              ? "Please enter your new password below."
+              : `Update your password${subdomain ? ` for ${subdomain}` : ""}.`}
           </CardDescription>
         </CardHeader>
         <CardContent>
