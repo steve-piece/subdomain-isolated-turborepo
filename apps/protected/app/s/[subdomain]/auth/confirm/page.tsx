@@ -1,7 +1,10 @@
 // apps/protected/app/s/[subdomain]/auth/confirm/page.tsx
 import { redirect } from "next/navigation";
 import type { EmailOtpType } from "@supabase/supabase-js";
-import { confirmEmailAndBootstrap } from "../../../../actions";
+import {
+  confirmEmailAndBootstrap,
+  handleAuthConfirmation,
+} from "../../../../actions";
 
 interface ConfirmPageProps {
   params: Promise<{ subdomain: string }>;
@@ -25,7 +28,27 @@ export default async function ConfirmPage({
     );
   }
 
-  const result = await confirmEmailAndBootstrap(tokenHash, type, subdomain);
+  if (type === "signup") {
+    const result = await confirmEmailAndBootstrap(tokenHash, type, subdomain);
+
+    if (result.redirectTo) {
+      redirect(result.redirectTo);
+    }
+
+    redirect("/auth/login");
+  }
+
+  const redirectHint =
+    typeof query.redirect_to === "string"
+      ? decodeURIComponent(query.redirect_to)
+      : undefined;
+
+  const result = await handleAuthConfirmation(
+    tokenHash,
+    type,
+    subdomain,
+    redirectHint
+  );
 
   if (result.redirectTo) {
     redirect(result.redirectTo);

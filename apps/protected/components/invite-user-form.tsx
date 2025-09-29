@@ -1,4 +1,5 @@
-// apps/protected/components/invite-user-form.tsx 
+// apps/protected/components/invite-user-form.tsx
+// Tenant-aware form for inviting teammates with role selection and Supabase action hook.
 "use client";
 
 import { useState } from "react";

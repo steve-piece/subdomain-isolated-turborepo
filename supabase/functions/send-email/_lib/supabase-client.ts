@@ -1,3 +1,4 @@
+// supabase/functions/send-email/_lib/supabase-client.ts 
 import { createClient as createSupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");

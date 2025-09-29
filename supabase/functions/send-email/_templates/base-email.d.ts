@@ -1,3 +1,4 @@
+// supabase/functions/send-email/_templates/base-email.d.ts 
 import * as React from "npm:react@18.3.1";
 export interface BaseEmailProps {
     children: React.ReactNode;

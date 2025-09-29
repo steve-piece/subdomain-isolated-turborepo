@@ -1,4 +1,5 @@
 // apps/protected/components/organization-dashboard.tsx
+// Renders the tenant landing dashboard with quick actions, stats, and sign-out controls.
 "use client";
 
 import { LogoutButton } from "@/components/logout-button";

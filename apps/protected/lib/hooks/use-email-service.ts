@@ -1,3 +1,4 @@
+// apps/protected/lib/hooks/use-email-service.ts 
 import { createClient } from "@/lib/supabase/client";
 
 interface CustomEmailPayload {

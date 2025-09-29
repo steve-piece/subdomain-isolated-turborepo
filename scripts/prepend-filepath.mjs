@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// scripts/prepend-filepath.mjs 
+// scripts/prepend-filepath.mjs
 import { exec } from "child_process";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
@@ -48,7 +48,13 @@ const COMMENT_END_STYLES = {
 async function getGitFiles() {
   try {
     const { stdout } = await execAsync("git ls-files");
-    return stdout.trim().split("\n");
+    const files = stdout.trim().split("\n");
+    const IGNORED_DIRECTORIES = new Set([".cursor"]);
+    return files.filter((filePath) => {
+      if (!filePath) return false;
+      const segments = filePath.split("/");
+      return !segments.some((segment) => IGNORED_DIRECTORIES.has(segment));
+    });
   } catch (error) {
     console.error("Error getting git files:", error);
     return [];

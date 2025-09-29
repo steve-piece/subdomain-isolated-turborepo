@@ -1,3 +1,5 @@
+// apps/protected/components/email-composer.tsx
+// Simple UI helper to trigger custom emails from within the protected app shell.
 "use client";
 
 import { useState } from "react";

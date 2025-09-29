@@ -1,3 +1,4 @@
+// apps/protected/instrumentation.ts 
 import * as Sentry from "@sentry/nextjs";
 
 export async function register() {

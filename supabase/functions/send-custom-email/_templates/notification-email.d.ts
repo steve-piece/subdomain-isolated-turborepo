@@ -1,3 +1,4 @@
+// supabase/functions/send-custom-email/_templates/notification-email.d.ts 
 import * as React from "npm:react@18.3.1";
 export interface NotificationEmailProps {
     userName: string;

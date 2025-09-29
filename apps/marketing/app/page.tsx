@@ -1,4 +1,5 @@
 // apps/marketing/app/page.tsx
+// Landing page introducing the product with CTAs into signup and login flows.
 import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
 import { SentryTestButton } from "@/components/sentry-test-button";

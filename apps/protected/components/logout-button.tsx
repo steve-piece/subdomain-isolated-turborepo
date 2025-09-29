@@ -1,4 +1,5 @@
 // apps/protected/components/logout-button.tsx
+// Provides a tenant-aware sign-out button that clears Supabase session state.
 "use client";
 
 import { Button } from "@workspace/ui/components/button";

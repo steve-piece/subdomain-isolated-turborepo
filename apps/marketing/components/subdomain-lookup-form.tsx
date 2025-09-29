@@ -1,4 +1,5 @@
 // apps/marketing/components/subdomain-lookup-form.tsx
+// Marketing entry form that searches/redirects users to their tenant workspace.
 "use client";
 
 import { cn } from "@workspace/ui/lib/utils";

@@ -1,3 +1,4 @@
+// supabase/functions/send-email/_lib/supabase-client.js 
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getServiceRoleClient = getServiceRoleClient;

@@ -1,4 +1,5 @@
-// apps/protected/components/forgot-password-form.tsx 
+// apps/protected/components/forgot-password-form.tsx
+// Handles sending password reset emails targeted to a tenant-specific subdomain.
 "use client";
 
 import { useState } from "react";
@@ -14,6 +15,7 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
+import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
 
 interface ForgotPasswordFormProps {
   subdomain: string;
@@ -27,19 +29,37 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps) {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔄 ForgotPasswordForm - Starting password reset for:", email);
+
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
       // Redirect to the current tenant's update-password route
-      const redirectTo = `https://${subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/update-password`;
+      const redirectTo = getRedirectUrl("/auth/update-password", subdomain);
+      console.log(
+        "🔍 ForgotPasswordForm - Reset email will redirect to:",
+        redirectTo
+      );
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("🚨 ForgotPasswordForm - Reset password error:", error);
+        if (error.message.includes("rate") || error.message.includes("limit")) {
+          throw new Error(
+            "Too many reset requests. Please wait an hour and try again."
+          );
+        }
+        throw error;
+      }
+
+      console.log(
+        "✅ ForgotPasswordForm - Reset password email sent successfully"
+      );
       setSuccess(true);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

@@ -1,4 +1,5 @@
 // apps/marketing/app/layout.tsx
+// Marketing app root layout that registers Sentry metadata and wraps providers.
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "@workspace/ui/globals.css";

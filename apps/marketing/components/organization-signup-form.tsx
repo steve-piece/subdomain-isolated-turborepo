@@ -1,4 +1,5 @@
 // apps/marketing/components/organization-signup-form.tsx
+// Marketing-side signup wizard that provisions organizations and handles validation.
 "use client";
 
 import { cn } from "@workspace/ui/lib/utils";
@@ -259,9 +260,11 @@ export function OrganizationSignUpForm({
       // Sign up the user
       const normalizedSubdomain = subdomain.trim().toLowerCase();
       const isDev = process.env.NODE_ENV !== "production";
-      const marketingRedirect = isDev
-        ? `http://${normalizedSubdomain}.localhost:3003/auth/confirm`
-        : `https://${normalizedSubdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/auth/confirm`;
+      const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com";
+      const tenantBaseUrl = isDev
+        ? `http://${normalizedSubdomain}.localhost:3003`
+        : `https://${normalizedSubdomain}.${appDomain}`;
+      const authRedirectUrl = `${tenantBaseUrl}/auth/confirm`;
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -272,12 +275,12 @@ export function OrganizationSignUpForm({
             company_name: organizationName,
             organization_name: organizationName,
             subdomain: normalizedSubdomain,
-            subdomain_url: `https://${normalizedSubdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
+            subdomain_url: tenantBaseUrl,
             user_role: "owner",
-            redirect_to: marketingRedirect,
-            site_url: marketingRedirect,
+            redirect_to: authRedirectUrl,
+            site_url: tenantBaseUrl,
           },
-          emailRedirectTo: marketingRedirect,
+          emailRedirectTo: authRedirectUrl,
         },
       });
 

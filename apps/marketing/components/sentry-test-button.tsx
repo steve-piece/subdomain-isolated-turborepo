@@ -1,3 +1,5 @@
+// apps/marketing/components/sentry-test-button.tsx
+// Buttons for exercising Sentry instrumentation from the marketing experience.
 "use client";
 
 import { useState } from "react";

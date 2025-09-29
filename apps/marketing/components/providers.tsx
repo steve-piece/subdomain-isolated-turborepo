@@ -1,4 +1,5 @@
-// apps/marketing/components/providers.tsx 
+// apps/marketing/components/providers.tsx
+// Marketing shell provider that injects theme context into client components.
 "use client";
 
 import * as React from "react";

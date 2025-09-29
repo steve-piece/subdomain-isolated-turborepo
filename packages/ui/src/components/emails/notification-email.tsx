@@ -1,3 +1,4 @@
+// packages/ui/src/components/emails/notification-email.tsx 
 import React from "react";
 import { BaseEmail, EmailButton, EmailHeading, EmailText } from "./base-email";
 

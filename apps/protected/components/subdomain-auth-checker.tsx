@@ -1,67 +1,81 @@
 // apps/protected/components/subdomain-auth-checker.tsx
+// Client-side guard that verifies tenant claims before rendering the dashboard shell.
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import React from "react";
 import { OrganizationDashboard } from "../components/organization-dashboard";
-import * as Sentry from "@sentry/nextjs";
+import { createClient } from "@/lib/supabase/client";
+import {
+  useTenantAccess,
+  type GuardFailure,
+  resolveGuardMessage,
+} from "@workspace/ui/hooks";
+import { useToast } from "@workspace/ui/components/toast";
 
 interface SubdomainAuthCheckerProps {
   subdomain: string;
 }
 
 export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [organizationName, setOrganizationName] = useState<string>(subdomain);
-  const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient();
-
-      // Get claims for fast, local authentication + tenant verification
-      const { data: claimsData, error: claimsError } =
-        await supabase.auth.getClaims();
-
-      if (claimsError || !claimsData) {
-        // No valid session - redirect to login
-        router.replace("/auth/login?reason=no_session");
-        return;
+  const { addToast } = useToast();
+  const access = useTenantAccess({
+    subdomain,
+    redirectTo: "/auth/login",
+    navigate: (path) => window.location.replace(path),
+    createClient,
+    showToast: false,
+    messages: {
+      no_session: "Please sign in to access this organization",
+      wrong_subdomain:
+        "Your account does not belong to this organization. Please sign in again.",
+      insufficient_role:
+        "You do not have sufficient permissions to access this organization.",
+      error: "We ran into a problem validating your access.",
+    },
+    onDenied: (failure: GuardFailure) => {
+      switch (failure.reason) {
+        case "no_session":
+          window.location.href = "/auth/login?reason=no_session";
+          break;
+        case "wrong_subdomain":
+          addToast(
+            resolveGuardMessage(
+              failure,
+              undefined,
+              "You don't have access to this organization"
+            ),
+            "error",
+            5000
+          );
+          window.location.href = "/auth/login?error=unauthorized";
+          break;
+        case "insufficient_role":
+          addToast(
+            resolveGuardMessage(
+              failure,
+              undefined,
+              "Insufficient permissions for this organization"
+            ),
+            "warning"
+          );
+          window.location.href = "/auth/login?error=insufficient_permissions";
+          break;
+        case "error":
+          addToast(
+            resolveGuardMessage(
+              failure,
+              undefined,
+              "Authentication check failed"
+            ),
+            "error"
+          );
+          window.location.href = "/auth/login?error=auth_check_failed";
+          break;
       }
+    },
+  });
 
-      // Verify user belongs to this specific subdomain/organization
-      const claimSubdomain = (
-        claimsData.claims?.subdomain as string | undefined
-      )?.toLowerCase();
-      if (claimSubdomain !== subdomain.toLowerCase()) {
-        router.replace("/auth/login?error=unauthorized");
-        return;
-      }
-
-      // User is authenticated and authorized for this tenant
-      setIsAuthenticated(true);
-      setUserEmail((claimsData.claims?.email as string | undefined) || null);
-      setOrganizationName(
-        (claimsData.claims?.company_name as string | undefined) || subdomain
-      );
-      setIsLoading(false);
-    };
-
-    checkAuth().catch((error) => {
-      Sentry.captureException(error);
-      Sentry.logger.error("subdomain_auth_check_error", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        subdomain,
-      });
-      router.replace("/auth/login?error=auth_check_failed");
-    });
-  }, [subdomain, router]);
-
-  // Show loading state while checking authentication
-  if (isLoading) {
+  if (access.state === "checking") {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <div className="flex flex-col items-center gap-6">
@@ -84,12 +98,13 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
   }
 
   // If authenticated, show the dashboard
-  if (isAuthenticated && userEmail) {
+  if (access.state === "allowed") {
+    const claims = access.claims.claims;
     return (
       <OrganizationDashboard
-        organizationName={organizationName}
+        organizationName={claims.company_name ?? subdomain}
         subdomain={subdomain}
-        userEmail={userEmail}
+        userEmail={(claims.email as string | undefined) ?? ""}
       />
     );
   }

@@ -1,3 +1,4 @@
+// apps/marketing/app/api/sentry-test/route.ts 
 // Test API route to verify Sentry error capture
 import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";

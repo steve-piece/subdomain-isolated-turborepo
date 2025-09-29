@@ -1,16 +1,15 @@
 // packages/ui/src/components/emails/password-reset-email.tsx
-import React from "react";
 import { BaseEmail, EmailButton, EmailHeading, EmailText } from "./base-email";
 
 export interface PasswordResetEmailProps {
   userName?: string;
-  resetUrl: string;
+  confirmationUrl: string;
   organizationName?: string;
 }
 
 export function PasswordResetEmail({
   userName,
-  resetUrl,
+  confirmationUrl,
   organizationName,
 }: PasswordResetEmailProps) {
   const previewText = "Reset your password - action required";
@@ -28,7 +27,7 @@ export function PasswordResetEmail({
       </EmailText>
 
       <div style={{ textAlign: "center", margin: "32px 0" }}>
-        <EmailButton href={resetUrl}>Reset Password</EmailButton>
+        <EmailButton href={confirmationUrl}>Reset Password</EmailButton>
       </div>
 
       <EmailText style={{ fontSize: "14px", color: "#6b7280" }}>

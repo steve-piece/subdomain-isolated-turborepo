@@ -1,5 +1,6 @@
 // packages/ui/src/lib/email.ts
 import { Resend } from "resend";
+import * as Sentry from "@sentry/nextjs";
 
 // Initialize Resend client - will be created when needed
 let resendClient: Resend | null = null;
@@ -11,8 +12,7 @@ function getResendClient(): Resend {
       const error = new Error(
         "RESEND_API_KEY environment variable is required"
       );
-      // Note: Sentry not imported here to avoid circular dependencies
-      // Error handling happens in calling functions
+      Sentry.captureException(error);
       throw error;
     }
     resendClient = new Resend(apiKey);
@@ -97,6 +97,7 @@ export async function sendEmail(
     const result = await resend.emails.send(emailData);
 
     if (result.error) {
+      Sentry.captureException(result.error);
       return {
         success: false,
         error: result.error.message,
@@ -108,6 +109,7 @@ export async function sendEmail(
       id: result.data?.id,
     };
   } catch (error) {
+    Sentry.captureException(error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",

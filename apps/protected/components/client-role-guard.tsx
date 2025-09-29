@@ -1,12 +1,15 @@
 // apps/protected/components/client-role-guard.tsx
+// Client-only guard that checks Supabase claims to enforce role-based UI access.
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useToast } from "@workspace/ui/components/toast";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-
-type AppRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
+import {
+  type AppRole,
+  useTenantAccess,
+  resolveGuardMessage,
+} from "@workspace/ui/hooks";
 
 interface ClientRoleGuardProps {
   subdomain: string;
@@ -23,90 +26,85 @@ export function ClientRoleGuard({
   redirectToLogin = false,
   fallbackMessage,
 }: ClientRoleGuardProps) {
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const { addToast } = useToast();
-  const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const supabase = createClient();
-        const { data: claims, error } = await supabase.auth.getClaims();
-
-        if (error || !claims) {
-          if (redirectToLogin) {
-            router.replace("/auth/login?reason=no_session");
-            return;
-          }
-          setIsAuthorized(false);
-          setIsLoading(false);
-          return;
-        }
-
-        // Verify user belongs to this subdomain
-        if (claims.claims.subdomain !== subdomain) {
-          if (redirectToLogin) {
-            router.replace("/auth/login?error=unauthorized");
-            return;
-          }
-          addToast("You don't have access to this organization", "error");
-          setIsAuthorized(false);
-          setIsLoading(false);
-          return;
-        }
-
-        const role = (claims.claims.user_role ?? "member") as AppRole;
-
-        // Check role permissions if allowedRoles is specified
-        if (allowedRoles && allowedRoles.length > 0) {
-          const hasPermission = allowedRoles.includes(role);
-          setIsAuthorized(hasPermission);
-
-          if (!hasPermission && !redirectToLogin) {
-            const message =
-              fallbackMessage ||
-              `This content requires ${allowedRoles.join(" or ")} permissions. Your current role: ${role}`;
-            addToast(message, "warning", 5000);
-          }
-        } else {
-          // No role restriction, just need valid session for this subdomain
-          setIsAuthorized(true);
-        }
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Client role guard error:", error);
-        if (redirectToLogin) {
-          router.replace("/auth/login?error=auth_check_failed");
-        } else {
-          addToast("Authentication check failed", "error");
-          setIsAuthorized(false);
-        }
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [
+  const access = useTenantAccess({
     subdomain,
     allowedRoles,
-    redirectToLogin,
-    fallbackMessage,
-    addToast,
-    router,
-  ]);
+    redirectTo: redirectToLogin ? "/auth/login" : undefined,
+    navigate: (path) => window.location.replace(path),
+    showToast: false,
+    messages: {
+      no_session: "Please sign in to access this content",
+      wrong_subdomain: "You don't have access to this organization",
+      insufficient_role: (failure) =>
+        fallbackMessage ||
+        `This content requires ${
+          failure.allowed?.join(" or ") ?? "additional"
+        } permissions. Your current role: ${failure.actual ?? "unknown"}`,
+      error: "Authentication check failed",
+    },
+    createClient,
+    onDenied: (failure) => {
+      if (redirectToLogin) return;
 
-  if (isLoading) {
+      switch (failure.reason) {
+        case "no_session":
+          addToast(
+            resolveGuardMessage(
+              failure,
+              undefined,
+              "Please sign in to access this content"
+            ),
+            "warning"
+          );
+          break;
+        case "wrong_subdomain":
+          addToast(
+            resolveGuardMessage(
+              failure,
+              undefined,
+              "You don't have access to this organization"
+            ),
+            "error"
+          );
+          break;
+        case "insufficient_role":
+          addToast(
+            resolveGuardMessage(
+              failure,
+              undefined,
+              fallbackMessage ||
+                `This content requires ${
+                  failure.allowed?.join(" or ") ?? "additional"
+                } permissions.`
+            ),
+            "warning"
+          );
+          break;
+        case "error":
+          addToast(
+            resolveGuardMessage(
+              failure,
+              undefined,
+              "Authentication check failed"
+            ),
+            "error"
+          );
+          break;
+      }
+    },
+  });
+
+  if (access.state === "checking") {
     return <div className="opacity-50">{children}</div>;
   }
 
-  if (isAuthorized === false && !redirectToLogin) {
+  if (access.state !== "allowed" && !redirectToLogin) {
     // Show disabled version of children or hide completely
     return <div className="opacity-30 pointer-events-none">{children}</div>;
   }
 
-  if (isAuthorized) {
+  if (access.state === "allowed") {
     return <>{children}</>;
   }
 

@@ -1,4 +1,5 @@
 // apps/protected/components/session-evaluator.tsx
+// Client fallback that routes users to marketing or tenant root when middleware misses.
 "use client";
 
 import { useEffect } from "react";

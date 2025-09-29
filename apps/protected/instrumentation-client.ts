@@ -1,3 +1,4 @@
+// apps/protected/instrumentation-client.ts 
 // instrumentation-client.ts
 // This file configures the initialization of Sentry for the client-side.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/

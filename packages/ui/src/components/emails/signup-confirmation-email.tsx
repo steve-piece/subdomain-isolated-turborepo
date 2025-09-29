@@ -1,5 +1,4 @@
 // packages/ui/src/components/emails/signup-confirmation-email.tsx
-import React from "react";
 import { BaseEmail, EmailButton, EmailHeading, EmailText } from "./base-email";
 
 export interface SignupConfirmationEmailProps {

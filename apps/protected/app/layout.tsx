@@ -1,4 +1,5 @@
 // apps/protected/app/layout.tsx
+// Protected app root layout wiring fonts, Sentry metadata, and global providers.
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";

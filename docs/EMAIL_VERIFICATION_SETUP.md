@@ -1,4 +1,5 @@
 <!-- docs/EMAIL_VERIFICATION_SETUP.md -->
+
 # Email Verification Setup - Supabase Dashboard Configuration
 
 This guide covers the **manual configuration steps** required in your Supabase Dashboard to enable email verification for our subdomain multi-tenant architecture.
@@ -118,6 +119,8 @@ Navigate to **Authentication → Email Templates → Reset password** and replac
   >
 </p>
 ```
+
+> **Why the hash matters:** our custom email hook appends Supabase recovery credentials to the URL hash fragment (e.g. `https://acme.yourapp.com/auth/update-password#access_token=…&refresh_token=…&type=recovery&token_hash=…`). Even though the hash is not part of the redirect allow-list, the base path must still be present so Supabase can append the fragment safely. This mirrors how the confirm-email flow works and prevents email providers from stripping the recovery tokens.
 
 #### Reauthentication Email Template
 

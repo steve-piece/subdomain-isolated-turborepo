@@ -1,4 +1,5 @@
 // apps/protected/components/providers.tsx
+// Wraps the protected app with theme and toast providers for global UI context.
 "use client";
 
 import * as React from "react";

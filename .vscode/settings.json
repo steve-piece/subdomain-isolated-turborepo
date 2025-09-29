@@ -1,3 +1,5 @@
 {
-  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css"
+  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
+  "git.ignoreLimitWarning": true,
+  "terminal.integrated.enableImages": true
 }

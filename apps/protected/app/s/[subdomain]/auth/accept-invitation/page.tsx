@@ -1,4 +1,5 @@
 // apps/protected/app/s/[subdomain]/auth/accept-invitation/page.tsx
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -20,6 +21,7 @@ export default async function AcceptInvitationPage({
   params,
   searchParams,
 }: AcceptInvitationPageProps) {
+  noStore();
   const { subdomain } = await params;
   const searchParamsData = await searchParams;
 

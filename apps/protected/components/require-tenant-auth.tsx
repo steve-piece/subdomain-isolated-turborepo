@@ -1,4 +1,5 @@
 // apps/protected/components/require-tenant-auth.tsx
+// Server-side gate that enforces tenant claims before rendering protected routes.
 /**
  * Server wrapper that checks the user's JWT claims from cookies and ensures:
  * - The user has a valid session

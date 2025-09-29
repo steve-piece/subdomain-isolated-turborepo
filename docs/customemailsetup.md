@@ -1,3 +1,5 @@
+<!-- docs/CUSTOM_EMAIL_SETUP.md -->
+
 # Custom Email Delivery Setup
 
 This guide documents how to configure Supabase so that transactional emails
@@ -106,3 +108,5 @@ confirm delivery.
 
 With the above steps completed, the project now ships both auth-triggered and
 custom transactional emails using the shared React templates in `packages/ui`.
+
+**Why the hash matters:** our custom email hook appends Supabase recovery credentials to the URL hash fragment (e.g. `https://acme.yourapp.com/auth/update-password#access_token=…&refresh_token=…&type=recovery&token_hash=…`). Even though the hash is not part of the redirect allow-list, the base path must still be present so Supabase can append the fragment safely. This mirrors how the confirm-email flow works and prevents email providers from stripping the recovery tokens.

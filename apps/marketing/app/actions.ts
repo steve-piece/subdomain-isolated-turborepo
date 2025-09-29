@@ -142,6 +142,7 @@ export async function searchTenants(
       name: error instanceof Error ? error.name : "Unknown",
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      queryLength: trimmedQuery.length,
     });
     return {
       tenants: [],
@@ -165,6 +166,9 @@ export async function verifyTenant(
   }
 
   try {
+    Sentry.logger.info("tenant_verify_started", {
+      subdomain,
+    });
     const supabase = await createClient();
 
     // Check if tenant exists with exact subdomain match using secure view
@@ -179,6 +183,7 @@ export async function verifyTenant(
     if (error) {
       Sentry.logger.error("tenant_verify_error", {
         message: error.message,
+        subdomain,
       });
       return {
         exists: false,
@@ -205,6 +210,7 @@ export async function verifyTenant(
   } catch (error) {
     Sentry.logger.error("tenant_verify_exception", {
       message: error instanceof Error ? error.message : String(error),
+      subdomain,
     });
     return {
       exists: false,

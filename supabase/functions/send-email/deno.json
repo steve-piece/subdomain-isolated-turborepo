@@ -3,5 +3,10 @@
     "jsx": "react-jsx",
     "jsxImportSource": "npm:react@18.3.1"
   },
-  "imports": {}
+  "imports": {
+    "react": "npm:react@18.3.1",
+    "@react-email/components": "npm:@react-email/components@0.0.22",
+    "resend": "npm:resend@4.0.0",
+    "standardwebhooks": "npm:standardwebhooks@1.0.0"
+  }
 }
