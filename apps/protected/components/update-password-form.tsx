@@ -1,4 +1,4 @@
-// apps/protected/components/update-password-form.tsx 
+// apps/protected/components/update-password-form.tsx
 "use client";
 
 import React from "react";
@@ -14,7 +14,7 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface UpdatePasswordFormProps
   extends React.ComponentPropsWithoutRef<"div"> {
@@ -37,133 +37,126 @@ export function UpdatePasswordForm({
   const [sessionInfo, setSessionInfo] = useState<string>("Checking session...");
   const router = useRouter();
 
-  // Simplified authentication check - server-side already handled OTP verification for reset flows
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        console.log("🔍 UpdatePasswordForm - Checking session...", {
-          isResetFlow,
-          userEmail,
-          subdomain,
-        });
+  // Create client once to catch early auth events
+  const supabase = useMemo(() => createClient(), []);
 
-        const supabase = createClient();
+  // For reset flows, manually verify the OTP from URL (workaround for @supabase/ssr issue)
+  useEffect(() => {
+    const setupSession = async () => {
+      try {
+        if (isResetFlow && typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          const tokenHash = params.get("token_hash");
+          const type = params.get("type");
+
+          console.log("🔍 UpdatePasswordForm - Checking URL params:", {
+            hasTokenHash: !!tokenHash,
+            type,
+          });
+
+          if (tokenHash && type === "recovery") {
+            console.log("🔄 UpdatePasswordForm - Manually verifying OTP...");
+
+            const { data, error: verifyError } = await supabase.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: "recovery",
+            });
+
+            if (verifyError) {
+              console.error(
+                "🚨 UpdatePasswordForm - OTP verification failed:",
+                verifyError
+              );
+              setSessionInfo("❌ Reset link invalid or expired");
+              setError(verifyError.message);
+              return;
+            }
+
+            if (data.session) {
+              console.log("✅ UpdatePasswordForm - Session established:", {
+                userEmail: data.session.user.email,
+              });
+              setSessionInfo(`✅ Session active: ${data.session.user.email}`);
+              setError(null);
+              return;
+            }
+          }
+        }
+
+        // For non-reset flows or if no tokens in URL, check session normally
         const {
           data: { session },
           error: sessionError,
         } = await supabase.auth.getSession();
 
-        console.log("🔍 UpdatePasswordForm - Session check result:", {
+        console.log("🔍 UpdatePasswordForm - Session check:", {
           hasSession: !!session,
-          sessionError: sessionError?.message,
-          userId: session?.user?.id,
           userEmail: session?.user?.email,
-          accessToken: session?.access_token
-            ? `${session.access_token.slice(0, 20)}...`
-            : null,
+          isResetFlow,
         });
 
-        if (sessionError) {
-          console.error("🚨 UpdatePasswordForm - Session error:", sessionError);
-          setSessionInfo(`Session Error: ${sessionError.message}`);
-          setError(`Session Error: ${sessionError.message}`);
-          return;
-        }
-
-        if (!session) {
-          console.warn("⚠️ UpdatePasswordForm - No active session found");
-          if (isResetFlow) {
-            // For reset flows, this shouldn't happen since server-side verified OTP
-            setSessionInfo("❌ Reset session not established");
-            setError(
-              "Reset session not established. Please try the reset link again."
-            );
-          } else {
-            // For regular flows, user needs to login
-            setSessionInfo("❌ No active session - please login");
+        if (sessionError || !session) {
+          setSessionInfo(
+            isResetFlow
+              ? "⏳ Verifying reset link..."
+              : "❌ No active session - please login"
+          );
+          if (!isResetFlow) {
             setError("No active session found. Please login first.");
           }
           return;
         }
 
-        // Session established successfully
-        const displayEmail = userEmail || session.user.email;
-        setSessionInfo(
-          isResetFlow
-            ? `✅ Reset verified for: ${displayEmail}`
-            : `✅ Active session: ${displayEmail}`
-        );
-        console.log(
-          "✅ UpdatePasswordForm - Session ready for password update:",
-          {
-            userId: session.user.id,
-            email: displayEmail,
-            isResetFlow,
-          }
-        );
+        setSessionInfo(`✅ Session active: ${session.user.email}`);
         setError(null);
       } catch (error) {
-        console.error("🚨 UpdatePasswordForm - Session check error:", error);
-        setSessionInfo(
-          `Session Check Error: ${error instanceof Error ? error.message : "Unknown error"}`
-        );
+        console.error("🚨 UpdatePasswordForm - Session setup error:", error);
         setError(
-          `Session Check Error: ${error instanceof Error ? error.message : "Unknown error"}`
+          `Session Error: ${error instanceof Error ? error.message : "Unknown error"}`
         );
       }
     };
 
-    checkSession();
-  }, [isResetFlow, userEmail, subdomain]);
+    setupSession();
+  }, [isResetFlow, userEmail]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("🔄 UpdatePasswordForm - Starting password update...");
 
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
-      // Double-check session before updating
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      console.log("🔍 UpdatePasswordForm - Pre-update user check:", {
-        hasUser: !!user,
-        userId: user?.id,
-        userError: userError?.message,
+      // Update password directly with Supabase client
+      // For recovery flows, the session is automatically established via the recovery token
+      console.log(
+        "🔄 UpdatePasswordForm - Calling supabase.auth.updateUser..."
+      );
+      const { data, error: updateError } = await supabase.auth.updateUser({
+        password,
       });
 
-      if (userError) {
-        throw new Error(`User check failed: ${userError.message}`);
-      }
-
-      if (!user) {
-        throw new Error("No authenticated user found");
-      }
-
-      console.log("🔄 UpdatePasswordForm - Calling updateUser...");
-      const { error } = await supabase.auth.updateUser({ password });
-
-      if (error) {
-        console.error("🚨 UpdatePasswordForm - Update password failed:", error);
-        throw error;
-      }
-
-      console.log(
-        "✅ UpdatePasswordForm - Password updated successfully, redirecting..."
-      );
-
-      // Redirect based on flow type
-      if (isResetFlow) {
-        router.push(
-          "/auth/login?message=Password updated successfully! Please login with your new password."
+      if (updateError) {
+        console.error(
+          "🚨 UpdatePasswordForm - Update password failed:",
+          updateError
         );
-      } else {
-        router.push("/protected");
+        throw updateError;
       }
+
+      console.log("✅ UpdatePasswordForm - Password updated successfully:", {
+        userId: data.user?.id,
+      });
+
+      // Sign out and redirect to login
+      await supabase.auth.signOut();
+
+      router.push(
+        `/auth/login?message=${encodeURIComponent(
+          "Password updated successfully! Please login with your new password."
+        )}`
+      );
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "An error occurred";

@@ -1,5 +1,6 @@
 // apps/protected/app/s/[subdomain]/(protected)/admin/page.tsx
 import RequireTenantAuth from "@/components/require-tenant-auth";
+import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -176,16 +177,7 @@ export default async function AdminPage({
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Link href="/invite-user">
-                      <Button
-                        className="w-full justify-start"
-                        size="lg"
-                        variant="outline"
-                      >
-                        <span className="mr-2">👤</span>
-                        Invite Admin User
-                      </Button>
-                    </Link>
+                    <InviteUserDialog subdomain={subdomain} />
                     <Button
                       variant="outline"
                       className="w-full justify-start"

@@ -135,12 +135,30 @@ erDiagram
 - 🔐 **Role-Based Access**: `superadmin` → `admin` → `member` → `view-only`
 - 🛡️ **Row Level Security**: Comprehensive RLS policies for tenant isolation
 
-Verified schema (example project via Supabase MCP):
+Verified schema (via Supabase MCP):
 
-- Tables: `organizations`, `tenants`, `user_profiles` (RLS enabled)
-- View: `tenants_public` (subdomain, name)
-- Functions: `get_user_org_id`, `user_has_role`, `user_in_org`, `custom_access_token_hook`, `set_updated_at`, `handle_new_user`
-- Triggers: `trg_user_profiles_updated_at`, `on_auth_user_created` (see SQL)
+**Core Tables:** (all RLS enabled)
+
+- `organizations`, `tenants`, `user_profiles` - Multi-tenant org structure
+- `subscriptions`, `subscription_tiers`, `feature_limits`, `usage_counters` - Billing & usage
+- `projects`, `project_permissions` - Project management with granular access
+- `capabilities`, `role_capabilities`, `org_role_capabilities` - RBAC system
+
+**Views:**
+
+- `tenants_public` - Public subdomain lookup
+- `org_entitlements` - Subscription tier & feature aggregation
+
+**Key Functions:**
+
+- `bootstrap_organization()` - Initialize new org after signup
+- `custom_access_token_hook()` - Enrich JWT with role/org claims
+- `feature_increment_if_within_limit()` - Usage quota enforcement
+- `user_org_access()` - Check org membership & role
+- `user_org_capability()` - Check RBAC capability permissions
+- `user_project_access()` - Check project-level permissions
+- `handle_new_project()` - Auto-grant creator admin access
+- Trigger functions: `set_updated_at()`, `sync_user_email()`, `prevent_user_id_change()`
 
 ## 🚀 Complete Setup Guide
 

@@ -1,7 +1,6 @@
 // apps/protected/app/s/[subdomain]/auth/accept-invitation/page.tsx
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { Button } from "@workspace/ui/components/button";
+import { AcceptInvitationForm } from "@/components/accept-invitation-form";
 import {
   Card,
   CardHeader,
@@ -10,7 +9,6 @@ import {
   CardContent,
 } from "@workspace/ui/components/card";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 interface AcceptInvitationPageProps {
   params: Promise<{ subdomain: string }>;
@@ -103,76 +101,26 @@ export default async function AcceptInvitationPage({
     );
   }
 
-  // Process the invitation
-  const supabase = await createClient();
+  console.log(
+    "🔄 AcceptInvitationPage - Rendering client-side form for invite type"
+  );
 
-  const { data, error: verifyError } = await supabase.auth.verifyOtp({
-    token_hash,
-    type: "invite",
-  });
-
-  if (verifyError) {
-    return (
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-md">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl text-red-600">
-                Invitation Error
-              </CardTitle>
-              <CardDescription>
-                Unable to process your invitation
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                  <p className="text-sm text-red-700 flex items-center">
-                    <span className="mr-2">⚠️</span>
-                    {verifyError.message}
-                  </p>
-                </div>
-                <div className="text-center text-sm">
-                  <Link
-                    href="/auth/login"
-                    className="underline underline-offset-4"
-                  >
-                    ← Back to Login
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // If successful, redirect to dashboard
-  if (data.user) {
-    redirect("/dashboard");
-  }
-
+  // Render the client-side form that will:
+  // 1. Verify OTP to establish session
+  // 2. Show password setup form
+  // 3. Complete invitation and redirect
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Welcome to {subdomain}!</CardTitle>
-            <CardDescription>Your invitation has been accepted</CardDescription>
+            <CardDescription>
+              Set up your password to complete your invitation
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="p-3 rounded-md bg-green-50 border border-green-200">
-                <p className="text-sm text-green-700 flex items-center">
-                  <span className="mr-2">✅</span>
-                  You&apos;ve successfully joined the organization!
-                </p>
-              </div>
-              <Link href="/dashboard">
-                <Button className="w-full">Go to Dashboard</Button>
-              </Link>
-            </div>
+            <AcceptInvitationForm redirectTo="/dashboard" />
           </CardContent>
         </Card>
       </div>

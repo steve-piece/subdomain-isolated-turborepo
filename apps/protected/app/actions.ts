@@ -3,9 +3,9 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
-import { logger } from "@sentry/nextjs";
 
 export interface ResendVerificationResponse {
   success: boolean;
@@ -178,12 +178,13 @@ export async function inviteUserToOrganization(
       };
     }
 
-    // Send invitation email using Supabase Auth
+    // Send invitation email using Supabase Auth (requires admin client)
     const redirectTo = getRedirectUrl("/auth/accept-invitation", subdomain);
 
-    const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
-      email,
-      {
+    // Use admin client for inviting users (requires service role key)
+    const adminClient = createAdminClient();
+    const { error: inviteError } =
+      await adminClient.auth.admin.inviteUserByEmail(email, {
         redirectTo,
         data: {
           organization_name: organization.company_name,
@@ -192,8 +193,7 @@ export async function inviteUserToOrganization(
           invited_by_email: claims.claims.email,
           org_id: organization.id,
         },
-      }
-    );
+      });
 
     if (inviteError) {
       Sentry.logger.error("invite_user_error", {
@@ -232,16 +232,30 @@ export interface UpdatePasswordResponse {
  * Updates the current user's password via Supabase Auth and then signs them out,
  * recording failures in Sentry so the UI can surface meaningful feedback. This
  * action is protected and requires an authenticated session.
+ *
+ * @param password - The new password to set
+ * @param accessToken - Optional access token from password reset URL (for recovery flows)
  */
 export async function updatePassword(
-  password: string
+  password: string,
+  accessToken?: string
 ): Promise<UpdatePasswordResponse> {
   try {
     const supabase = await createClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // If access token provided (from recovery flow), verify user with it
+    let user;
+    if (accessToken) {
+      const {
+        data: { user: recoveryUser },
+      } = await supabase.auth.getUser(accessToken);
+      user = recoveryUser;
+    } else {
+      const {
+        data: { user: sessionUser },
+      } = await supabase.auth.getUser();
+      user = sessionUser;
+    }
 
     if (!user) {
       return { success: false, message: "Authentication required" };
@@ -551,9 +565,14 @@ export interface SendMagicLinkResponse {
 
 export async function sendMagicLink(
   email: string,
+  subdomain?: string,
   redirectTo?: string
 ): Promise<SendMagicLinkResponse> {
   const supabase = await createClient();
+
+  // Generate redirect URL if not provided
+  const finalRedirectTo =
+    redirectTo || getRedirectUrl("/auth/confirm", subdomain);
 
   return Sentry.startSpan(
     {
@@ -561,6 +580,7 @@ export async function sendMagicLink(
       name: "Send magic link",
       attributes: {
         email,
+        subdomain,
         hasRedirect: Boolean(redirectTo),
       },
     },
@@ -569,9 +589,10 @@ export async function sendMagicLink(
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: redirectTo,
+            emailRedirectTo: finalRedirectTo,
             data: {
               email_action: "magiclink",
+              subdomain,
             },
           },
         });
@@ -583,6 +604,8 @@ export async function sendMagicLink(
         span.setStatus({ code: 1 }); // OK
         Sentry.logger.info("magic_link_sent", {
           email,
+          subdomain,
+          redirectTo: finalRedirectTo,
           hasRedirect: Boolean(redirectTo),
         });
 
@@ -701,4 +724,316 @@ export async function verifyReauthentication(
       }
     }
   );
+}
+
+// ============================================================================
+// 2FA/MFA - Email-based Multi-Factor Authentication
+// ============================================================================
+
+export interface EnrollMFAResponse {
+  success: boolean;
+  message: string;
+  factorId?: string;
+}
+
+/**
+ * Enroll user in email-based MFA
+ */
+export async function enrollMFA(): Promise<EnrollMFAResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    // Enroll in email MFA factor
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: "totp",
+      friendlyName: `Email MFA for ${user.email}`,
+    });
+
+    if (error) {
+      Sentry.logger.error("mfa_enroll_error", {
+        message: error.message,
+        userId: user.id,
+      });
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ MFA enrollment started:", {
+      factorId: data.id,
+      userId: user.id,
+    });
+
+    return {
+      success: true,
+      message: "MFA enrollment started",
+      factorId: data.id,
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface VerifyMFAEnrollmentResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Verify MFA enrollment with code
+ */
+export async function verifyMFAEnrollment(
+  factorId: string,
+  code: string
+): Promise<VerifyMFAEnrollmentResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { error } = await supabase.auth.mfa.challengeAndVerify({
+      factorId,
+      code,
+    });
+
+    if (error) {
+      Sentry.logger.error("mfa_verify_enrollment_error", {
+        message: error.message,
+        userId: user.id,
+        factorId,
+      });
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ MFA enrollment verified:", {
+      factorId,
+      userId: user.id,
+    });
+
+    return { success: true, message: "MFA enabled successfully" };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface ChallengeMFAResponse {
+  success: boolean;
+  message: string;
+  challengeId?: string;
+}
+
+/**
+ * Challenge MFA - Send verification code to user's email
+ */
+export async function challengeMFA(
+  factorId: string
+): Promise<ChallengeMFAResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.auth.mfa.challenge({
+      factorId,
+    });
+
+    if (error) {
+      Sentry.logger.error("mfa_challenge_error", {
+        message: error.message,
+        factorId,
+      });
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ MFA challenge sent:", {
+      challengeId: data.id,
+      factorId,
+    });
+
+    return {
+      success: true,
+      message: "Verification code sent",
+      challengeId: data.id,
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface VerifyMFAResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Verify MFA code during login
+ */
+export async function verifyMFA(
+  factorId: string,
+  challengeId: string,
+  code: string
+): Promise<VerifyMFAResponse> {
+  try {
+    const supabase = await createClient();
+
+    const { error } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId,
+      code,
+    });
+
+    if (error) {
+      Sentry.logger.error("mfa_verify_error", {
+        message: error.message,
+        factorId,
+        challengeId,
+      });
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ MFA verified successfully:", {
+      factorId,
+      challengeId,
+    });
+
+    return { success: true, message: "Verification successful" };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface UnenrollMFAResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Unenroll from MFA - Disable 2FA
+ */
+export async function unenrollMFA(
+  factorId: string
+): Promise<UnenrollMFAResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { error } = await supabase.auth.mfa.unenroll({
+      factorId,
+    });
+
+    if (error) {
+      Sentry.logger.error("mfa_unenroll_error", {
+        message: error.message,
+        userId: user.id,
+        factorId,
+      });
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ MFA unenrolled:", {
+      factorId,
+      userId: user.id,
+    });
+
+    return { success: true, message: "2FA disabled successfully" };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface GetMFAFactorsResponse {
+  success: boolean;
+  message?: string;
+  factors?: Array<{
+    id: string;
+    friendlyName: string;
+    factorType: string;
+    status: string;
+  }>;
+}
+
+/**
+ * Get user's MFA factors
+ */
+export async function getMFAFactors(): Promise<GetMFAFactorsResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { data, error } = await supabase.auth.mfa.listFactors();
+
+    if (error) {
+      Sentry.logger.error("mfa_list_factors_error", {
+        message: error.message,
+        userId: user.id,
+      });
+      return { success: false, message: error.message };
+    }
+
+    return {
+      success: true,
+      factors: data.totp.map((factor) => ({
+        id: factor.id,
+        friendlyName: factor.friendly_name || "Email MFA",
+        factorType: factor.factor_type,
+        status: factor.status,
+      })),
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
 }

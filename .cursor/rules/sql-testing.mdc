@@ -4,6 +4,8 @@ alwaysApply: false
 
 # @sql-testing - SQL Migration Testing and Validation Checklist
 
+**IMPORTANT** ALWAYS ADD COMMENTS ON FUNCTIONS,TABLES, AND COLUMNS FOR AUTO-GENERATED SUPABASE API DOCUMENTATION.
+
 ## Comprehensive SQL Migration Quality Assurance
 
 ### **Core Principle: Database Reliability and Security**

@@ -30,8 +30,7 @@ interface LoginFormProps {
 
 // Client component because it handles form state, user input, and navigation.
 export function LoginForm({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  subdomain: _subdomain,
+  subdomain,
   className,
   ...props
 }: LoginFormProps & React.ComponentPropsWithoutRef<"div">) {
@@ -241,7 +240,7 @@ export function LoginForm({
       },
       async (span) => {
         try {
-          const result = await sendMagicLink(email);
+          const result = await sendMagicLink(email, subdomain);
 
           if (result.success) {
             span.setStatus({ code: 1 }); // OK

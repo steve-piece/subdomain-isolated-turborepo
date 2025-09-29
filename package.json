@@ -31,6 +31,11 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@sentry/nextjs": "^10.15.0"
+    "@sentry/nextjs": "^10.15.0",
+    "@supabase/supabase-js": "^2.57.4",
+    "dotenv": "^17.2.2",
+    "find-up": "^8.0.0",
+    "glob": "^11.0.3",
+    "openai": "^5.23.1"
   }
 }

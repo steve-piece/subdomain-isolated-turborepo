@@ -1,9 +1,10 @@
 // apps/protected/components/accept-invitation-form.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { completeInvitation } from "@/app/actions";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -24,8 +25,72 @@ export function AcceptInvitationForm({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [sessionEmail, setSessionEmail] = useState<string | undefined>(email);
   const router = useRouter();
   const { addToast } = useToast();
+
+  // Create client once
+  const supabase = useMemo(() => createClient(), []);
+
+  // Verify OTP on mount to establish session
+  useEffect(() => {
+    const verifyInvitation = async () => {
+      try {
+        if (typeof window === "undefined") return;
+
+        const params = new URLSearchParams(window.location.search);
+        const tokenHash = params.get("token_hash");
+        const type = params.get("type");
+
+        console.log("🔍 AcceptInvitationForm - Checking URL params:", {
+          hasTokenHash: !!tokenHash,
+          type,
+        });
+
+        if (!tokenHash || type !== "invite") {
+          setError("Invalid or incomplete invitation link");
+          setIsVerifying(false);
+          return;
+        }
+
+        console.log("🔄 AcceptInvitationForm - Manually verifying OTP...");
+
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "invite",
+        });
+
+        if (verifyError) {
+          console.error(
+            "🚨 AcceptInvitationForm - OTP verification failed:",
+            verifyError
+          );
+          setError(verifyError.message);
+          setIsVerifying(false);
+          return;
+        }
+
+        if (data.session) {
+          console.log("✅ AcceptInvitationForm - Session established:", {
+            userEmail: data.session.user.email,
+          });
+          setSessionEmail(data.session.user.email);
+          setError(null);
+        }
+
+        setIsVerifying(false);
+      } catch (error) {
+        console.error("🚨 AcceptInvitationForm - Unexpected error:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to verify invitation"
+        );
+        setIsVerifying(false);
+      }
+    };
+
+    verifyInvitation();
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -68,8 +133,52 @@ export function AcceptInvitationForm({
     router.push(result.redirectTo ?? redirectTo);
   };
 
+  // Show loading state while verifying
+  if (isVerifying) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+        <p className="text-center text-sm text-muted-foreground">
+          Verifying your invitation...
+        </p>
+      </div>
+    );
+  }
+
+  // Show error state if verification failed
+  if (error && !sessionEmail) {
+    return (
+      <div className="space-y-4">
+        <div className="p-3 rounded-md bg-red-50 border border-red-200">
+          <p className="text-sm text-red-700 flex items-center">
+            <span className="mr-2">❌</span>
+            {error}
+          </p>
+        </div>
+        <Button
+          type="button"
+          className="w-full"
+          variant="outline"
+          onClick={() => router.push("/auth/login")}
+        >
+          Back to Login
+        </Button>
+      </div>
+    );
+  }
+
+  // Show password setup form
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
+      {sessionEmail && (
+        <div className="p-3 rounded-md bg-blue-50 border border-blue-200 mb-4">
+          <p className="text-sm text-blue-700">
+            Setting up password for: <strong>{sessionEmail}</strong>
+          </p>
+        </div>
+      )}
       {email ? (
         <div className="text-sm text-muted-foreground">
           <span className="font-medium text-foreground">Invited email:</span>{" "}

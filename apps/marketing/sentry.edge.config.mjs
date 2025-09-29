@@ -1,4 +1,4 @@
-// apps/marketing/sentry.edge.config.mjs 
+// apps/marketing/sentry.edge.config.mjs
 // sentry.edge.config.js
 // This file configures the initialization of Sentry for edge features (middleware, edge routes, and so on).
 // The config you add here will be used whenever one of the edge features is loaded.
@@ -22,6 +22,11 @@ Sentry.init({
   // of transactions for tracing.
   // We recommend adjusting this value in production
   tracesSampleRate: 1,
+
+  // Release tracking for better source map resolution
+  release:
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA,
   integrations: [
     Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
   ],

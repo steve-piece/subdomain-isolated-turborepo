@@ -84,10 +84,31 @@ export default async function UpdatePasswordPage({
     );
   }
 
-  // Server-side OTP verification for tenant-scoped session
+  // For password recovery, render form and let client handle PASSWORD_RECOVERY event
+  // Do NOT verify OTP server-side as it consumes the single-use token
+  if (token_hash && type === "recovery") {
+    console.log(
+      "🔄 UpdatePasswordPage - Recovery tokens detected, rendering form for client-side handling"
+    );
+
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-md">
+          <UpdatePasswordForm
+            className="flex flex-col gap-6"
+            subdomain={subdomain}
+            isResetFlow={true}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // For other OTP types (email confirmation, etc.), verify server-side
   if (token_hash && type) {
     console.log(
-      "🔄 UpdatePasswordPage - Server-side OTP verification starting..."
+      "🔄 UpdatePasswordPage - Server-side OTP verification starting for type:",
+      type
     );
 
     try {
@@ -111,10 +132,10 @@ export default async function UpdatePasswordPage({
               <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl text-red-600">
-                    Reset Token Invalid
+                    Verification Failed
                   </CardTitle>
                   <CardDescription>
-                    Your password reset link is invalid or expired
+                    Your verification link is invalid or expired
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -126,19 +147,9 @@ export default async function UpdatePasswordPage({
                       </p>
                     </div>
                     <div className="text-center space-y-2">
-                      <Link href="/auth/forgot-password">
-                        <Button className="w-full">
-                          Request New Reset Link
-                        </Button>
+                      <Link href="/auth/login">
+                        <Button className="w-full">Back to Login</Button>
                       </Link>
-                      <div className="text-sm">
-                        <Link
-                          href="/auth/login"
-                          className="underline underline-offset-4"
-                        >
-                          ← Back to Login
-                        </Link>
-                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -159,10 +170,10 @@ export default async function UpdatePasswordPage({
               <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl text-red-600">
-                    Reset Verification Failed
+                    Verification Failed
                   </CardTitle>
                   <CardDescription>
-                    Unable to verify your identity with this reset link
+                    Unable to verify your identity
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -170,14 +181,12 @@ export default async function UpdatePasswordPage({
                     <div className="p-3 rounded-md bg-red-50 border border-red-200">
                       <p className="text-sm text-red-700 flex items-center">
                         <span className="mr-2">⚠️</span>
-                        Reset token verification failed - no user found
+                        Verification failed - no user found
                       </p>
                     </div>
                     <div className="text-center space-y-2">
-                      <Link href="/auth/forgot-password">
-                        <Button className="w-full">
-                          Request New Reset Link
-                        </Button>
+                      <Link href="/auth/login">
+                        <Button className="w-full">Back to Login</Button>
                       </Link>
                     </div>
                   </div>
@@ -204,7 +213,7 @@ export default async function UpdatePasswordPage({
             <UpdatePasswordForm
               className="flex flex-col gap-6"
               subdomain={subdomain}
-              isResetFlow={true}
+              isResetFlow={false}
               userEmail={data.user.email}
             />
           </div>
@@ -225,7 +234,7 @@ export default async function UpdatePasswordPage({
                   Verification Error
                 </CardTitle>
                 <CardDescription>
-                  An error occurred while processing your reset link
+                  An error occurred while processing your link
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -239,8 +248,8 @@ export default async function UpdatePasswordPage({
                     </p>
                   </div>
                   <div className="text-center space-y-2">
-                    <Link href="/auth/forgot-password">
-                      <Button className="w-full">Request New Reset Link</Button>
+                    <Link href="/auth/login">
+                      <Button className="w-full">Back to Login</Button>
                     </Link>
                   </div>
                 </div>

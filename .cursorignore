@@ -12,9 +12,3 @@
 /examples
 .env
 .env.local
-apps/protected/lib/supabase/client.ts
-apps/protected/lib/supabase/server.ts
-apps/protected/lib/supabase/middleware.ts
-apps/marketing/lib/supabase/client.ts
-apps/marketing/lib/supabase/server.ts
-apps/marketing/lib/supabase/middleware.ts

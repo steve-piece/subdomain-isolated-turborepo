@@ -1,4 +1,4 @@
-// apps/marketing/sentry.server.config.mjs 
+// apps/marketing/sentry.server.config.mjs
 // sentry.server.config.js
 // This file configures the initialization of Sentry on the server.
 // The config you add here will be used whenever the server handles a request.
@@ -21,6 +21,11 @@ Sentry.init({
   // of transactions for tracing.
   // We recommend adjusting this value in production
   tracesSampleRate: 1,
+
+  // Release tracking for better source map resolution
+  release:
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA,
   integrations: [
     Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
   ],

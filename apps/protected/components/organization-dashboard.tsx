@@ -70,7 +70,7 @@ export function OrganizationDashboard({
           </Card>
 
           {/* Dashboard Stats */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2">
             <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -95,21 +95,6 @@ export function OrganizationDashboard({
                 <div className="text-2xl font-bold">0</div>
                 <p className="text-xs text-muted-foreground">
                   Start your first project
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Storage Used
-                </CardTitle>
-                <div className="text-2xl">💾</div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">0 GB</div>
-                <p className="text-xs text-muted-foreground">
-                  Of 10 GB available
                 </p>
               </CardContent>
             </Card>
