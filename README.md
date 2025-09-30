@@ -579,3 +579,407 @@ Guidelines:
 - Keep page files minimal; move logic/UI into wrapper components
 - Use clean URLs in links/navigation; never `/s/<subdomain>` in UI
 - Server actions must validate claims and tenant subdomain
+
+---
+
+## 🎨 Settings & RBAC System
+
+### Overview
+
+The application features a comprehensive settings management system integrated with a powerful Role-Based Access Control (RBAC) framework that enables fine-grained permission management across organizations.
+
+### Architecture
+
+```mermaid
+graph TB
+    subgraph "👤 User Settings"
+        US1[Profile Settings]
+        US2[Security Settings]
+        US3[Notification Preferences]
+    end
+
+    subgraph "🏢 Organization Settings"
+        OS1[General Settings]
+        OS2[Team Management]
+        OS3[Billing & Plans]
+        OS4[Custom Role Capabilities]
+    end
+
+    subgraph "🔐 RBAC System"
+        R1[41 Capabilities]
+        R2[5 Role Levels]
+        R3[Custom Overrides]
+        R4[Tier-Based Access]
+    end
+
+    subgraph "🗄️ Database Layer"
+        D1[user_profiles]
+        D2[user_notification_preferences]
+        D3[user_security_settings]
+        D4[organizations]
+        D5[organization_team_settings]
+        D6[capabilities]
+        D7[role_capabilities]
+        D8[org_role_capabilities]
+        D9[security_audit_log]
+    end
+
+    US1 --> D1
+    US2 --> D3
+    US3 --> D2
+    OS1 --> D4
+    OS2 --> D5
+    OS4 --> R3
+    R1 --> D6
+    R2 --> D7
+    R3 --> D8
+    US2 --> D9
+```
+
+### User Settings
+
+**Profile Settings** (`/settings/profile`)
+
+- Personal information management (name, email, bio, timezone)
+- Profile picture upload
+- Account context display (organization, role, subdomain)
+- Account deletion (danger zone)
+
+**Security Settings** (`/settings/security`)
+
+- Security overview dashboard
+- Password management with reset functionality
+- Two-Factor Authentication (2FA) setup via email
+- Active session management
+- Security audit log viewer
+- Real-time security activity feed
+
+**Notification Settings** (`/settings/notifications`)
+
+- Email notification toggles (account activity, team updates, projects, marketing)
+- In-app notification preferences
+- Email digest frequency (realtime, daily, weekly, never)
+- Quiet hours configuration with timezone support
+
+### Organization Settings
+
+**General Settings** (`/org-settings`)
+
+- Organization identity (name, description, subdomain)
+- Logo upload and management
+- Contact information (website, support email, business address)
+- Organization details (ID, creation date, current plan)
+- Danger zone (ownership transfer, organization deletion)
+
+**Team Management** (`/org-settings/team`)
+
+- Team member list with role badges
+- User invitation system
+- Role assignment and management
+- Member removal functionality
+
+**Billing** (`/org-settings/billing`)
+
+- Current plan display
+- Subscription tier management
+- Usage statistics and quotas
+- Payment method management
+
+**Custom Role Capabilities** (`/org-settings/roles`) - **Business+ Tier**
+
+- Role-based capability customization
+- Grant/revoke permissions per role
+- Visual indicators for custom overrides
+- Reset to defaults functionality
+- Real-time permission updates
+- Comprehensive audit trail
+
+### RBAC (Role-Based Access Control)
+
+#### Role Hierarchy
+
+```
+owner > superadmin > admin > member > view-only
+```
+
+#### Roles & Default Capabilities
+
+**Owner (41 permissions)**
+
+- Full system access
+- Organization deletion rights
+- Custom permission configuration (Business+ tier)
+- Ownership transfer capability
+
+**Superadmin (40 permissions)**
+
+- All capabilities except organization deletion
+- Full administrative access
+- Team and project management
+
+**Admin (32 permissions)**
+
+- Project creation, viewing, editing, deletion, archiving
+- Team invitation, removal, viewing, role management
+- Billing viewing and management
+- Organization settings editing
+- Security audit log access
+- Analytics access
+
+**Member (9 permissions)**
+
+- Project creation and editing (own projects)
+- Team viewing
+- Profile and security settings management
+- Notification preferences
+
+**View-Only (4 permissions)**
+
+- View own projects
+- View team members
+- View own security settings
+- View analytics
+
+#### Capability Categories
+
+1. **Projects** (7 capabilities)
+   - Create, view (all/own), edit (all/own), delete, archive
+
+2. **Team Management** (4 capabilities)
+   - Invite, remove, view, manage roles
+
+3. **Billing** (3 capabilities)
+   - View, manage, upgrade subscription
+
+4. **Organization** (9 capabilities)
+   - View/edit general settings, team settings, delete org, logo upload
+
+5. **Profile** (3 capabilities)
+   - Edit own/others profiles, upload picture
+
+6. **Security** (4 capabilities)
+   - View/edit own security, view org audit log, manage sessions
+
+7. **Notifications** (1 capability)
+   - Edit own notification preferences
+
+8. **Analytics** (3 capabilities)
+   - View, generate reports, export data
+
+### Custom Role Capabilities (Business+ Feature)
+
+Organizations on Business or Enterprise tiers can customize role capabilities:
+
+**Features:**
+
+- Grant additional capabilities to lower roles
+- Revoke default capabilities from any role
+- Create custom permission workflows
+- Full audit trail of all permission changes
+- Real-time permission updates
+- Visual indicators for customized roles
+
+**Implementation:**
+
+```typescript
+// Server actions for managing custom capabilities
+await grantCustomCapability(role, capabilityKey);
+await revokeCustomCapability(role, capabilityKey);
+await resetRoleToDefaults(role);
+```
+
+**Tier Verification:**
+
+```typescript
+// Automatic tier checking
+const canCustomize = await canCustomizeRoles(); // Business+ only
+```
+
+**UI Components:**
+
+- `RoleCapabilitiesManager`: Interactive permission toggle grid
+- `UpgradePrompt`: Tier upgrade call-to-action for free/pro users
+- Role selector with capability grouping by category
+- Reset confirmation dialog for destructive actions
+
+### Database Schema Extensions
+
+**New Tables:**
+
+```sql
+-- User settings
+user_notification_preferences
+user_security_settings
+user_active_sessions
+
+-- Organization settings
+organization_team_settings
+settings_usage_tracking
+
+-- Security
+security_audit_log
+
+-- RBAC
+capabilities (41 entries)
+role_capabilities (130+ mappings)
+org_role_capabilities (custom overrides)
+```
+
+**Automatic Initialization:**
+
+- Triggers auto-create settings for new users
+- Triggers auto-create team settings for new organizations
+- Default notification preferences applied on signup
+- Security settings initialized with password timestamp
+
+**Row-Level Security:**
+
+- All settings tables have RLS enabled
+- Users can only access their own settings
+- Organization settings require role verification
+- Service role has full access for backend operations
+
+### Navigation System
+
+**Collapsible Sidebar** (`AppSidebar`)
+
+- Persistent navigation across all protected routes
+- Role-based menu filtering
+- Premium feature indicators (💎)
+- Real-time permission count display
+- Organized sections:
+  - **Main**: Dashboard, Admin Panel
+  - **User Settings**: Profile, Security, Notifications
+  - **Organization**: General, Team, Billing, Roles
+
+**Route Groups:**
+
+```
+apps/protected/app/s/[subdomain]/(protected)/
+├── (dashboard)/        # Main application routes
+│   ├── dashboard/
+│   └── admin/
+├── (user-settings)/    # User personal settings
+│   └── settings/
+│       ├── profile/
+│       ├── security/
+│       └── notifications/
+└── (org-settings)/     # Organization settings
+    └── org-settings/
+        ├── page.tsx    # General
+        ├── team/
+        ├── billing/
+        └── roles/      # Business+ only
+```
+
+### Security Features
+
+**Multi-Factor Authentication (2FA)**
+
+- Email-based 6-digit code authentication
+- MFA setup UI with clear onboarding
+- Challenge-response verification flow
+- Factor management (enroll, verify, unenroll, list)
+
+**Session Management:**
+
+- Active session tracking across devices
+- Session revocation capability
+- "Current Device" indicator
+- Last active timestamps
+- IP address logging
+
+**Security Audit Log:**
+
+- Real-time security event logging
+- Event categorization (login, logout, password_change, mfa_enabled)
+- Severity levels (info, warning, critical)
+- Action states (success, failure, attempted)
+- IP address and user agent tracking
+- Dedicated viewer at `/settings/security/audit-log`
+
+**Helper Functions:**
+
+```typescript
+// RBAC permission checks
+const permissions = getUserPermissions(role, orgId);
+const hasAccess = userHasCapability(userId, orgId, "projects.create");
+
+// Usage limit enforcement
+const withinLimit = await checkUsageLimit(orgId, "api_calls");
+
+// Security logging
+await logSecurityEvent(userId, orgId, "login", "success");
+```
+
+### Testing
+
+A comprehensive test suite ensures all functionality works correctly:
+
+**Testing Checklist:**
+
+- ✅ Login and authentication flows
+- ✅ Dashboard and navigation
+- ✅ User settings (profile, security, notifications)
+- ✅ Organization settings (general, team, billing, roles)
+- ✅ RBAC permission enforcement
+- ✅ Tier-based feature gating
+- ✅ Sidebar navigation and role display
+- ✅ 2FA setup and verification
+- ✅ Security audit log recording
+
+See `TESTING_CHECKLIST.md` for detailed test scenarios.
+
+### Documentation
+
+Complete documentation is available in `/docs/rbac-settings/`:
+
+- `README.md` - Documentation index
+- `RBAC_QUICK_REFERENCE.md` - Developer reference for RBAC
+- `CUSTOM_ROLE_CAPABILITIES.md` - Custom permissions guide
+- `SETTINGS_ARCHITECTURE.md` - System architecture overview
+- `SETTINGS_INTEGRATION.md` - Database integration details
+- `SETTINGS_DATABASE_SCHEMA.sql` - Complete schema migration
+- `SEED_CAPABILITIES.sql` - Initial data seeding
+- `MIGRATION_GUIDE.md` - Step-by-step migration instructions
+
+### Quick Start
+
+**Apply Database Migrations:**
+
+```bash
+# Using Supabase CLI
+supabase db push
+
+# Or run SQL directly
+psql "postgresql://postgres:[PASSWORD]@db.your-project.supabase.co:5432/postgres" \
+  -f docs/rbac-settings/SETTINGS_DATABASE_SCHEMA.sql
+
+# Seed capabilities
+psql "postgresql://postgres:[PASSWORD]@db.your-project.supabase.co:5432/postgres" \
+  -f docs/rbac-settings/SEED_CAPABILITIES.sql
+```
+
+**Check User Permissions:**
+
+```typescript
+import { getUserPermissions, userHasCapability } from "@/lib/rbac/permissions";
+
+// Get all permissions for a user
+const permissions = await getUserPermissions(user.role, orgId);
+
+// Check specific capability
+if (userHasCapability(permissions, "projects.create")) {
+  // User can create projects
+}
+```
+
+**Filter Navigation by Permissions:**
+
+```typescript
+import { filterNavigationByPermissions } from "@/lib/rbac/permissions";
+
+const visibleRoutes = filterNavigationByPermissions(routes, permissions);
+```
+
+---

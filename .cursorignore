@@ -8,7 +8,6 @@
 /backup
 /test
 /tests
-/docs
 /examples
 .env
 .env.local

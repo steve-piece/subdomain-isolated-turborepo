@@ -56,7 +56,7 @@ export function MFAVerify({ factorId, onSuccess, onCancel }: MFAVerifyProps) {
     };
 
     sendChallenge();
-  }, [factorId]);
+  }, [addToast, factorId]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1037,3 +1037,567 @@ export async function getMFAFactors(): Promise<GetMFAFactorsResponse> {
     };
   }
 }
+
+// ============================================================================
+// CUSTOM ROLE CAPABILITIES (Business+ Tier)
+// ============================================================================
+
+export interface CustomCapabilityResponse {
+  success: boolean;
+  message?: string;
+  canCustomize?: boolean;
+  tier?: string;
+}
+
+export interface OrgCapabilitiesResponse {
+  success: boolean;
+  message?: string;
+  data?: any[];
+}
+
+/**
+ * Check if organization can customize role capabilities
+ * Requires Business+ subscription tier
+ */
+export async function canCustomizeRoles(): Promise<CustomCapabilityResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { data: claims } = await supabase.auth.getClaims();
+    const orgId = claims?.claims?.org_id;
+
+    if (!orgId) {
+      return { success: false, message: "Organization context required" };
+    }
+
+    const { data: subscription } = await supabase
+      .from("subscriptions")
+      .select(
+        `
+        subscription_tiers (
+          name,
+          allows_custom_permissions
+        )
+      `
+      )
+      .eq("org_id", orgId)
+      .single();
+
+    return {
+      success: true,
+      canCustomize:
+        subscription?.subscription_tiers?.allows_custom_permissions || false,
+      tier: subscription?.subscription_tiers?.name || "free",
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+/**
+ * Grant custom capability to a role
+ * Only organization owners on Business+ tier can customize
+ */
+export async function grantCustomCapability(
+  role: string,
+  capabilityKey: string
+): Promise<CustomCapabilityResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { data: claims } = await supabase.auth.getClaims();
+    const orgId = claims?.claims?.org_id;
+    const userRole = claims?.claims?.user_role;
+
+    if (!orgId) {
+      return { success: false, message: "Organization context required" };
+    }
+
+    // Only owners can customize
+    if (userRole !== "owner") {
+      return {
+        success: false,
+        message: "Only organization owners can customize role capabilities",
+      };
+    }
+
+    // Check subscription tier
+    const tierCheck = await canCustomizeRoles();
+    if (!tierCheck.canCustomize) {
+      return {
+        success: false,
+        message: `Upgrade to Business tier to customize role capabilities. Current tier: ${tierCheck.tier}`,
+      };
+    }
+
+    // Get capability ID
+    const { data: capability } = await supabase
+      .from("capabilities")
+      .select("id")
+      .eq("key", capabilityKey)
+      .single();
+
+    if (!capability) {
+      return { success: false, message: "Capability not found" };
+    }
+
+    // Upsert custom capability (granted = true)
+    const { error } = await supabase.from("org_role_capabilities").upsert(
+      {
+        org_id: orgId,
+        role: role,
+        capability_id: capability.id,
+        granted: true,
+        updated_by: user.id,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "org_id,role,capability_id",
+      }
+    );
+
+    if (error) {
+      Sentry.captureException(error);
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ Custom capability granted:", {
+      orgId,
+      role,
+      capability: capabilityKey,
+    });
+
+    return {
+      success: true,
+      message: `Capability '${capabilityKey}' granted to ${role}`,
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+/**
+ * Revoke custom capability from a role
+ * Only organization owners on Business+ tier can customize
+ */
+export async function revokeCustomCapability(
+  role: string,
+  capabilityKey: string
+): Promise<CustomCapabilityResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { data: claims } = await supabase.auth.getClaims();
+    const orgId = claims?.claims?.org_id;
+    const userRole = claims?.claims?.user_role;
+
+    if (!orgId) {
+      return { success: false, message: "Organization context required" };
+    }
+
+    // Only owners can customize
+    if (userRole !== "owner") {
+      return {
+        success: false,
+        message: "Only organization owners can customize role capabilities",
+      };
+    }
+
+    // Check subscription tier
+    const tierCheck = await canCustomizeRoles();
+    if (!tierCheck.canCustomize) {
+      return {
+        success: false,
+        message: `Upgrade to Business tier to customize role capabilities. Current tier: ${tierCheck.tier}`,
+      };
+    }
+
+    // Get capability ID
+    const { data: capability } = await supabase
+      .from("capabilities")
+      .select("id")
+      .eq("key", capabilityKey)
+      .single();
+
+    if (!capability) {
+      return { success: false, message: "Capability not found" };
+    }
+
+    // Upsert custom capability (granted = false to revoke)
+    const { error } = await supabase.from("org_role_capabilities").upsert(
+      {
+        org_id: orgId,
+        role: role,
+        capability_id: capability.id,
+        granted: false,
+        updated_by: user.id,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "org_id,role,capability_id",
+      }
+    );
+
+    if (error) {
+      Sentry.captureException(error);
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ Custom capability revoked:", {
+      orgId,
+      role,
+      capability: capabilityKey,
+    });
+
+    return {
+      success: true,
+      message: `Capability '${capabilityKey}' revoked from ${role}`,
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+/**
+ * Reset role to default capabilities
+ * Removes all custom overrides for a specific role
+ */
+export async function resetRoleToDefaults(
+  role: string
+): Promise<CustomCapabilityResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { data: claims } = await supabase.auth.getClaims();
+    const orgId = claims?.claims?.org_id;
+    const userRole = claims?.claims?.user_role;
+
+    if (!orgId) {
+      return { success: false, message: "Organization context required" };
+    }
+
+    // Only owners can customize
+    if (userRole !== "owner") {
+      return {
+        success: false,
+        message: "Only organization owners can reset role capabilities",
+      };
+    }
+
+    // Delete all custom capabilities for this role
+    const { error } = await supabase
+      .from("org_role_capabilities")
+      .delete()
+      .eq("org_id", orgId)
+      .eq("role", role);
+
+    if (error) {
+      Sentry.captureException(error);
+      return { success: false, message: error.message };
+    }
+
+    console.log("✅ Role reset to defaults:", {
+      orgId,
+      role,
+    });
+
+    return {
+      success: true,
+      message: `${role} role reset to default capabilities`,
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+/**
+ * Get all custom capabilities for current organization
+ */
+export async function getOrgCustomCapabilities(): Promise<OrgCapabilitiesResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { data: claims } = await supabase.auth.getClaims();
+    const orgId = claims?.claims?.org_id;
+    const userRole = claims?.claims?.user_role;
+
+    if (!orgId) {
+      return { success: false, message: "Organization context required" };
+    }
+
+    // Only owners and admins can view
+    if (!["owner", "admin", "superadmin"].includes(userRole || "")) {
+      return {
+        success: false,
+        message: "Only owners and admins can view custom capabilities",
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("org_role_capabilities")
+      .select(
+        `
+        role,
+        granted,
+        updated_at,
+        capabilities (
+          id,
+          key,
+          name,
+          description,
+          category
+        )
+      `
+      )
+      .eq("org_id", orgId)
+      .order("role", { ascending: true });
+
+    if (error) {
+      Sentry.captureException(error);
+      return { success: false, message: error.message };
+    }
+
+    return {
+      success: true,
+      data: data || [],
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+/**
+ * Get all available capabilities grouped by category
+ */
+export async function getAllCapabilities(): Promise<OrgCapabilitiesResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const { data: claims } = await supabase.auth.getClaims();
+    const userRole = claims?.claims?.user_role;
+
+    // Only owners and admins can view
+    if (!["owner", "admin", "superadmin"].includes(userRole || "")) {
+      return {
+        success: false,
+        message: "Only owners and admins can view capabilities",
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("capabilities")
+      .select("*")
+      .order("category", { ascending: true })
+      .order("name", { ascending: true });
+
+    if (error) {
+      Sentry.captureException(error);
+      return { success: false, message: error.message };
+    }
+
+    return {
+      success: true,
+      data: data || [],
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+/**
+ * Update user profile information
+ */
+export async function updateUserProfile(data: {
+  full_name?: string;
+  bio?: string;
+  timezone?: string;
+  phone_number?: string;
+  language?: string;
+}) {
+  const supabase = await createClient();
+
+  // Check authentication
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    return { success: false, message: "Authentication required" };
+  }
+
+  // Update user_profiles table
+  const { error: updateError } = await supabase
+    .from("user_profiles")
+    .update({
+      ...data,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", user.id);
+
+  if (updateError) {
+    Sentry.withScope((scope) => {
+      scope.setTag("action", "update_profile");
+      scope.setUser({ id: user.id, email: user.email });
+      scope.setContext("profile_update", {
+        message: updateError.message,
+        details: updateError.details,
+      });
+      Sentry.captureException(updateError);
+    });
+    return { success: false, message: "Failed to update profile" };
+  }
+
+  return { success: true, message: "Profile updated successfully" };
+}
+
+/**
+ * Update user notification preferences
+ */
+export async function updateNotificationPreferences(data: {
+  email_account_activity?: boolean;
+  email_team_updates?: boolean;
+  email_project_activity?: boolean;
+  email_marketing?: boolean;
+  inapp_push_enabled?: boolean;
+  inapp_sound_enabled?: boolean;
+  email_digest_frequency?: string;
+  quiet_hours_enabled?: boolean;
+  quiet_hours_start?: string;
+  quiet_hours_end?: string;
+}) {
+  const supabase = await createClient();
+
+  // Check authentication
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    return { success: false, message: "Authentication required" };
+  }
+
+  // Check if preferences exist
+  const { data: existing } = await supabase
+    .from("user_notification_preferences")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  let error;
+  
+  if (existing) {
+    // Update existing preferences
+    const { error: updateError } = await supabase
+      .from("user_notification_preferences")
+      .update({
+        ...data,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id);
+    error = updateError;
+  } else {
+    // Insert new preferences
+    const { error: insertError } = await supabase
+      .from("user_notification_preferences")
+      .insert({
+        user_id: user.id,
+        ...data,
+      });
+    error = insertError;
+  }
+
+  if (error) {
+    Sentry.withScope((scope) => {
+      scope.setTag("action", "update_notification_preferences");
+      scope.setUser({ id: user.id, email: user.email });
+      scope.setContext("notification_update", {
+        message: error.message,
+        details: error.details,
+      });
+      Sentry.captureException(error);
+    });
+    return { success: false, message: "Failed to update notification preferences" };
+  }
+
+  return { success: true, message: "Notification preferences updated successfully" };
+}

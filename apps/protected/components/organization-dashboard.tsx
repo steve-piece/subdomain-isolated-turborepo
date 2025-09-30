@@ -45,11 +45,6 @@ export function OrganizationDashboard({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/admin">
-              <Button variant="outline" size="sm">
-                ⚙️ Admin Panel
-              </Button>
-            </Link>
             <LogoutButton subdomain={subdomain} />
           </div>
         </div>

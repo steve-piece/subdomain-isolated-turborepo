@@ -24,29 +24,15 @@ export default async function AdminPage({
       allowedRoles={["owner", "admin", "superadmin"]}
     >
       {() => (
-        <div className="flex h-screen w-full flex-col">
-          <header className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  ⚙️ Admin Dashboard
-                </h1>
-                <p className="text-muted-foreground mt-1 flex items-center">
-                  <span className="mr-2">🏢</span>
-                  {subdomain} administration
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Link href="/">
-                  <Button variant="outline" size="sm">
-                    ← Back to Dashboard
-                  </Button>
-                </Link>
-              </div>
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted/20">
+          <div className="p-6">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+              <p className="text-muted-foreground mt-1">
+                Advanced settings and administration tools for {subdomain}
+              </p>
             </div>
-          </header>
 
-          <main className="flex-1 p-6 bg-gradient-to-br from-background to-muted/30">
             <div className="mx-auto max-w-6xl space-y-6">
               {/* Admin Overview */}
               <Card className="bg-gradient-to-r from-card to-card/50 shadow-lg">
@@ -113,22 +99,24 @@ export default async function AdminPage({
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow cursor-pointer group">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Security
-                    </CardTitle>
-                    <div className="text-2xl group-hover:scale-110 transition-transform">
-                      🔐
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">✓</div>
-                    <p className="text-xs text-muted-foreground">
-                      Security settings & audit logs
-                    </p>
-                  </CardContent>
-                </Card>
+                <Link href="/settings/security">
+                  <Card className="hover:shadow-md transition-shadow cursor-pointer group">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Security
+                      </CardTitle>
+                      <div className="text-2xl group-hover:scale-110 transition-transform">
+                        🔐
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">✓</div>
+                      <p className="text-xs text-muted-foreground">
+                        Security settings & audit logs
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
 
                 <Card className="hover:shadow-md transition-shadow cursor-pointer group">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -244,7 +232,7 @@ export default async function AdminPage({
                 </Card>
               </div>
             </div>
-          </main>
+          </div>
         </div>
       )}
     </RequireTenantAuth>

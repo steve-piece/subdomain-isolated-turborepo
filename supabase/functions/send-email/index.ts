@@ -15,6 +15,8 @@ import { SignupConfirmationEmail } from "./_templates/signup-confirmation-email.
 import { PasswordResetEmail } from "./_templates/password-reset-email.tsx";
 import { UserInvitationEmail } from "./_templates/user-invitation-email.tsx";
 import { NotificationEmail } from "./_templates/notification-email.tsx";
+import { MagicLinkEmail } from "./_templates/magic-link-email.tsx";
+import { TwoFactorEmail } from "./_templates/two-factor-email.tsx";
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 if (!resendApiKey) {
@@ -339,17 +341,25 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
     }
 
     case "magiclink": {
+      const magicLinkUrl =
+        buildConfirmationUrl(
+          email_data.email_action_type,
+          email_data.token_hash,
+          email_data.redirect_to,
+          email_data.site_url,
+          subdomain
+        ) ?? email_data.token;
+
       return {
-        subject: "Your magic link",
-        text: `Use this link to sign in: ${
-          buildConfirmationUrl(
-            email_data.email_action_type,
-            email_data.token_hash,
-            email_data.redirect_to,
-            email_data.site_url,
-            subdomain
-          ) ?? email_data.token
-        }`,
+        subject: organizationName
+          ? `Sign in to ${organizationName}`
+          : "Your magic link to sign in",
+        react: React.createElement(MagicLinkEmail, {
+          userName: fullName,
+          magicLinkUrl,
+          organizationName,
+          subdomain,
+        }),
       };
     }
 
