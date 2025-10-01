@@ -3,6 +3,7 @@
 
 import { type ActivityItem } from "@/app/actions/activity/get-recent-activity";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw } from "lucide-react";
 
 interface ActivityFeedProps {
   activities: ActivityItem[];
@@ -12,7 +13,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
   if (activities.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <div className="text-4xl mb-2">🔄</div>
+        <RefreshCw className="h-10 w-10 mx-auto mb-2" />
         <p className="text-sm">No recent activity</p>
         <p className="text-xs mt-1">
           Activity will appear here as your team starts working

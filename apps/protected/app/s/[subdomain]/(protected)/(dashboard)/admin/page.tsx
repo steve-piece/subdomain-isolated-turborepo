@@ -7,6 +7,7 @@
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -17,6 +18,23 @@ import {
 } from "@workspace/ui/components/card";
 import Link from "next/link";
 import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
+import { ForceLogoutControls } from "@/components/admin/force-logout-controls";
+import {
+  Wrench,
+  Users,
+  Settings,
+  CreditCard,
+  Shield,
+  Plug,
+  BarChart3,
+  Zap,
+  Mail,
+  Download,
+  ClipboardList,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+} from "lucide-react";
 
 type SystemStatus = "operational" | "degraded" | "down";
 
@@ -209,6 +227,26 @@ function formatRelativeTime(timestamp: string | null): string {
 // ✅ Enable caching - admin page can be cached for 60 seconds
 export const revalidate = 60;
 
+// ✅ Generate dynamic page title
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ subdomain: string }>;
+}): Promise<Metadata> {
+  const { subdomain } = await params;
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+
+  const companyName = claims?.claims.company_name || subdomain;
+  // Read APP_NAME from environment - ensure it's defined in .env.local
+  const appName =
+    process.env.NEXT_PUBLIC_APP_NAME || process.env.APP_NAME || "Your App Name";
+
+  return {
+    title: `${companyName} Admin | ${appName}`,
+  };
+}
+
 export default async function AdminPage({
   params,
 }: {
@@ -246,7 +284,8 @@ export default async function AdminPage({
           <Card className="bg-gradient-to-r from-card to-card/50 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
-                🔧 Organization Management
+                <Wrench className="h-6 w-6" />
+                Organization Management
               </CardTitle>
               <CardDescription className="text-base">
                 Advanced settings and administration tools for {subdomain}
@@ -262,9 +301,7 @@ export default async function AdminPage({
                   <CardTitle className="text-sm font-medium">
                     User Management
                   </CardTitle>
-                  <div className="text-2xl group-hover:scale-110 transition-transform">
-                    👥
-                  </div>
+                  <Users className="h-6 w-6 text-muted-foreground group-hover:scale-110 transition-transform" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -285,12 +322,10 @@ export default async function AdminPage({
                   <CardTitle className="text-sm font-medium">
                     Organization Settings
                   </CardTitle>
-                  <div className="text-2xl group-hover:scale-110 transition-transform">
-                    ⚙️
-                  </div>
+                  <Settings className="h-6 w-6 text-muted-foreground group-hover:scale-110 transition-transform" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">⚙️</div>
+                  <div className="text-2xl font-bold">Active</div>
                   <p className="text-xs text-muted-foreground">
                     Configure organization preferences
                   </p>
@@ -304,9 +339,7 @@ export default async function AdminPage({
                   <CardTitle className="text-sm font-medium">
                     Billing & Plans
                   </CardTitle>
-                  <div className="text-2xl group-hover:scale-110 transition-transform">
-                    💳
-                  </div>
+                  <CreditCard className="h-6 w-6 text-muted-foreground group-hover:scale-110 transition-transform" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold capitalize">
@@ -325,12 +358,13 @@ export default async function AdminPage({
                   <CardTitle className="text-sm font-medium">
                     Security
                   </CardTitle>
-                  <div className="text-2xl group-hover:scale-110 transition-transform">
-                    🔐
-                  </div>
+                  <Shield className="h-6 w-6 text-muted-foreground group-hover:scale-110 transition-transform" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">✓</div>
+                  <div className="text-2xl font-bold flex items-center gap-2">
+                    <CheckCircle2 className="h-6 w-6 text-green-600" />
+                    Secure
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Security settings & audit logs
                   </p>
@@ -343,9 +377,7 @@ export default async function AdminPage({
                 <CardTitle className="text-sm font-medium">
                   Integrations
                 </CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">
-                  🔌
-                </div>
+                <Plug className="h-6 w-6 text-muted-foreground group-hover:scale-110 transition-transform" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -360,9 +392,7 @@ export default async function AdminPage({
             <Card className="hover:shadow-md transition-shadow group opacity-60">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Analytics</CardTitle>
-                <div className="text-2xl group-hover:scale-110 transition-transform">
-                  📊
-                </div>
+                <BarChart3 className="h-6 w-6 text-muted-foreground group-hover:scale-110 transition-transform" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">Coming Soon</div>
@@ -373,12 +403,16 @@ export default async function AdminPage({
             </Card>
           </div>
 
+          {/* Force Logout Controls */}
+          <ForceLogoutControls />
+
           <div className="grid gap-6 md:grid-cols-2">
             {/* Quick Admin Actions */}
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  ⚡ Quick Admin Actions
+                  <Zap className="h-5 w-5" />
+                  Quick Admin Actions
                 </CardTitle>
                 <CardDescription>Common administrative tasks</CardDescription>
               </CardHeader>
@@ -390,7 +424,7 @@ export default async function AdminPage({
                   size="lg"
                   disabled
                 >
-                  <span className="mr-2">📧</span>
+                  <Mail className="h-4 w-4 mr-2" />
                   Send Team Notification
                   <span className="ml-auto text-xs text-muted-foreground">
                     Coming Soon
@@ -402,7 +436,7 @@ export default async function AdminPage({
                   size="lg"
                   disabled
                 >
-                  <span className="mr-2">🔄</span>
+                  <Download className="h-4 w-4 mr-2" />
                   Export Organization Data
                   <span className="ml-auto text-xs text-muted-foreground">
                     Coming Soon
@@ -414,7 +448,7 @@ export default async function AdminPage({
                   size="lg"
                   disabled
                 >
-                  <span className="mr-2">📋</span>
+                  <ClipboardList className="h-4 w-4 mr-2" />
                   Generate Usage Report
                   <span className="ml-auto text-xs text-muted-foreground">
                     Coming Soon
@@ -429,13 +463,15 @@ export default async function AdminPage({
                 <CardTitle className="flex items-center gap-2">
                   {systemHealth.api.status === "operational" &&
                   systemHealth.database.status === "operational" &&
-                  systemHealth.storage.status === "operational"
-                    ? "🟢"
-                    : systemHealth.api.status === "down" ||
-                        systemHealth.database.status === "down" ||
-                        systemHealth.storage.status === "down"
-                      ? "🔴"
-                      : "🟡"}{" "}
+                  systemHealth.storage.status === "operational" ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  ) : systemHealth.api.status === "down" ||
+                    systemHealth.database.status === "down" ||
+                    systemHealth.storage.status === "down" ? (
+                    <XCircle className="h-5 w-5 text-red-600" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-yellow-600" />
+                  )}
                   System Status
                 </CardTitle>
                 <CardDescription>

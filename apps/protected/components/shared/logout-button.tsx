@@ -5,6 +5,7 @@
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 
 interface LogoutButtonProps {
   subdomain: string;
@@ -28,7 +29,7 @@ export function LogoutButton({
       onClick={handleLogout}
       className="flex items-center gap-2"
     >
-      <span>🚪</span>
+      <LogOut className="h-4 w-4" />
       Sign out
     </Button>
   );

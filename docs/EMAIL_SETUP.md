@@ -16,16 +16,16 @@ Set these variables in your `.env` files and Supabase project secrets:
 
 ```bash
 # Supabase
-SUPABASE_URL=https://qnbqrlpvokzgtfevnuzv.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=...
-SUPABASE_SECRET_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...  # Only for Edge Functions
+SUPABASE_URL={{Your Supabase Project URL}}
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY={{Your Supabase Project Publishable Key}}
+SUPABASE_SECRET_KEY={{Your Supabase Project Secret Key}}
+SUPABASE_SERVICE_ROLE_KEY={{Your Supabase Project Service Role Key}}  # Only for Edge Functions
 
 # Email (Resend)
 RESEND_API_KEY=...
-EMAIL_DOMAIN=auth.voltguardai.com
-SENDER_EMAIL=support@auth.voltguardai.com
-SUPPORT_EMAIL=support@auth.voltguardai.com
+EMAIL_DOMAIN={{Your Email Domain}}
+SENDER_EMAIL={{Your Sender Email}}
+SUPPORT_EMAIL={{Your Support Email}}
 
 # Email toggles (optional - for testing)
 RESEND_ENABLE_INVITATION_EMAILS=true
@@ -71,23 +71,23 @@ Navigate to **Authentication → URL Configuration**:
 **Site URL:**
 
 ```
-https://ghostwrite.app
+https://{{Your_App_Domain}}
 ```
 
 **Redirect URLs:**
 
 ```
-https://ghostwrite.app/signup/success
-https://*.ghostwrite.app/auth/confirm
-https://*.ghostwrite.app/auth/error
-https://*.ghostwrite.app/auth/resend-verification
-https://*.ghostwrite.app/auth/login
-https://*.ghostwrite.app/auth/forgot-password
-https://*.ghostwrite.app/auth/update-password
-https://*.ghostwrite.app/auth/accept-invitation
+https://{{Your_App_Domain}}/signup/success
+https://*.{{Your_App_Domain}}/auth/confirm
+https://*.{{Your_App_Domain}}/auth/error
+https://*.{{Your_App_Domain}}/auth/resend-verification
+https://*.{{Your_App_Domain}}/auth/login
+https://*.{{Your_App_Domain}}/auth/forgot-password
+https://*.{{Your_App_Domain}}/auth/update-password
+https://*.{{Your_App_Domain}}/auth/accept-invitation
 ```
 
-> Replace `ghostwrite.app` with your `NEXT_PUBLIC_APP_DOMAIN`
+> Replace `{{Your_App_Domain}}` with your `NEXT_PUBLIC_APP_DOMAIN`
 
 ### 3.3 Email Templates
 
@@ -296,7 +296,7 @@ await sendEmail({
   templateData: {
     title: "Important Update",
     message: "New features are live!",
-    actionUrl: "https://yourapp.com/dashboard",
+    actionUrl: "https://{{Your_App_Domain}}/dashboard",
     actionText: "View Dashboard",
   },
 });
@@ -363,7 +363,7 @@ pnpm dlx supabase functions invoke send-custom-email \
 1. Admin clicks "Invite Team Members"
 2. Fill form with email and role
 3. User receives email
-4. Click link → lands on `company.ghostwrite.app/auth/accept-invitation`
+4. Click link → lands on `subdomain.{{Your_App_Domain}}/auth/accept-invitation`
 5. Account created with proper role
 
 ### Test Password Reset
@@ -371,7 +371,7 @@ pnpm dlx supabase functions invoke send-custom-email \
 1. User clicks "Forgot your password?"
 2. Fill form with email
 3. User receives reset email
-4. Click link → lands on `company.ghostwrite.app/auth/update-password`
+4. Click link → lands on `subdomain.{{Your_App_Domain}}/auth/update-password`
 5. Set new password with validation
 
 ## 6. Permission Levels
@@ -422,7 +422,7 @@ pnpm dlx supabase functions invoke send-custom-email \
 **Important:** Recovery credentials are appended to URL hash fragments:
 
 ```
-https://acme.ghostwrite.app/auth/update-password#access_token=...&refresh_token=...&type=recovery&token_hash=...
+https://acme.{{Your_App_Domain}}/auth/update-password#access_token=...&refresh_token=...&type=recovery&token_hash=...
 ```
 
 The hash is not part of the redirect allow-list, but the base path must be present for Supabase to append the fragment safely.
@@ -437,14 +437,14 @@ The hash is not part of the redirect allow-list, but the base path must be prese
 
 ## 10. Troubleshooting
 
-| Issue                 | Solution                                                 |
-| --------------------- | -------------------------------------------------------- |
-| Emails not sending    | Check `RESEND_API_KEY` and Edge Function logs            |
-| Wrong email template  | Verify Supabase email templates configured               |
-| Token expired         | Use "Request new link" flow on error pages               |
-| Subdomain mismatch    | Verify wildcard redirect URLs include `*.ghostwrite.app` |
-| Hook not triggered    | Check hook secret matches and endpoint is correct        |
-| Custom emails failing | Verify user has valid session token                      |
+| Issue                 | Solution                                                      |
+| --------------------- | ------------------------------------------------------------- |
+| Emails not sending    | Check `RESEND_API_KEY` and Edge Function logs                 |
+| Wrong email template  | Verify Supabase email templates configured                    |
+| Token expired         | Use "Request new link" flow on error pages                    |
+| Subdomain mismatch    | Verify wildcard redirect URLs include `*.{{Your_App_Domain}}` |
+| Hook not triggered    | Check hook secret matches and endpoint is correct             |
+| Custom emails failing | Verify user has valid session token                           |
 
 ## 11. Package Dependencies
 

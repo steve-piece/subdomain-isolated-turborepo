@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
 import * as Sentry from "@sentry/nextjs";
+import { Building2, Search } from "lucide-react";
 
 export function SessionEvaluator() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export function SessionEvaluator() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted/30">
       <div className="flex flex-col items-center gap-6">
-        <div className="text-6xl mb-2">🏢</div>
+        <Building2 className="h-16 w-16 mb-2 text-primary" />
         <div className="relative">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
@@ -65,7 +66,7 @@ export function SessionEvaluator() {
             Evaluating Access
           </h2>
           <p className="text-muted-foreground flex items-center justify-center">
-            <span className="mr-2">🔍</span>
+            <Search className="h-4 w-4 mr-2" />
             Checking your session and determining the best route...
           </p>
         </div>

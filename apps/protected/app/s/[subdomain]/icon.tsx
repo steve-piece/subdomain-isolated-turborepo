@@ -9,6 +9,10 @@ export const size = {
 };
 export const contentType = "image/png";
 
+// Default logo URL - used when organization doesn't have a custom logo
+const DEFAULT_LOGO_URL =
+  "https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png";
+
 /**
  * Dynamic favicon generator for each organization
  * Uses organization logo if available, otherwise generates SVG with first letter
@@ -22,33 +26,38 @@ export default async function Icon({
 
   try {
     const supabase = await createClient();
-    const { data: organization } = await supabase
-      .from("organizations")
-      .select("logo_url, company_name")
-      .eq("subdomain", subdomain)
-      .single();
 
-    // If organization has a logo, fetch and return it
-    if (organization?.logo_url) {
-      try {
-        const response = await fetch(organization.logo_url);
+    // Get logo from JWT claims (same as sidebar)
+    const { data: claims } = await supabase.auth.getClaims();
+    const logoUrl = claims?.claims.organization_logo_url as string | undefined;
+    const companyName = claims?.claims.company_name as string | undefined;
+
+    console.log(`[ICON] Subdomain: ${subdomain}, Logo from JWT:`, logoUrl);
+
+    // Use custom logo if available, otherwise use default logo
+    const finalLogoUrl = logoUrl || DEFAULT_LOGO_URL;
+
+    console.log(`[ICON] Fetching logo from: ${finalLogoUrl}`);
+    try {
+      const response = await fetch(finalLogoUrl);
+      console.log(`[ICON] Logo fetch status: ${response.status}`);
+
+      if (response.ok) {
         const blob = await response.blob();
         return new Response(blob, {
           headers: {
             "Content-Type": response.headers.get("content-type") || "image/png",
-            "Cache-Control": "public, max-age=3600, s-maxage=3600",
+            "Cache-Control": "public, max-age=300, s-maxage=300",
           },
         });
-      } catch (error) {
-        console.error("Error fetching organization logo:", error);
-        // Fall through to generated icon
       }
+    } catch (error) {
+      console.error("[ICON] Error fetching logo:", error);
+      // Fall through to generated icon
     }
 
     // Generate a simple icon with the first letter
-    const firstLetter = (organization?.company_name || subdomain)
-      .charAt(0)
-      .toUpperCase();
+    const firstLetter = (companyName || subdomain).charAt(0).toUpperCase();
 
     return new ImageResponse(
       (

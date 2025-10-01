@@ -71,7 +71,7 @@ export async function getOrganizationMetadata(subdomain: string) {
       .single();
 
     const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "ghostwrite.app";
-    const appName = process.env.APP_NAME || "Ghost Write AI";
+    const appName = process.env.APP_NAME || "Your App Name";
 
     return {
       title: organization?.company_name || subdomain,

@@ -64,7 +64,7 @@ export async function getRecentActivity(
         activities.push({
           id: `project-${project.id}`,
           type: "project_created",
-          icon: "📁",
+          icon: "Folder",
           title: "New project created",
           description: `${ownerName} created "${project.name}"`,
           timestamp: project.created_at,
@@ -81,7 +81,7 @@ export async function getRecentActivity(
           activities.push({
             id: `member-${member.user_id}`,
             type: "member_joined",
-            icon: "👤",
+            icon: "User",
             title: "Team member joined",
             description: `${memberName} joined the organization`,
             timestamp: member.created_at,

@@ -10,6 +10,7 @@ import {
   resolveGuardMessage,
 } from "@workspace/ui/hooks";
 import { useToast } from "@workspace/ui/components/toast";
+import { Building2, Search } from "lucide-react";
 
 interface SubdomainAuthCheckerProps {
   subdomain: string;
@@ -88,7 +89,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <div className="flex flex-col items-center gap-6">
-          <div className="text-6xl mb-2">🏢</div>
+          <Building2 className="h-16 w-16 mb-2 text-primary" />
           <div className="relative">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
@@ -97,7 +98,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
               Loading {subdomain}
             </h2>
             <p className="text-muted-foreground flex items-center justify-center">
-              <span className="mr-2">🔍</span>
+              <Search className="h-4 w-4 mr-2" />
               Verifying your access permissions...
             </p>
           </div>
@@ -111,7 +112,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <div className="flex flex-col items-center gap-6">
-          <div className="text-6xl mb-2">🏢</div>
+          <Building2 className="h-16 w-16 mb-2 text-primary" />
           <div className="relative">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
@@ -120,7 +121,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
               Welcome back!
             </h2>
             <p className="text-muted-foreground flex items-center justify-center">
-              <span className="mr-2">✨</span>
+              <Search className="h-4 w-4 mr-2" />
               Redirecting to dashboard...
             </p>
           </div>

@@ -38,6 +38,67 @@ export default async function ProtectedLayout({
     redirect("/auth/login?error=unauthorized");
   }
 
+  // ✅ FORCE LOGOUT CHECK: Verify user's session is still valid
+  // Check if user should be forced to logout due to:
+  // - Organization-wide logout (migrations, security)
+  // - User-specific logout (role change, suspicious activity)
+  // - Permission updates (capabilities changed)
+
+  // Get JWT issued at time from the session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session?.access_token && claims.claims.org_id) {
+    try {
+      // Decode JWT to get issued_at time (iat is in the payload)
+      const tokenParts = session.access_token.split(".");
+      if (tokenParts.length !== 3 || !tokenParts[1]) {
+        throw new Error("Invalid JWT format");
+      }
+
+      const payload = JSON.parse(atob(tokenParts[1]));
+      const jwtIssuedAt = payload.iat
+        ? new Date(payload.iat * 1000).toISOString()
+        : null;
+
+      if (!jwtIssuedAt) {
+        throw new Error("JWT issued_at time not found");
+      }
+
+      const { data: logoutCheck } = await supabase.rpc("should_force_logout", {
+        p_user_id: user.id,
+        p_org_id: claims.claims.org_id,
+        p_jwt_issued_at: jwtIssuedAt,
+      });
+
+      if (logoutCheck?.should_logout) {
+        // Log the reason for debugging
+        Sentry.logger.info("force_logout_triggered", {
+          user_id: user.id,
+          org_id: claims.claims.org_id,
+          reason: logoutCheck.reason,
+          jwt_issued_at: jwtIssuedAt,
+        });
+
+        // Force logout
+        await supabase.auth.signOut();
+        redirect(
+          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`
+        );
+      }
+    } catch (error) {
+      // Don't block user if force logout check fails, but log it
+      Sentry.captureException(error, {
+        tags: {
+          context: "force_logout_check",
+          user_id: user.id,
+          org_id: claims.claims.org_id,
+        },
+      });
+    }
+  }
+
   // Sentry logging for debugging
   const sanitizedClaimSummary = {
     claimKeys: Object.keys(claims.claims ?? {}),
@@ -64,9 +125,34 @@ export default async function ProtectedLayout({
   const orgId = claims.claims.org_id;
   const isOwner = userRole === "owner";
 
+  // Get capabilities from JWT (now included in custom_claims_hook)
+  const userCapabilities: string[] = claims.claims.capabilities || [];
+
+  // Get organization logo from JWT
+  const organizationLogoUrl = claims.claims.organization_logo_url;
+
+  // Get user's full name from database (not in minimal JWT)
+  let userFullName: string | null = null;
+  try {
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("full_name")
+      .eq("user_id", user.id)
+      .single();
+    userFullName = profile?.full_name || null;
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        context: "user_profile_fetch",
+        user_id: user.id,
+      },
+    });
+  }
+
   // Check if organization needs onboarding
   let needsOnboarding = false;
-  if (orgId && isOwner) {
+
+  if (orgId) {
     try {
       const { data: org } = await supabase
         .from("organizations")
@@ -74,7 +160,9 @@ export default async function ProtectedLayout({
         .eq("id", orgId)
         .single();
 
-      needsOnboarding = !org?.onboarding_completed;
+      if (org) {
+        needsOnboarding = isOwner && !org.onboarding_completed;
+      }
     } catch (error) {
       Sentry.captureException(error, {
         tags: {
@@ -85,50 +173,19 @@ export default async function ProtectedLayout({
     }
   }
 
-  // Get user capabilities from database (once)
-  let userCapabilities: string[] = [];
-  if (orgId) {
-    try {
-      // Get user's role-based capabilities
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("org_id", orgId)
-        .single();
-
-      if (profile) {
-        const { data: capabilities } = await supabase
-          .from("role_capabilities")
-          .select("capabilities(key)")
-          .eq("role", profile.role)
-          .eq("is_default", true);
-
-        if (capabilities) {
-          userCapabilities = capabilities
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((cap: any) => cap.capabilities?.key)
-            .filter(Boolean);
-        }
-      }
-    } catch (error) {
-      Sentry.captureException(error, {
-        tags: {
-          context: "protected_layout_capabilities",
-          org_id: orgId,
-        },
-      });
-    }
-  }
-
-  // Prepare claims object for context
+  // ✅ Minimal JWT claims (identity + org context + authorization)
   const tenantClaims = {
+    // Identity
     user_id: user.id,
     email: user.email || "",
-    subdomain: claims.claims.subdomain,
+
+    // Organization Context
     org_id: claims.claims.org_id,
+    subdomain: claims.claims.subdomain,
     company_name: claims.claims.company_name,
-    full_name: claims.claims.full_name,
+    organization_logo_url: claims.claims.organization_logo_url,
+
+    // Authorization
     user_role: userRole,
     capabilities: userCapabilities,
   };
@@ -143,10 +200,11 @@ export default async function ProtectedLayout({
       />
       <div className="flex h-screen overflow-hidden bg-background">
         <AppSidebar
-          subdomain={subdomain}
           organizationName={organizationName}
           userRole={userRole}
           userCapabilities={userCapabilities}
+          logoUrl={organizationLogoUrl}
+          userName={userFullName}
         />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>

@@ -33,7 +33,7 @@ const webhookVerifier = new Webhook(hookSecret);
 
 const appDomain = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN");
 const marketingDomain = Deno.env.get("NEXT_PUBLIC_MARKETING_DOMAIN");
-const appName = Deno.env.get("APP_NAME") ?? "Ghost Write Ai";
+const appName = Deno.env.get("APP_NAME") ?? "Your App Name";
 const supportEmail =
   Deno.env.get("SENDER_EMAIL") ??
   Deno.env.get("SUPPORT_EMAIL") ??

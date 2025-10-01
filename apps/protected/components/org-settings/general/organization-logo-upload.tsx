@@ -178,15 +178,20 @@ export function OrganizationLogoUpload({
             </Button>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">
-          {isDragging ? (
-            <span className="text-primary font-medium">
-              Drop file to upload
-            </span>
-          ) : (
-            "Click logo or drag & drop. SVG, PNG, JPG or WebP. Max 5MB."
-          )}
-        </p>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">
+            {isDragging ? (
+              <span className="text-primary font-medium">
+                Drop file to upload
+              </span>
+            ) : (
+              "Click logo or drag & drop. SVG, PNG, JPG or WebP. Max 5MB."
+            )}
+          </p>
+          <p className="text-xs text-amber-600 dark:text-amber-500">
+            ℹ️ Logo updates in the sidebar will appear on your next login
+          </p>
+        </div>
         <input
           ref={fileInputRef}
           type="file"

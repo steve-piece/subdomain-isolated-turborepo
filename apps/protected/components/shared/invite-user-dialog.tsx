@@ -15,6 +15,7 @@ import {
 } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
+import { UserPlus } from "lucide-react";
 
 interface InviteUserDialogProps {
   subdomain: string;
@@ -68,7 +69,7 @@ export function InviteUserDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button className="w-full justify-start" size="lg" variant="outline">
-            <span className="mr-2">👤</span>
+            <UserPlus className="h-4 w-4 mr-2" />
             Invite Team Member
           </Button>
         )}

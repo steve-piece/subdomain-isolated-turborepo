@@ -48,5 +48,24 @@ export async function updateUserProfile(data: {
     return { success: false, message: "Failed to update profile" };
   }
 
+  // Sync full_name to auth.users metadata for custom claims
+  if (data.full_name) {
+    const { error: authUpdateError } = await supabase.auth.updateUser({
+      data: { full_name: data.full_name },
+    });
+
+    if (authUpdateError) {
+      // Log error but don't fail the request since user_profiles was updated
+      Sentry.withScope((scope) => {
+        scope.setTag("action", "update_profile_auth_sync");
+        scope.setUser({ id: user.id, email: user.email });
+        scope.setContext("auth_sync", {
+          message: authUpdateError.message,
+        });
+        Sentry.captureException(authUpdateError);
+      });
+    }
+  }
+
   return { success: true, message: "Profile updated successfully" };
 }

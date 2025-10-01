@@ -20,6 +20,7 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@workspace/ui/components/toast";
 import { sendMagicLink } from "@actions/auth";
+import { Lock, AlertCircle } from "lucide-react";
 
 // Props define the tenant context needed by this component.
 // `subdomain` is passed from the route so the form knows which org is in scope.
@@ -351,7 +352,7 @@ export function LoginForm({
               {error && (
                 <div className="p-3 rounded-md bg-red-50 border border-red-200">
                   <p className="text-sm text-red-700 flex items-center">
-                    <span className="mr-2">⚠️</span>
+                    <AlertCircle className="mr-2" />
                     {error}
                     {error.includes("Email not confirmed") && (
                       <Link
@@ -374,7 +375,7 @@ export function LoginForm({
                   </span>
                 ) : (
                   <span className="flex items-center">
-                    <span className="mr-2">🔐</span>
+                    <Lock className="h-4 w-4 mr-2" />
                     Login
                   </span>
                 )}
