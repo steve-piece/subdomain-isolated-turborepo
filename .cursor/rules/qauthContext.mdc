@@ -1,0 +1,382 @@
+---
+alwaysApply: true
+---
+
+# Performance & Auth Architecture Rules
+
+## Core Principles
+
+### 1. Centralized Authentication (CRITICAL)
+
+**Rule:** Authentication MUST be checked once at the layout level and shared via context.
+
+```tsx
+// ✅ CORRECT: Auth in layout, shared via context
+export default async function ProtectedLayout({ children, params }) {
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+
+  return (
+    <TenantClaimsProvider claims={claims}>{children}</TenantClaimsProvider>
+  );
+}
+
+// ✅ CORRECT: Page reads from context
+("use client");
+export function DashboardWrapper() {
+  const claims = useTenantClaims(); // No API calls!
+  return <div>Welcome, {claims.full_name}</div>;
+}
+```
+
+```tsx
+// ❌ WRONG: Duplicate auth check in page
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(); // Duplicate!
+  const { data: claims } = await supabase.auth.getClaims(); // Duplicate!
+  // ...
+}
+```
+
+**Enforcement:**
+
+- Never call `supabase.auth.getUser()` or `supabase.auth.getClaims()` in page components
+- Layout handles auth once, pages use context
+- Use `useTenantClaims()` hook in client components for auth data
+
+### 2. Smart Caching Strategy
+
+**Rule:** Use `revalidate` for most pages, reserve `noStore()` only for critical real-time data.
+
+```tsx
+// ✅ CORRECT: Cache dashboard for 60 seconds
+export const revalidate = 60;
+
+export default async function DashboardPage() {
+  // Can safely cache - auth is handled by layout
+  return <DashboardWrapper />;
+}
+```
+
+```tsx
+// ❌ WRONG: Using noStore() unnecessarily
+import { unstable_noStore as noStore } from "next/cache";
+
+export default async function DashboardPage() {
+  noStore(); // Prevents all caching! Don't do this!
+  // ...
+}
+```
+
+**Caching Rules by Page Type:**
+
+| Page Type          | Cache Time         | Reason                                  |
+| ------------------ | ------------------ | --------------------------------------- |
+| Dashboard          | `revalidate = 60`  | Stats can be 60s stale                  |
+| Profile            | `revalidate = 120` | Rarely changes                          |
+| Team Settings      | `revalidate = 30`  | More dynamic                            |
+| Org Settings       | `revalidate = 60`  | Infrequent changes                      |
+| **Billing**        | `noStore()`        | **Needs real-time subscription status** |
+| **Audit Logs**     | `noStore()`        | **Must be immediately fresh**           |
+| **Security Pages** | `noStore()`        | **Critical security data**              |
+
+**When to Use noStore():**
+
+- Real-time payment/subscription status
+- Security audit logs
+- Critical permission checks where stale data = security risk
+- Password reset/update flows
+
+### 3. Server Components First
+
+**Rule:** Default to server components, use client components only for interactivity.
+
+```tsx
+// ✅ CORRECT: Server component with embedded client components
+// No "use client" directive
+
+import { LogoutButton } from "./logout-button"; // Client
+import { InviteDialog } from "./invite-dialog"; // Client
+
+export function OrganizationDashboard({ organizationName, userEmail }) {
+  return (
+    <div>
+      <h1>{organizationName}</h1> {/* Static - renders on server */}
+      <p>Welcome, {userEmail}</p> {/* Static - renders on server */}
+      <LogoutButton /> {/* Interactive - client component */}
+      <InviteDialog /> {/* Interactive - client component */}
+    </div>
+  );
+}
+```
+
+```tsx
+// ❌ WRONG: Entire component is client-side
+"use client";
+
+export function OrganizationDashboard({ organizationName, userEmail }) {
+  return (
+    <div>
+      <h1>{organizationName}</h1> {/* Could be server-rendered! */}
+      <p>Welcome, {userEmail}</p> {/* Could be server-rendered! */}
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+  );
+}
+```
+
+**Extract Granular Client Components:**
+
+```tsx
+// ✅ CORRECT: Small client component for interactivity
+"use client";
+
+import { Button } from "@workspace/ui/components/button";
+
+export function LogoutButton() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    await signOut();
+  };
+
+  return <Button onClick={handleLogout}>{isLoading ? "..." : "Logout"}</Button>;
+}
+```
+
+### 4. Use getClaims() Over getUser()
+
+**Rule:** Prefer `getClaims()` for auth checks (faster JWT validation).
+
+```tsx
+// ✅ CORRECT: Fast local JWT validation
+const { data: claims } = await supabase.auth.getClaims();
+
+if (!claims || claims.claims.subdomain !== subdomain) {
+  redirect("/auth/login");
+}
+```
+
+```tsx
+// ❌ LESS OPTIMAL: Network call to auth server
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+// Use this only when you need user metadata not in JWT
+```
+
+**When to Use Each:**
+
+- `getClaims()`: Auth checks, role validation (fast, local)
+- `getUser()`: Need user metadata not in JWT (slower, network call)
+
+### 5. Cache Invalidation
+
+**Rule:** Explicitly revalidate paths when data changes.
+
+```tsx
+// ✅ CORRECT: Revalidate after updates
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+export async function updateOrganizationSettings(data: FormData) {
+  await supabase.from("organizations").update(data);
+
+  // Invalidate affected pages
+  revalidatePath("/org-settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+```
+
+```tsx
+// ❌ WRONG: Update without revalidation
+export async function updateOrganizationSettings(data: FormData) {
+  await supabase.from("organizations").update(data);
+  return { success: true }; // Cached pages show stale data!
+}
+```
+
+### 6. Page Component Structure
+
+**Rule:** Keep page.tsx minimal - fetch data, pass to wrapper.
+
+```tsx
+// ✅ CORRECT: Thin page, fat wrapper
+// apps/protected/app/s/[subdomain]/(protected)/(dashboard)/dashboard/page.tsx
+
+export const revalidate = 60;
+
+export default async function DashboardPage({ params }) {
+  const { subdomain } = await params;
+
+  // Optional: Fetch dashboard-specific data
+  // const stats = await getDashboardStats(subdomain);
+
+  return <DashboardWrapper subdomain={subdomain} />;
+}
+```
+
+```tsx
+// ❌ WRONG: Fat page with logic mixed in
+export default async function DashboardPage({ params }) {
+  noStore(); // Bad!
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(); // Duplicate!
+  const { data: claims } = await supabase.auth.getClaims(); // Duplicate!
+
+  // 200+ lines of UI logic mixed with auth...
+  return (
+    <div>
+      <h1>{claims.claims.company_name}</h1>
+      {/* Tons of inline JSX */}
+    </div>
+  );
+}
+```
+
+### 7. No Duplicate RequireTenantAuth
+
+**Rule:** Don't wrap pages in RequireTenantAuth if layout already handles auth.
+
+```tsx
+// ✅ CORRECT: Simple role check
+export default async function AdminPage({ params }) {
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  const userRole = claims?.claims.user_role;
+
+  if (!["owner", "admin", "superadmin"].includes(userRole)) {
+    redirect("/dashboard?error=insufficient_permissions");
+  }
+
+  return <AdminWrapper />;
+}
+```
+
+```tsx
+// ❌ WRONG: Duplicate auth wrapper
+export default async function AdminPage({ params }) {
+  return (
+    <RequireTenantAuth allowedRoles={["owner", "admin"]}>
+      {/* Layout already checked auth! This is redundant! */}
+      <AdminContent />
+    </RequireTenantAuth>
+  );
+}
+```
+
+## Component Organization
+
+### Naming Conventions
+
+- **Page Wrappers:** `{route}-wrapper.tsx` (e.g., `dashboard-wrapper.tsx`)
+- **Feature Components:** `{feature}-{type}.tsx` (e.g., `team-invite-dialog.tsx`)
+- **Shared Components:** Descriptive names (e.g., `data-table.tsx`, `app-sidebar.tsx`)
+
+### Directory Structure
+
+```
+components/
+├── shared/                  # Used across 2+ routes
+│   ├── app-sidebar.tsx
+│   ├── page-header.tsx
+│   └── data-table.tsx
+├── dashboard/               # Dashboard-specific
+│   ├── dashboard-wrapper.tsx
+│   ├── stats-card.tsx
+│   └── activity-feed.tsx
+└── org-settings/            # Org settings-specific
+    ├── org-settings-wrapper.tsx
+    └── team/
+        ├── team-list.tsx
+        └── invite-member-dialog.tsx
+```
+
+## Performance Checklist
+
+Before creating/editing a page component, verify:
+
+- [ ] Is auth handled by layout? (Don't duplicate `getClaims()`)
+- [ ] Can this page be cached? (Use `revalidate` unless billing/audit)
+- [ ] Is this a server component? (Remove `"use client"` unless needed)
+- [ ] Are client components granular? (Extract buttons, dialogs only)
+- [ ] Will updates revalidate cache? (Add `revalidatePath()` in actions)
+
+## Anti-Patterns to Avoid
+
+### ❌ The "Auth Everywhere" Anti-Pattern
+
+```tsx
+// Every page doing its own auth check
+export default async function Page() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(); // Duplicate!
+  if (!user) redirect("/login");
+  // ...
+}
+```
+
+### ❌ The "No Cache" Anti-Pattern
+
+```tsx
+// Using noStore() without justification
+import { unstable_noStore as noStore } from "next/cache";
+
+export default async function ProfilePage() {
+  noStore(); // Why? Profile rarely changes!
+  // ...
+}
+```
+
+### ❌ The "Everything is Client" Anti-Pattern
+
+```tsx
+// Marking entire pages as client components
+"use client";
+
+export default function DashboardPage() {
+  // Tons of static content that could be server-rendered
+  return <div>...</div>;
+}
+```
+
+### ❌ The "No Revalidation" Anti-Pattern
+
+```tsx
+// Updating data without cache invalidation
+export async function updateSettings(data) {
+  await db.update(data);
+  return { success: true }; // Cache still has old data!
+}
+```
+
+## Quick Reference
+
+| Scenario               | Solution                                                   |
+| ---------------------- | ---------------------------------------------------------- |
+| Need user info in page | Use `useTenantClaims()` hook (client) or read from context |
+| Need to cache page     | Add `export const revalidate = 60`                         |
+| Need real-time data    | Use `noStore()` or client-side fetching                    |
+| Need role check        | Read `claims.user_role` from context                       |
+| Data updated           | Call `revalidatePath("/page-path")`                        |
+| Need interactivity     | Create small client component, embed in server component   |
+| Large component        | Keep server-side, extract interactive parts                |
+
+## References
+
+- [Performance & Caching Strategy](/docs/PERFORMANCE_CACHING.md)
+- [Page Wrappers Guide](/docs/page-wrappers.md)
+- [Next.js Caching Docs](https://nextjs.org/docs/app/building-your-application/caching)
+- [Supabase getClaims()](https://supabase.com/docs/reference/javascript/auth-getclaims)

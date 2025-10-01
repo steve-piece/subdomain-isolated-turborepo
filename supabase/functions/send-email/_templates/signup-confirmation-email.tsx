@@ -1,4 +1,4 @@
-// supabase/functions/send-email/_templates/signup-confirmation-email.tsx 
+// supabase/functions/send-email/_templates/signup-confirmation-email.tsx
 import * as React from "npm:react@18.3.1";
 
 import {
@@ -12,16 +12,18 @@ export interface SignupConfirmationEmailProps {
   userName: string;
   organizationName: string;
   confirmationUrl: string;
-  subdomain: string;
+  appName: string;
+  marketingUrl: string;
 }
 
 export function SignupConfirmationEmail({
   userName,
   organizationName,
   confirmationUrl,
-  subdomain,
+  appName,
+  marketingUrl,
 }: SignupConfirmationEmailProps): React.ReactElement {
-  const previewText = `Welcome to ${organizationName}! Please confirm your email address.`;
+  const previewText = `Welcome to ${organizationName} on ${appName}! Please confirm your email address.`;
 
   return (
     <BaseEmail previewText={previewText}>
@@ -30,8 +32,9 @@ export function SignupConfirmationEmail({
       <EmailText>Hi {userName}!</EmailText>
 
       <EmailText>
-        Thank you for creating your organization account. Please click the
-        button below to verify your email address and complete your setup:
+        Thank you for creating your organization on <strong>{appName}</strong>.
+        Please click the button below to verify your email address and complete
+        your setup:
       </EmailText>
 
       <div style={{ textAlign: "center", margin: "32px 0" }}>
@@ -39,16 +42,7 @@ export function SignupConfirmationEmail({
       </div>
 
       <EmailText style={{ fontSize: "14px", color: "#6b7280" }}>
-        <strong>Organization:</strong> {organizationName}
-        <br />
-        <strong>Subdomain:</strong> {subdomain}
-        <br />
-        <strong>Your Role:</strong> Owner
-      </EmailText>
-
-      <EmailText>
-        Once verified, you can access your organization workspace at your
-        subdomain URL.
+        This link will expire in 24 hours for security reasons.
       </EmailText>
 
       <EmailText
@@ -58,10 +52,19 @@ export function SignupConfirmationEmail({
           borderTop: "1px solid #e5e7eb",
           paddingTop: "16px",
           marginTop: "32px",
+          textAlign: "center",
         }}
       >
-        This link will expire in 24 hours. If you didn&apos;t create this
-        account, you can safely ignore this email.
+        Not sure why you&apos;re seeing this?{" "}
+        <a
+          href={marketingUrl}
+          style={{
+            color: "#3b82f6",
+            textDecoration: "none",
+          }}
+        >
+          Learn more about {appName}
+        </a>
       </EmailText>
     </BaseEmail>
   );

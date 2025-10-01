@@ -34,6 +34,7 @@ const webhookVerifier = new Webhook(hookSecret);
 
 const appDomain = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN");
 const marketingDomain = Deno.env.get("NEXT_PUBLIC_MARKETING_DOMAIN");
+const appName = Deno.env.get("APP_NAME") ?? "Ghost Write Ai";
 const supportEmail =
   Deno.env.get("SENDER_EMAIL") ??
   Deno.env.get("SUPPORT_EMAIL") ??
@@ -257,17 +258,22 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
 
   const subdomain = metadata.subdomain ?? userMetadata.subdomain;
   const organizationName =
+    metadata.company_name ??
     metadata.organization_name ??
     userMetadata.company_name ??
     "Your Organization";
   const inviterName =
     metadata.invited_by_name ??
+    userMetadata.full_name ??
     metadata.invited_by_email ??
-    userMetadata.full_name;
+    "A team member";
   const inviterEmail =
     metadata.invited_by_email ?? userMetadata.email ?? user.email;
   const userRole = metadata.user_role ?? "member";
   const fullName = userMetadata.full_name ?? metadata.full_name;
+  const marketingUrl = marketingDomain
+    ? `https://${marketingDomain}`
+    : "https://bask-app.com";
 
   switch (email_data.email_action_type) {
     case "signup": {
@@ -312,6 +318,8 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
           userName: fullName,
           organizationName,
           resetUrl,
+          appName,
+          marketingUrl,
         }),
       };
     }
@@ -358,7 +366,8 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
           userName: fullName,
           magicLinkUrl,
           organizationName,
-          subdomain,
+          appName,
+          marketingUrl,
         }),
       };
     }
@@ -396,6 +405,8 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
           notificationMessage: `We need to verify your identity to continue. Use this code: ${email_data.token}`,
           actionUrl: reauthUrl,
           actionText: "Verify identity",
+          appName,
+          marketingUrl,
         }),
       };
     }

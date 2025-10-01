@@ -12,14 +12,16 @@ export interface MagicLinkEmailProps {
   userName?: string;
   magicLinkUrl: string;
   organizationName?: string;
-  subdomain?: string;
+  appName: string;
+  marketingUrl: string;
 }
 
 export function MagicLinkEmail({
   userName,
   magicLinkUrl,
   organizationName,
-  subdomain,
+  appName,
+  marketingUrl,
 }: MagicLinkEmailProps): React.ReactElement {
   const previewText = `Your magic link to sign in${organizationName ? ` to ${organizationName}` : ""}`;
 
@@ -40,22 +42,6 @@ export function MagicLinkEmail({
         <EmailButton href={magicLinkUrl}>Sign In Now</EmailButton>
       </div>
 
-      {(organizationName || subdomain) && (
-        <EmailText style={{ fontSize: "14px", color: "#6b7280" }}>
-          {organizationName && (
-            <>
-              <strong>Organization:</strong> {organizationName}
-              <br />
-            </>
-          )}
-          {subdomain && (
-            <>
-              <strong>Subdomain:</strong> {subdomain}
-            </>
-          )}
-        </EmailText>
-      )}
-
       <EmailText
         style={{
           fontSize: "14px",
@@ -72,13 +58,24 @@ export function MagicLinkEmail({
 
       <EmailText
         style={{
-          fontSize: "12px",
-          color: "#9ca3af",
-          marginTop: "24px",
+          fontSize: "14px",
+          color: "#6b7280",
+          borderTop: "1px solid #e5e7eb",
+          paddingTop: "16px",
+          marginTop: "32px",
           textAlign: "center",
         }}
       >
-        This link expires in 1 hour
+        Not sure why you&apos;re seeing this?{" "}
+        <a
+          href={marketingUrl}
+          style={{
+            color: "#3b82f6",
+            textDecoration: "none",
+          }}
+        >
+          Learn more about {appName}
+        </a>
       </EmailText>
     </BaseEmail>
   );

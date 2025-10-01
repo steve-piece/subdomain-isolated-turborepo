@@ -1,6 +1,6 @@
 // apps/protected/app/s/[subdomain]/auth/reauthenticate/page.tsx
-import { ReauthenticateForm } from "@/components/reauthenticate-form";
-import RequireTenantAuth from "@/components/require-tenant-auth";
+import { ReauthenticateForm } from "@/components/auth/reauthenticate-form";
+import RequireTenantAuth from "@/components/shared/require-tenant-auth";
 
 interface ReauthenticatePageProps {
   params: Promise<{ subdomain: string }>;

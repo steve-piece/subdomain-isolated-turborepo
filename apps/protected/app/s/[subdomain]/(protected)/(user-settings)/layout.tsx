@@ -1,28 +1,28 @@
-// apps/protected/app/s/[subdomain]/(user-settings)/layout.tsx
+// apps/protected/app/s/[subdomain]/(protected)/(user-settings)/layout.tsx
 /**
  * Layout for user settings routes with tabs navigation
  */
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { User, Lock, Bell } from "lucide-react";
 
 const userSettingsTabs = [
   {
     title: "Profile",
-    href: "/settings/profile",
+    path: "profile",
     icon: User,
   },
   {
     title: "Security",
-    href: "/settings/security",
+    path: "security",
     icon: Lock,
   },
   {
     title: "Notifications",
-    href: "/settings/notifications",
+    path: "notifications",
     icon: Bell,
   },
 ];
@@ -33,6 +33,8 @@ export default function UserSettingsLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const params = useParams();
+  const subdomain = params?.subdomain as string;
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted/20">
@@ -48,12 +50,13 @@ export default function UserSettingsLayout({
             <nav className="flex gap-2 overflow-x-auto">
               {userSettingsTabs.map((tab) => {
                 const Icon = tab.icon;
-                const isActive = pathname === tab.href;
+                const fullPath = `/s/${subdomain}/${tab.path}`;
+                const isActive = pathname.startsWith(fullPath);
 
                 return (
                   <Link
-                    key={tab.href}
-                    href={tab.href}
+                    key={tab.path}
+                    href={fullPath}
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
                       "hover:bg-accent hover:text-accent-foreground",

@@ -1,5 +1,5 @@
 // apps/protected/app/s/[subdomain]/auth/login/page.tsx
-import { LoginForm } from "@/components/login-form";
+import { LoginForm } from "@/components/auth/login-form";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 

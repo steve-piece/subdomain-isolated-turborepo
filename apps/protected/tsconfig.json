@@ -7,7 +7,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@actions/*": ["./app/actions/*"]
     },
     "types": [
       "vitest/globals",

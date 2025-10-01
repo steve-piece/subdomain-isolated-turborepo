@@ -7,14 +7,16 @@ export interface TwoFactorEmailProps {
   userName?: string;
   verificationCode: string;
   organizationName?: string;
-  subdomain?: string;
+  appName: string;
+  marketingUrl: string;
 }
 
 export function TwoFactorEmail({
   userName,
   verificationCode,
   organizationName,
-  subdomain,
+  appName,
+  marketingUrl,
 }: TwoFactorEmailProps): React.ReactElement {
   const previewText = `Your verification code: ${verificationCode}`;
 
@@ -25,7 +27,8 @@ export function TwoFactorEmail({
       {userName && <EmailText>Hi {userName}!</EmailText>}
 
       <EmailText>
-        You&apos;re attempting to sign in to your account. Please use the
+        You&apos;re attempting to sign in
+        {organizationName ? ` to ${organizationName}` : ""}. Please use the
         verification code below to complete your login:
       </EmailText>
 
@@ -68,32 +71,9 @@ export function TwoFactorEmail({
       <EmailText
         style={{ textAlign: "center", fontSize: "14px", color: "#6b7280" }}
       >
-        Enter this code in your browser to continue
+        Enter this code in your browser to continue. This code expires in 10
+        minutes.
       </EmailText>
-
-      {(organizationName || subdomain) && (
-        <EmailText
-          style={{
-            fontSize: "14px",
-            color: "#6b7280",
-            marginTop: "24px",
-            paddingTop: "16px",
-            borderTop: "1px solid #e5e7eb",
-          }}
-        >
-          {organizationName && (
-            <>
-              <strong>Organization:</strong> {organizationName}
-              <br />
-            </>
-          )}
-          {subdomain && (
-            <>
-              <strong>Subdomain:</strong> {subdomain}
-            </>
-          )}
-        </EmailText>
-      )}
 
       <EmailText
         style={{
@@ -103,22 +83,34 @@ export function TwoFactorEmail({
           padding: "12px",
           borderRadius: "6px",
           borderLeft: "3px solid #f59e0b",
+          marginTop: "24px",
         }}
       >
         <strong>⚠️ Security Alert:</strong> If you didn&apos;t attempt to sign
         in, someone may be trying to access your account. Please secure your
-        account immediately by changing your password.
+        account immediately.
       </EmailText>
 
       <EmailText
         style={{
-          fontSize: "12px",
-          color: "#9ca3af",
-          marginTop: "24px",
+          fontSize: "14px",
+          color: "#6b7280",
+          borderTop: "1px solid #e5e7eb",
+          paddingTop: "16px",
+          marginTop: "32px",
           textAlign: "center",
         }}
       >
-        This code expires in 10 minutes
+        Not sure why you&apos;re seeing this?{" "}
+        <a
+          href={marketingUrl}
+          style={{
+            color: "#3b82f6",
+            textDecoration: "none",
+          }}
+        >
+          Learn more about {appName}
+        </a>
       </EmailText>
     </BaseEmail>
   );

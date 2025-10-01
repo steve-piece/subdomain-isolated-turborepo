@@ -16,6 +16,7 @@ THE FOLLOWING VARIABLES AND THEIR NAMING CONVENTIONS SHOULD BE USED AS FOLLOWS:
 ## Domain Variables
 
 `NEXT_PUBLIC_MARKETING_DOMAIN`="bask-app.com" -> apps/marketing app domain name. These are the public pages associated with our turborepo.
+`APP_NAME`="Ghost Write Ai" -> Name of the app/platform.
 `NEXT_PUBLIC_APP_DOMAIN`="ghostwrite.app"-> apps/protected app domain name. These are the protected pages associated with our turborepo. All organizations are given a subdomain upon signup (FULLY ISOLATED ORGANIZATIONS BY SUBDOMAIN), and this variable is saved in the user metadata along with their organization name.
 `EMAIL_DOMAIN`="auth.voltguardai.com" -> Email domain name. This is the domain setup with Resend in the resend.com domain settings.
 

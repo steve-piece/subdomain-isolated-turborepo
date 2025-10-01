@@ -5,7 +5,6 @@
  */
 
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type UserRole =
   | "owner"
@@ -72,19 +71,25 @@ export async function getUserPermissions(
       profile.role as UserRole
     );
 
+    const subscriptionTiers = subscription?.subscription_tiers as unknown as {
+      name: string;
+      allows_custom_permissions: boolean;
+      max_projects: number;
+      max_team_members: number;
+    } | null;
+
     return {
       role: profile.role as UserRole,
       capabilities,
       subscription: {
-        tier: subscription?.subscription_tiers?.name || "free",
+        tier: subscriptionTiers?.name || "free",
         features: {
           customPermissions:
-            subscription?.subscription_tiers?.allows_custom_permissions ||
-            false,
+            subscriptionTiers?.allows_custom_permissions || false,
         },
         limits: {
-          maxProjects: subscription?.subscription_tiers?.max_projects,
-          maxTeamMembers: subscription?.subscription_tiers?.max_team_members,
+          maxProjects: subscriptionTiers?.max_projects,
+          maxTeamMembers: subscriptionTiers?.max_team_members,
         },
       },
     };
@@ -137,8 +142,11 @@ async function getUserCapabilities(
     // Start with defaults
     if (defaultCapabilities) {
       for (const cap of defaultCapabilities) {
-        if (cap.capabilities?.key) {
-          capabilityMap.set(cap.capabilities.key, true);
+        const capabilities = cap.capabilities as unknown as {
+          key: string;
+        } | null;
+        if (capabilities?.key) {
+          capabilityMap.set(capabilities.key, true);
         }
       }
     }
@@ -146,8 +154,11 @@ async function getUserCapabilities(
     // Apply custom overrides
     if (customCapabilities) {
       for (const cap of customCapabilities) {
-        if (cap.capabilities?.key) {
-          capabilityMap.set(cap.capabilities.key, cap.granted);
+        const capabilities = cap.capabilities as unknown as {
+          key: string;
+        } | null;
+        if (capabilities?.key) {
+          capabilityMap.set(capabilities.key, cap.granted);
         }
       }
     }
@@ -240,12 +251,17 @@ export async function checkUsageLimit(
       .eq("org_id", orgId)
       .single();
 
+    const subscriptionTiers = subscription?.subscription_tiers as unknown as {
+      max_projects: number;
+      max_team_members: number;
+    } | null;
+
     let limit: number | null = null;
     let current = 0;
 
     switch (limitType) {
-      case "projects":
-        limit = subscription?.subscription_tiers?.max_projects || null;
+      case "projects": {
+        limit = subscriptionTiers?.max_projects || null;
         const { count: projectCount } = await supabase
           .from("projects")
           .select("*", { count: "exact", head: true })
@@ -253,21 +269,24 @@ export async function checkUsageLimit(
           .eq("status", "active");
         current = projectCount || 0;
         break;
+      }
 
-      case "team_members":
-        limit = subscription?.subscription_tiers?.max_team_members || null;
+      case "team_members": {
+        limit = subscriptionTiers?.max_team_members || null;
         const { count: memberCount } = await supabase
           .from("user_profiles")
           .select("*", { count: "exact", head: true })
           .eq("org_id", orgId);
         current = memberCount || 0;
         break;
+      }
 
-      case "storage":
+      case "storage": {
         // Implement storage tracking
         limit = null; // No limit by default
         current = 0;
         break;
+      }
     }
 
     return {

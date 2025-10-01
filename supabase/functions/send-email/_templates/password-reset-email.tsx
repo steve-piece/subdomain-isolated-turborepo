@@ -1,4 +1,4 @@
-// supabase/functions/send-email/_templates/password-reset-email.tsx 
+// supabase/functions/send-email/_templates/password-reset-email.tsx
 import * as React from "npm:react@18.3.1";
 
 import {
@@ -12,12 +12,16 @@ export interface PasswordResetEmailProps {
   userName?: string;
   resetUrl: string;
   organizationName?: string;
+  appName: string;
+  marketingUrl: string;
 }
 
 export function PasswordResetEmail({
   userName,
   resetUrl,
   organizationName,
+  appName,
+  marketingUrl,
 }: PasswordResetEmailProps): React.ReactElement {
   const previewText = "Reset your password - action required";
 
@@ -48,10 +52,19 @@ export function PasswordResetEmail({
           borderTop: "1px solid #e5e7eb",
           paddingTop: "16px",
           marginTop: "32px",
+          textAlign: "center",
         }}
       >
-        If you didn&apos;t request this password reset, you can safely ignore
-        this email. Your password will not be changed.
+        Not sure why you&apos;re seeing this?{" "}
+        <a
+          href={marketingUrl}
+          style={{
+            color: "#3b82f6",
+            textDecoration: "none",
+          }}
+        >
+          Learn more about {appName}
+        </a>
       </EmailText>
     </BaseEmail>
   );

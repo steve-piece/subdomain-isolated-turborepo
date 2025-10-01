@@ -1,7 +1,4 @@
 ---
-description: Step-by-step migration from code-in-page to wrapper + layout structure
-globs:
-  - apps/**/app/**/page.tsx
 alwaysApply: false
 ---
 

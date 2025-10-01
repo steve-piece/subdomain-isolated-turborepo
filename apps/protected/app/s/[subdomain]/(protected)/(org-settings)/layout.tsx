@@ -1,33 +1,33 @@
-// apps/protected/app/s/[subdomain]/(org-settings)/layout.tsx
+// apps/protected/app/s/[subdomain]/(protected)/(org-settings)/layout.tsx
 /**
  * Layout for organization settings routes with tabs navigation
  */
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Building2, Users, CreditCard, Shield } from "lucide-react";
 
 const orgSettingsTabs = [
   {
     title: "General",
-    href: "/org-settings",
+    path: "org-settings",
     icon: Building2,
   },
   {
     title: "Team",
-    href: "/org-settings/team",
+    path: "org-settings/team",
     icon: Users,
   },
   {
     title: "Roles",
-    href: "/org-settings/roles",
+    path: "org-settings/roles",
     icon: Shield,
   },
   {
     title: "Billing",
-    href: "/org-settings/billing",
+    path: "org-settings/billing",
     icon: CreditCard,
   },
 ];
@@ -38,6 +38,8 @@ export default function OrgSettingsLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const params = useParams();
+  const subdomain = params?.subdomain as string;
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted/20">
@@ -50,29 +52,36 @@ export default function OrgSettingsLayout({
                 Manage your organization&apos;s configuration and team
               </p>
             </div>
-            <nav className="flex gap-2 overflow-x-auto">
-              {orgSettingsTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = pathname === tab.href;
+            <div className="relative">
+              {/* Gradient fade indicators for scroll overflow */}
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-card/50 to-transparent z-10" />
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card/50 to-transparent z-10" />
 
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
-                      "hover:bg-accent hover:text-accent-foreground",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {tab.title}
-                  </Link>
-                );
-              })}
-            </nav>
+              <nav className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                {orgSettingsTabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const fullHref = `/s/${subdomain}/${tab.path}`;
+                  const isActive = pathname === fullHref;
+
+                  return (
+                    <Link
+                      key={tab.path}
+                      href={fullHref}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {tab.title}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
           </div>
         </div>
       </div>

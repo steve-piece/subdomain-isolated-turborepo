@@ -1,8 +1,8 @@
-// apps/protected/tests/subdomain-auth-checker.test.tsx 
+// apps/protected/tests/subdomain-auth-checker.test.tsx
 import { render, waitFor } from "@testing-library/react";
 import React from "react";
 import { vi, describe, it, beforeEach } from "vitest";
-import { SubdomainAuthChecker } from "@/components/subdomain-auth-checker";
+import { SubdomainAuthChecker } from "@/components/shared/subdomain-auth-checker";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 

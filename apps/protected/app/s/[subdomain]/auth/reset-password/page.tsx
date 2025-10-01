@@ -1,12 +1,12 @@
-// apps/protected/app/s/[subdomain]/auth/reset-password/page.tsx 
-import { ForgotPasswordForm } from "@/components/forgot-password-form"
+// apps/protected/app/s/[subdomain]/auth/reset-password/page.tsx
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 export default async function ResetPasswordPage({
   params,
 }: {
-  params: Promise<{ subdomain: string }>
+  params: Promise<{ subdomain: string }>;
 }) {
-  const { subdomain } = await params
+  const { subdomain } = await params;
 
   return (
     <div className="flex h-screen w-full items-center justify-center px-4">
@@ -18,5 +18,5 @@ export default async function ResetPasswordPage({
         <ForgotPasswordForm subdomain={subdomain} />
       </div>
     </div>
-  )
+  );
 }

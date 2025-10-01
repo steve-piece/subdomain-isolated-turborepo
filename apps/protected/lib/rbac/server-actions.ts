@@ -150,6 +150,17 @@ export async function getUserCapabilities(
       .single();
 
     if (profileError || !profile) {
+      Sentry.captureException(profileError ?? new Error("Missing profile"), {
+        tags: {
+          org_id: orgId,
+          user_id: user.id,
+        },
+        extra: {
+          query: "user_profiles.select(role)",
+          hasProfile: !!profile,
+          hasError: !!profileError,
+        },
+      });
       return [];
     }
 
@@ -161,12 +172,23 @@ export async function getUserCapabilities(
       .eq("is_default", true);
 
     if (capError || !capabilities) {
+      if (capError) {
+        Sentry.captureException(capError, {
+          tags: {
+            org_id: orgId,
+            user_id: user.id,
+            role: profile.role,
+          },
+        });
+      }
       return [];
     }
 
     // Extract capability keys
     return capabilities
-      .map((cap: any) => cap.capabilities?.key)
+      .map(
+        (cap: { capabilities: { key: string }[] }) => cap.capabilities[0]?.key
+      )
       .filter(Boolean) as CapabilityKey[];
   } catch (error) {
     Sentry.captureException(error);

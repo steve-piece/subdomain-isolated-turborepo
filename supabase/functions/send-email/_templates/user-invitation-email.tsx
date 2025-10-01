@@ -1,4 +1,4 @@
-// supabase/functions/send-email/_templates/user-invitation-email.tsx 
+// supabase/functions/send-email/_templates/user-invitation-email.tsx
 import * as React from "npm:react@18.3.1";
 
 import {
@@ -13,8 +13,9 @@ export interface UserInvitationEmailProps {
   inviterName: string;
   inviterEmail: string;
   invitationUrl: string;
-  userRole: string;
   recipientEmail: string;
+  appName: string;
+  marketingUrl: string;
 }
 
 export function UserInvitationEmail({
@@ -22,10 +23,11 @@ export function UserInvitationEmail({
   inviterName,
   inviterEmail,
   invitationUrl,
-  userRole,
   recipientEmail,
+  appName,
+  marketingUrl,
 }: UserInvitationEmailProps): React.ReactElement {
-  const previewText = `You've been invited to join ${organizationName} by ${inviterName}`;
+  const previewText = `You've been invited to join ${organizationName} on ${appName}`;
 
   return (
     <BaseEmail previewText={previewText}>
@@ -34,8 +36,8 @@ export function UserInvitationEmail({
       </EmailHeading>
 
       <EmailText>
-        Hi there! {inviterName} ({inviterEmail}) has invited you to join
-        <strong> {organizationName}</strong> as a <strong>{userRole}</strong>.
+        {inviterName} ({inviterEmail}) has invited you to join{" "}
+        <strong>{organizationName}</strong> on <strong>{appName}</strong>.
       </EmailText>
 
       <EmailText>
@@ -46,16 +48,6 @@ export function UserInvitationEmail({
         <EmailButton href={invitationUrl}>Accept Invitation</EmailButton>
       </div>
 
-      <EmailText style={{ fontSize: "14px", color: "#6b7280" }}>
-        <strong>Organization:</strong> {organizationName}
-        <br />
-        <strong>Your Role:</strong> {userRole}
-        <br />
-        <strong>Invited by:</strong> {inviterName} ({inviterEmail})
-        <br />
-        <strong>Your Email:</strong> {recipientEmail}
-      </EmailText>
-
       <EmailText
         style={{
           fontSize: "14px",
@@ -63,11 +55,19 @@ export function UserInvitationEmail({
           borderTop: "1px solid #e5e7eb",
           paddingTop: "16px",
           marginTop: "32px",
+          textAlign: "center",
         }}
       >
-        This invitation will expire in 7 days. If you don&apos;t recognize this
-        organization or didn&apos;t expect this invitation, you can safely
-        ignore this email.
+        Not sure why you&apos;re seeing this?{" "}
+        <a
+          href={marketingUrl}
+          style={{
+            color: "#3b82f6",
+            textDecoration: "none",
+          }}
+        >
+          Learn more about {appName}
+        </a>
       </EmailText>
     </BaseEmail>
   );

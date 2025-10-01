@@ -1,8 +1,8 @@
-// apps/protected/tests/update-password-form.test.tsx 
+// apps/protected/tests/update-password-form.test.tsx
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { UpdatePasswordForm } from "@/components/update-password-form";
+import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 import * as supabaseClient from "@/lib/supabase/client";
 
 const mockPush = vi.fn();

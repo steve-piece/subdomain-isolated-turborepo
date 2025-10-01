@@ -1,7 +1,7 @@
 // apps/protected/tests/require-tenant-auth.test.tsx 
 import React from "react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import RequireTenantAuth from "@/components/require-tenant-auth";
+import RequireTenantAuth from "@/components/shared/require-tenant-auth";
 import { createClient } from "@/lib/supabase/server";
 
 vi.mock("@/lib/supabase/server", () => ({

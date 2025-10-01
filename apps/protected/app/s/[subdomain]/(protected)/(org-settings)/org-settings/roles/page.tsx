@@ -1,88 +1,100 @@
 // apps/protected/app/s/[subdomain]/(protected)/(org-settings)/org-settings/roles/page.tsx
+/**
+ * ✅ PHASE 1.5g: Simplified roles page
+ * - Simple role check (owner only)
+ * - Caching enabled (revalidate = 60)
+ */
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { unstable_noStore as noStore } from "next/cache";
 import {
   canCustomizeRoles,
   getAllCapabilities,
   getOrgCustomCapabilities,
-} from "@/app/actions";
-import { RoleCapabilitiesManager } from "@/components/role-capabilities-manager";
-import { UpgradePrompt } from "@/components/upgrade-prompt";
+} from "@actions/rbac";
+import { RoleCapabilitiesManager } from "@/components/org-settings/roles/role-capabilities-manager";
+import { UpgradePrompt } from "@/components/shared/upgrade-prompt";
+import { UserRole } from "@/lib/rbac/permissions";
+
+// ✅ Roles change infrequently - cache for 60 seconds
+export const revalidate = 60;
 
 export default async function RolesCustomizationPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
 }) {
-  noStore();
-  const { subdomain } = await params;
+  await params; // Consume params
   const supabase = await createClient();
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  // ✅ Simple role check - owner only
+  const { data: claims } = await supabase.auth.getClaims();
+  const userRole = claims?.claims.user_role || "member";
 
-  if (userError || !user) {
-    redirect("/auth/login?reason=no_session");
-  }
-
-  const { data: claims, error: claimsError } = await supabase.auth.getClaims();
-
-  if (claimsError || !claims || claims.claims.subdomain !== subdomain) {
-    redirect("/auth/login?error=unauthorized");
-  }
-
-  const organizationName = claims.claims.company_name || subdomain;
-  const userRole = claims.claims.user_role || "member";
-  const orgId = claims.claims.org_id;
-
-  // Only owners can customize roles
   if (userRole !== "owner") {
-    redirect(
-      "/org-settings?error=unauthorized&message=Only owners can customize roles"
-    );
+    redirect("/dashboard?error=unauthorized");
   }
 
-  // Check if org can customize
-  const tierCheck = await canCustomizeRoles();
+  const orgId = claims?.claims.org_id;
+  if (!orgId) {
+    redirect("/dashboard?error=no_organization");
+  }
 
-  if (!tierCheck.success || !tierCheck.canCustomize) {
+  // Check if org can customize roles
+  const canCustomizeResponse = await canCustomizeRoles();
+
+  if (!canCustomizeResponse.success || !canCustomizeResponse.canCustomize) {
+    // Fetch organization to get current tier
+    const { data: organization } = await supabase
+      .from("organizations")
+      .select("plan")
+      .eq("id", orgId)
+      .single();
+
     return (
       <UpgradePrompt
-        feature="Custom Role Capabilities"
+        feature="Custom Roles & Permissions"
         requiredTier="Business"
-        currentTier={tierCheck.tier || "free"}
-        description="Customize what each role can do in your organization with fine-grained permission control."
-        benefits={[
-          "Grant additional capabilities to lower roles",
-          "Revoke default capabilities from any role",
-          "Create custom permission workflows",
-          "Full audit trail of all changes",
-        ]}
+        currentTier={organization?.plan || "Free"}
       />
     );
   }
 
-  // Fetch all capabilities
-  const capabilitiesResult = await getAllCapabilities();
-  const customCapabilitiesResult = await getOrgCustomCapabilities();
+  // Get all capabilities and custom capabilities
+  const [allCapabilitiesResponse, customCapabilitiesResponse] =
+    await Promise.all([getAllCapabilities(), getOrgCustomCapabilities()]);
 
-  if (!capabilitiesResult.success) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-destructive">{capabilitiesResult.message}</p>
-      </div>
-    );
-  }
+  const allCapabilities = (
+    allCapabilitiesResponse.success ? allCapabilitiesResponse.data || [] : []
+  ) as Array<{
+    id: string;
+    key: string;
+    name: string;
+    description: string;
+    category: string;
+  }>;
+
+  const customCapabilities = (
+    customCapabilitiesResponse.success
+      ? customCapabilitiesResponse.data || []
+      : []
+  ) as Array<{
+    role: UserRole;
+    granted: boolean;
+    updated_at: string;
+    capabilities: {
+      id: string;
+      key: string;
+      name: string;
+      description: string;
+      category: string;
+    };
+  }>;
 
   return (
     <RoleCapabilitiesManager
-      capabilities={capabilitiesResult.data || []}
-      customCapabilities={customCapabilitiesResult.data || []}
       orgId={orgId}
-      organizationName={organizationName}
+      allCapabilities={allCapabilities}
+      customCapabilities={customCapabilities}
     />
   );
 }

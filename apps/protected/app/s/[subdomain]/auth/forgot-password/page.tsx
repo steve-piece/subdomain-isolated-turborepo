@@ -1,5 +1,5 @@
-// apps/protected/app/s/[subdomain]/auth/forgot-password/page.tsx 
-import { ForgotPasswordForm } from "@/components/forgot-password-form";
+// apps/protected/app/s/[subdomain]/auth/forgot-password/page.tsx
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 interface ForgotPasswordPageProps {
   params: Promise<{ subdomain: string }>;

@@ -1,5 +1,5 @@
 // supabase/functions/send-email/_templates/notification-email.tsx
-import * as React from "react";
+import * as React from "npm:react@18.3.1";
 import {
   BaseEmail,
   EmailButton,

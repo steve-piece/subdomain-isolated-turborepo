@@ -3,7 +3,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
-import { Providers } from "@/components/providers";
+import { Providers } from "@/components/shared/providers";
 import * as Sentry from "@sentry/nextjs";
 import type { Metadata } from "next";
 

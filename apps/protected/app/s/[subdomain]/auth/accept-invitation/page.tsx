@@ -1,6 +1,6 @@
 // apps/protected/app/s/[subdomain]/auth/accept-invitation/page.tsx
 import { unstable_noStore as noStore } from "next/cache";
-import { AcceptInvitationForm } from "@/components/accept-invitation-form";
+import { AcceptInvitationForm } from "@/components/auth/accept-invitation-form";
 import {
   Card,
   CardHeader,

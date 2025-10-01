@@ -5,7 +5,7 @@ import {
   confirmEmailAndBootstrap,
   handleAuthConfirmation,
 } from "../../../../actions";
-import { MagicLinkVerify } from "@/components/magic-link-verify";
+import { MagicLinkVerify } from "@/components/auth/magic-link-verify";
 
 interface ConfirmPageProps {
   params: Promise<{ subdomain: string }>;
