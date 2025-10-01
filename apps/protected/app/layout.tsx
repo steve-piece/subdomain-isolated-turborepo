@@ -8,7 +8,22 @@ import * as Sentry from "@sentry/nextjs";
 import type { Metadata } from "next";
 
 export function generateMetadata(): Metadata {
+  const appName = process.env.APP_NAME || "Your App Name";
+
   return {
+    title: {
+      default: appName,
+      template: `%s | ${appName}`,
+    },
+    description: "Transform your workflow with AI-powered tools",
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      ],
+      apple: "/apple-touch-icon.png",
+    },
+    manifest: "/site.webmanifest",
     other: {
       ...Sentry.getTraceData(),
     },
