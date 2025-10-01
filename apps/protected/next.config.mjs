@@ -1,9 +1,24 @@
 // apps/protected/next.config.mjs
+/* eslint-disable no-undef */
 /** @type {import('next').NextConfig} */
 import { withSentryConfig } from "@sentry/nextjs";
 
+// Extract hostname from SUPABASE_URL
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseHostname = new URL(supabaseUrl).hostname;
+
 const nextConfig = {
   transpilePackages: ["@workspace/ui"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: supabaseHostname,
+        port: "",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
 };
 
 const sentryWebpackPluginOptions = {

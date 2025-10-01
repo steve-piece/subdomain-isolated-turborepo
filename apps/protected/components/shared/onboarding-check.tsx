@@ -20,13 +20,15 @@ export function OnboardingCheck({
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    // TEMPORARY: Show modal for ALL users for testing
-    // TODO: Remove this and uncomment the original logic below
+    // Only show modal if:
+    // 1. Organization needs onboarding
+    // 2. User is the owner
+    // 3. Not already dismissed (check sessionStorage)
     const dismissed = sessionStorage.getItem(
       `onboarding-dismissed-${subdomain}`
     );
 
-    if (!dismissed) {
+    if (needsOnboarding && isOwner && !dismissed) {
       // Small delay for better UX
       const timer = setTimeout(() => {
         setShowModal(true);
@@ -34,25 +36,7 @@ export function OnboardingCheck({
 
       return () => clearTimeout(timer);
     }
-
-    // ORIGINAL LOGIC (commented out for testing):
-    // Only show modal if:
-    // 1. Organization needs onboarding
-    // 2. User is the owner
-    // 3. Not already dismissed (check sessionStorage)
-    // const dismissed = sessionStorage.getItem(
-    //   `onboarding-dismissed-${subdomain}`
-    // );
-
-    // if (needsOnboarding && isOwner && !dismissed) {
-    //   // Small delay for better UX
-    //   const timer = setTimeout(() => {
-    //     setShowModal(true);
-    //   }, 500);
-
-    //   return () => clearTimeout(timer);
-    // }
-  }, [subdomain]);
+  }, [needsOnboarding, isOwner, subdomain]);
 
   const handleComplete = () => {
     setShowModal(false);

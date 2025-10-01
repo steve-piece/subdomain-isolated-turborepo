@@ -11,7 +11,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
-import { MFASetup } from "@/components/mfa-setup";
+import { MFASetup } from "@/components/auth/mfa-setup";
 import { Shield, Key, Smartphone, History } from "lucide-react";
 
 interface SecurityWrapperProps {

@@ -1,18 +1,14 @@
 // apps/protected/components/dashboard/activity-feed.tsx
-import {
-  getRecentActivity,
-  type ActivityItem,
-} from "@/app/actions/activity/get-recent-activity";
+"use client";
+
+import { type ActivityItem } from "@/app/actions/activity/get-recent-activity";
 import { formatDistanceToNow } from "date-fns";
 
 interface ActivityFeedProps {
-  orgId: string;
-  limit?: number;
+  activities: ActivityItem[];
 }
 
-export async function ActivityFeed({ orgId, limit = 5 }: ActivityFeedProps) {
-  const activities = await getRecentActivity(orgId, limit);
-
+export function ActivityFeed({ activities }: ActivityFeedProps) {
   if (activities.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -28,13 +24,13 @@ export async function ActivityFeed({ orgId, limit = 5 }: ActivityFeedProps) {
   return (
     <div className="space-y-3">
       {activities.map((activity) => (
-        <ActivityItem key={activity.id} activity={activity} />
+        <ActivityItemDisplay key={activity.id} activity={activity} />
       ))}
     </div>
   );
 }
 
-function ActivityItem({ activity }: { activity: ActivityItem }) {
+function ActivityItemDisplay({ activity }: { activity: ActivityItem }) {
   const timeAgo = formatDistanceToNow(new Date(activity.timestamp), {
     addSuffix: true,
   });

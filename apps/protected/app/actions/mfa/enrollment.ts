@@ -8,6 +8,8 @@ export interface EnrollMFAResponse {
   success: boolean;
   message: string;
   factorId?: string;
+  qrCode?: string;
+  secret?: string;
 }
 
 export interface VerifyMFAEnrollmentResponse {
@@ -16,7 +18,10 @@ export interface VerifyMFAEnrollmentResponse {
 }
 
 /**
- * Enroll user in email-based MFA
+ * Enroll user in TOTP (Authenticator App) MFA - FREE OPTION
+ *
+ * Note: This uses TOTP which is free on all Supabase plans.
+ * SMS/Phone MFA requires a paid plan.
  */
 export async function enrollMFA(): Promise<EnrollMFAResponse> {
   try {
@@ -30,10 +35,10 @@ export async function enrollMFA(): Promise<EnrollMFAResponse> {
       return { success: false, message: "Authentication required" };
     }
 
-    // Enroll in email MFA factor
+    // Enroll in TOTP MFA factor (FREE - works with authenticator apps)
     const { data, error } = await supabase.auth.mfa.enroll({
       factorType: "totp",
-      friendlyName: `Email MFA for ${user.email}`,
+      friendlyName: `Authenticator for ${user.email}`,
     });
 
     if (error) {
@@ -47,12 +52,15 @@ export async function enrollMFA(): Promise<EnrollMFAResponse> {
     console.log("✅ MFA enrollment started:", {
       factorId: data.id,
       userId: user.id,
+      type: "totp",
     });
 
     return {
       success: true,
       message: "MFA enrollment started",
       factorId: data.id,
+      qrCode: data.totp.qr_code,
+      secret: data.totp.secret,
     };
   } catch (error) {
     Sentry.captureException(error);

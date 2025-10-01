@@ -1,4 +1,5 @@
 // apps/protected/sentry.edge.config.mjs
+/* eslint-disable no-undef */
 // sentry.edge.config.js
 // This file configures the initialization of Sentry for edge features (middleware, edge routes, and so on).
 // The config you add here will be used whenever one of the edge features is loaded.

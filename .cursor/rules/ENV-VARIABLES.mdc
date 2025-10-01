@@ -38,4 +38,18 @@ SENTRY_AUTH_TOKEN= **Private Variable** -> Sentry Auth token. This is the Auth t
 
 CHECKLY_API_KEY= **Private Variable** -> Checkly API key. This is the API key that will be used to check the health of the application.
 
-\*\*
+# Local development tips:
+
+# - Marketing: http://localhost:3002
+
+# - Protected: http://localhost:3003
+
+# - Tenant: http://<tenant>.localhost:3003
+
+**FOR TESTING**
+
+Use these details:
+
+subdomain: acme
+user: steven@hormonefitness.com
+password: !@Ml3g3nddd

@@ -67,7 +67,10 @@ export async function unenrollMFA(
 }
 
 /**
- * Get user's MFA factors
+ * Get user's MFA factors (TOTP only - FREE option)
+ *
+ * Note: This only lists TOTP factors (authenticator apps) which are free.
+ * Phone/SMS factors require a paid Supabase plan and are not supported.
  */
 export async function getMFAFactors(): Promise<GetMFAFactorsResponse> {
   try {
@@ -91,11 +94,12 @@ export async function getMFAFactors(): Promise<GetMFAFactorsResponse> {
       return { success: false, message: error.message };
     }
 
+    // Map TOTP factors (authenticator apps) - FREE
     return {
       success: true,
       factors: data.totp.map((factor) => ({
         id: factor.id,
-        friendlyName: factor.friendly_name || "Email MFA",
+        friendlyName: factor.friendly_name || "Authenticator App",
         factorType: factor.factor_type,
         status: factor.status,
       })),

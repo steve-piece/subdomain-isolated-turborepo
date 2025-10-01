@@ -2,8 +2,8 @@
 // Renders the tenant landing dashboard with quick actions, stats, and sign-out controls.
 "use client";
 
-import { LogoutButton } from "@/components/logout-button";
-import { RoleProtectedAction } from "@/components/role-protected-action";
+import { LogoutButton } from "@/components/shared/logout-button";
+import { RoleProtectedAction } from "@/components/shared/role-protected-action";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,

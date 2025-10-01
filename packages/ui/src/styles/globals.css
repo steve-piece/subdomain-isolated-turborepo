@@ -126,12 +126,12 @@
     @apply bg-background text-foreground;
   }
   /* Cursor semantics: show pointer on interactive elements; not-allowed on disabled */
-  a[href],
-  button:not(:disabled),
-  [role="button"],
-  input[type="button"],
-  input[type="submit"],
-  summary {
+  a[href]:not([aria-disabled="true"]):not([disabled]),
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]):not([disabled]),
+  input[type="button"]:not([aria-disabled="true"]):not([disabled]),
+  input[type="submit"]:not([aria-disabled="true"]):not([disabled]),
+  summary:not([aria-disabled="true"]):not([disabled]) {
     @apply cursor-pointer;
   }
 

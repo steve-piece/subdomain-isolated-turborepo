@@ -1,9 +1,8 @@
 // apps/protected/components/shared/subdomain-auth-checker.tsx
-// Client-side guard that verifies tenant claims before rendering the dashboard shell.
+// Client-side guard that verifies tenant claims and redirects appropriately
 "use client";
 
 import React from "react";
-import { OrganizationDashboard } from "@/components/dashboard/organization-dashboard";
 import { createClient } from "@/lib/supabase/client";
 import {
   useTenantAccess,
@@ -18,6 +17,8 @@ interface SubdomainAuthCheckerProps {
 
 export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
   const { addToast } = useToast();
+  const [shouldRedirect, setShouldRedirect] = React.useState(false);
+
   const access = useTenantAccess({
     subdomain,
     redirectTo: "/auth/login",
@@ -75,6 +76,14 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
     },
   });
 
+  // Handle redirect to dashboard when authenticated
+  React.useEffect(() => {
+    if (access.state === "allowed" && !shouldRedirect) {
+      setShouldRedirect(true);
+      window.location.href = "/dashboard";
+    }
+  }, [access.state, shouldRedirect]);
+
   if (access.state === "checking") {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted/30">
@@ -97,15 +106,26 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
     );
   }
 
-  // If authenticated, show the dashboard
-  if (access.state === "allowed") {
-    const claims = access.claims.claims;
+  // Show loading screen while redirecting to dashboard
+  if (access.state === "allowed" || shouldRedirect) {
     return (
-      <OrganizationDashboard
-        organizationName={claims.company_name ?? subdomain}
-        subdomain={subdomain}
-        userEmail={(claims.email as string | undefined) ?? ""}
-      />
+      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted/30">
+        <div className="flex flex-col items-center gap-6">
+          <div className="text-6xl mb-2">🏢</div>
+          <div className="relative">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          </div>
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+              Welcome back!
+            </h2>
+            <p className="text-muted-foreground flex items-center justify-center">
+              <span className="mr-2">✨</span>
+              Redirecting to dashboard...
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 

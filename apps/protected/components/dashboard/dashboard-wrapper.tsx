@@ -13,13 +13,17 @@ import {
 import Link from "next/link";
 import { RoleProtectedAction } from "@/components/shared/role-protected-action";
 import { ActivityFeed } from "./activity-feed";
-import { Suspense } from "react";
+import type { ActivityItem } from "@/app/actions/activity/get-recent-activity";
 
 interface DashboardWrapperProps {
   subdomain: string;
+  activities: ActivityItem[];
 }
 
-export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
+export function DashboardWrapper({
+  subdomain,
+  activities,
+}: DashboardWrapperProps) {
   // ✅ Get user data from context - no API calls!
   const claims = useTenantClaims();
 
@@ -164,16 +168,7 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Suspense
-                  fallback={
-                    <div className="text-center py-8 text-muted-foreground">
-                      <div className="text-4xl mb-2">⏳</div>
-                      <p className="text-sm">Loading activity...</p>
-                    </div>
-                  }
-                >
-                  <ActivityFeed orgId={claims.org_id} limit={5} />
-                </Suspense>
+                <ActivityFeed activities={activities} />
               </CardContent>
             </Card>
           </div>

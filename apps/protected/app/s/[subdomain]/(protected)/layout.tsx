@@ -6,7 +6,7 @@
  * ✅ PHASE 1.2: Centralized auth with TenantClaimsProvider
  */
 import { AppSidebar } from "@/components/shared/app-sidebar";
-import { OnboardingCheck } from "@/components/onboarding-check";
+import { OnboardingCheck } from "@/components/shared/onboarding-check";
 import { TenantClaimsProvider } from "@/lib/contexts/tenant-claims-context";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";

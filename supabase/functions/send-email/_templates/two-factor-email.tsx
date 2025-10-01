@@ -18,7 +18,7 @@ export function TwoFactorEmail({
   appName,
   marketingUrl,
 }: TwoFactorEmailProps): React.ReactElement {
-  const previewText = `Your verification code: ${verificationCode}`;
+  const previewText = "Your two-factor authentication code is ready";
 
   return (
     <BaseEmail previewText={previewText}>
@@ -87,8 +87,16 @@ export function TwoFactorEmail({
         }}
       >
         <strong>⚠️ Security Alert:</strong> If you didn&apos;t attempt to sign
-        in, someone may be trying to access your account. Please secure your
-        account immediately.
+        in, someone may be trying to access your account. Take these steps
+        immediately:
+        <br />
+        <br />
+        • Change your password
+        <br />
+        • Review recent account activity for suspicious login attempts
+        <br />
+        • Enable two-factor authentication if not already active
+        <br />• Contact support if you notice any unauthorized access
       </EmailText>
 
       <EmailText

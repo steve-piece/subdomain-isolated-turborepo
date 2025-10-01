@@ -51,7 +51,8 @@ export default function UserSettingsLayout({
               {userSettingsTabs.map((tab) => {
                 const Icon = tab.icon;
                 const fullPath = `/s/${subdomain}/${tab.path}`;
-                const isActive = pathname.startsWith(fullPath);
+                const isActive =
+                  pathname === fullPath || pathname.startsWith(`${fullPath}/`);
 
                 return (
                   <Link

@@ -16,7 +16,6 @@ import { PasswordResetEmail } from "./_templates/password-reset-email.tsx";
 import { UserInvitationEmail } from "./_templates/user-invitation-email.tsx";
 import { NotificationEmail } from "./_templates/notification-email.tsx";
 import { MagicLinkEmail } from "./_templates/magic-link-email.tsx";
-import { TwoFactorEmail } from "./_templates/two-factor-email.tsx";
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 if (!resendApiKey) {
