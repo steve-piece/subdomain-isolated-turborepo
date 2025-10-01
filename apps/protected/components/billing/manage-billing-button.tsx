@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { createBillingPortalSession } from "@/app/actions/billing/checkout";
-import { useToast } from "@workspace/ui/hooks/use-toast";
+import { useToast } from "@workspace/ui/components/toast";
 
 interface ManageBillingButtonProps {
   orgId: string;
@@ -16,7 +16,7 @@ export function ManageBillingButton({
   subdomain,
 }: ManageBillingButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { addToast } = useToast();
 
   const handleManage = async () => {
     setIsLoading(true);
@@ -28,20 +28,12 @@ export function ManageBillingButton({
         // Redirect to Stripe Billing Portal
         window.location.href = result.url;
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to open billing portal",
-          variant: "destructive",
-        });
+        addToast(result.error || "Failed to open billing portal", "error");
         setIsLoading(false);
       }
     } catch (error) {
       console.error("Error opening billing portal:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      addToast("An unexpected error occurred", "error");
       setIsLoading(false);
     }
   };

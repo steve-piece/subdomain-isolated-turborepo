@@ -5,6 +5,20 @@ import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/lib/stripe/server";
 import type Stripe from "stripe";
 
+// Extended Stripe types to handle properties not in the strict type definitions
+interface StripeSubscriptionExtended extends Stripe.Subscription {
+  current_period_start: number;
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+  canceled_at: number | null;
+  trial_end: number | null;
+}
+
+interface StripeInvoiceExtended extends Stripe.Invoice {
+  subscription: string | Stripe.Subscription | null;
+  tax: number | null;
+}
+
 // Create service role client for webhook handlers
 // Note: This bypasses RLS as webhooks need elevated privileges
 const supabaseAdmin = createClient(
@@ -25,6 +39,8 @@ export async function syncSubscription(
   subscription: Stripe.Subscription
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Type assertion for Stripe properties that come as snake_case from the API
+    const sub = subscription as any;
     const orgId = subscription.metadata.org_id;
 
     if (!orgId) {
@@ -51,24 +67,18 @@ export async function syncSubscription(
       stripe_subscription_id: subscription.id,
       stripe_customer_id: subscription.customer as string,
       status: subscription.status,
-      period_start: new Date(
-        subscription.current_period_start * 1000
-      ).toISOString(),
-      period_end: new Date(
-        subscription.current_period_end * 1000
-      ).toISOString(),
+      period_start: new Date(sub.current_period_start * 1000).toISOString(),
+      period_end: new Date(sub.current_period_end * 1000).toISOString(),
       current_period_start: new Date(
-        subscription.current_period_start * 1000
+        sub.current_period_start * 1000
       ).toISOString(),
-      current_period_end: new Date(
-        subscription.current_period_end * 1000
-      ).toISOString(),
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      canceled_at: subscription.canceled_at
-        ? new Date(subscription.canceled_at * 1000).toISOString()
+      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: sub.cancel_at_period_end,
+      canceled_at: sub.canceled_at
+        ? new Date(sub.canceled_at * 1000).toISOString()
         : null,
-      trial_end: subscription.trial_end
-        ? new Date(subscription.trial_end * 1000).toISOString()
+      trial_end: sub.trial_end
+        ? new Date(sub.trial_end * 1000).toISOString()
         : null,
       billing_cycle:
         subscription.items.data[0]?.price.recurring?.interval || null,
@@ -181,7 +191,7 @@ export async function syncCustomerUpdated(
       .update({
         billing_email: customer.email || null,
         billing_name: customer.name || null,
-        billing_address: customer.address as any,
+        billing_address: customer.address || null,
         default_payment_method_id: customer.invoice_settings
           .default_payment_method as string | null,
         updated_at: new Date().toISOString(),
@@ -252,10 +262,18 @@ export async function syncInvoicePaid(
     }
 
     // Get subscription
+    const invoiceSubscription = (invoice as StripeInvoiceExtended).subscription;
+    const subscriptionId =
+      typeof invoiceSubscription === "string"
+        ? invoiceSubscription
+        : invoiceSubscription && typeof invoiceSubscription === "object"
+          ? invoiceSubscription.id
+          : null;
+
     const { data: subscription } = await supabaseAdmin
       .from("subscriptions")
       .select("id")
-      .eq("stripe_subscription_id", invoice.subscription)
+      .eq("stripe_subscription_id", subscriptionId)
       .single();
 
     const { error } = await supabaseAdmin.from("invoices").upsert(
@@ -270,7 +288,7 @@ export async function syncInvoicePaid(
         amount_paid: invoice.amount_paid,
         amount_remaining: invoice.amount_remaining,
         subtotal: invoice.subtotal,
-        tax: invoice.tax || 0,
+        tax: (invoice as StripeInvoiceExtended).tax ?? 0,
         total: invoice.total,
         invoice_pdf: invoice.invoice_pdf,
         hosted_invoice_url: invoice.hosted_invoice_url,
@@ -286,7 +304,7 @@ export async function syncInvoicePaid(
         due_date: invoice.due_date
           ? new Date(invoice.due_date * 1000).toISOString()
           : null,
-        metadata: invoice.metadata as any,
+        metadata: invoice.metadata || null,
         updated_at: new Date().toISOString(),
       },
       {
@@ -322,13 +340,21 @@ export async function syncInvoicePaymentFailed(
     }
 
     // Update subscription status to past_due
+    const invoiceSubscription = (invoice as StripeInvoiceExtended).subscription;
+    const subscriptionId =
+      typeof invoiceSubscription === "string"
+        ? invoiceSubscription
+        : invoiceSubscription && typeof invoiceSubscription === "object"
+          ? invoiceSubscription.id
+          : null;
+
     const { error } = await supabaseAdmin
       .from("subscriptions")
       .update({
         status: "past_due",
         updated_at: new Date().toISOString(),
       })
-      .eq("stripe_subscription_id", invoice.subscription);
+      .eq("stripe_subscription_id", subscriptionId);
 
     if (error) {
       return { success: false, error: error.message };
@@ -358,10 +384,18 @@ export async function syncInvoiceFinalized(
     }
 
     // Get subscription
+    const invoiceSubscription = (invoice as StripeInvoiceExtended).subscription;
+    const subscriptionId =
+      typeof invoiceSubscription === "string"
+        ? invoiceSubscription
+        : invoiceSubscription && typeof invoiceSubscription === "object"
+          ? invoiceSubscription.id
+          : null;
+
     const { data: subscription } = await supabaseAdmin
       .from("subscriptions")
       .select("id")
-      .eq("stripe_subscription_id", invoice.subscription)
+      .eq("stripe_subscription_id", subscriptionId)
       .single();
 
     const { error } = await supabaseAdmin.from("invoices").upsert(
@@ -376,7 +410,7 @@ export async function syncInvoiceFinalized(
         amount_paid: invoice.amount_paid || 0,
         amount_remaining: invoice.amount_remaining,
         subtotal: invoice.subtotal,
-        tax: invoice.tax || 0,
+        tax: (invoice as StripeInvoiceExtended).tax ?? 0,
         total: invoice.total,
         invoice_pdf: invoice.invoice_pdf,
         hosted_invoice_url: invoice.hosted_invoice_url,
@@ -389,7 +423,7 @@ export async function syncInvoiceFinalized(
         period_end: invoice.period_end
           ? new Date(invoice.period_end * 1000).toISOString()
           : null,
-        metadata: invoice.metadata as any,
+        metadata: invoice.metadata || null,
         updated_at: new Date().toISOString(),
       },
       {
@@ -445,7 +479,7 @@ export async function syncPaymentMethodAttached(
       card_exp_month: paymentMethod.card?.exp_month || null,
       card_exp_year: paymentMethod.card?.exp_year || null,
       is_default: false,
-      metadata: paymentMethod.metadata as any,
+      metadata: paymentMethod.metadata || null,
     });
 
     if (error) {
@@ -502,7 +536,7 @@ export async function syncPaymentMethodUpdated(
         card_last4: paymentMethod.card?.last4 || null,
         card_exp_month: paymentMethod.card?.exp_month || null,
         card_exp_year: paymentMethod.card?.exp_year || null,
-        metadata: paymentMethod.metadata as any,
+        metadata: paymentMethod.metadata || null,
         updated_at: new Date().toISOString(),
       })
       .eq("stripe_payment_method_id", paymentMethod.id);

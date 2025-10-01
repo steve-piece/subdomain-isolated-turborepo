@@ -11,6 +11,7 @@ export const contentType = "image/png";
 
 // Default logo URL - used when organization doesn't have a custom logo
 const DEFAULT_LOGO_URL =
+  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL ||
   "https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png";
 
 /**

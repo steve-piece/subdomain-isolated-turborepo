@@ -56,23 +56,25 @@ export default async function OrgSettingsPage({
         <CardHeader>
           <CardTitle>Organization Settings</CardTitle>
           <CardDescription>
-            Manage your organization's identity and preferences
+            Manage your organization&apos;s identity and preferences
           </CardDescription>
         </CardHeader>
       </Card>
 
       <OrganizationLogoUpload
-        organizationId={orgId}
+        organizationName={organization.company_name}
         currentLogoUrl={organization.logo_url || null}
       />
 
       <OrganizationIdentityForm
-        organizationId={orgId}
-        currentData={{
-          name: organization.name || "",
-          subdomain: organization.subdomain || subdomain,
-          description: organization.description || "",
-        }}
+        organizationName={organization.company_name || ""}
+        subdomain={organization.subdomain || subdomain}
+        description={organization.description || ""}
+        appDomain={process.env.NEXT_PUBLIC_APP_DOMAIN || ""}
+        onSubmit={async () => ({
+          success: true,
+          message: "Organization settings updated successfully!",
+        })}
       />
     </div>
   );

@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { createCheckoutSession } from "@/app/actions/billing/checkout";
-import { useToast } from "@workspace/ui/hooks/use-toast";
+import { useToast } from "@workspace/ui/components/toast";
 
 interface UpgradeButtonProps {
   orgId: string;
@@ -20,7 +20,7 @@ export function UpgradeButton({
   planName,
 }: UpgradeButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { addToast } = useToast();
 
   const handleUpgrade = async () => {
     setIsLoading(true);
@@ -32,20 +32,12 @@ export function UpgradeButton({
         // Redirect to Stripe Checkout
         window.location.href = result.url;
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to create checkout session",
-          variant: "destructive",
-        });
+        addToast(result.error || "Failed to create checkout session", "error");
         setIsLoading(false);
       }
     } catch (error) {
       console.error("Error creating checkout session:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      addToast("An unexpected error occurred", "error");
       setIsLoading(false);
     }
   };

@@ -50,7 +50,8 @@
         "STRIPE_PRO_YEARLY_PRICE_ID",
         "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID",
         "STRIPE_ENTERPRISE_YEARLY_PRICE_ID",
-        "NEXT_RUNTIME"
+        "NEXT_RUNTIME",
+        "RESEND_FROM_EMAIL"
       ]
     },
     "lint": {
@@ -101,7 +102,8 @@
         "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID",
         "STRIPE_ENTERPRISE_YEARLY_PRICE_ID",
         "NEXT_RUNTIME",
-        "STRIPE_SECRET_KEY"
+        "STRIPE_SECRET_KEY",
+        "RESEND_FROM_EMAIL"
       ]
     },
     "check-types": {

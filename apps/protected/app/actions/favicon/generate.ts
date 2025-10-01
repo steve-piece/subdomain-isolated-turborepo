@@ -4,6 +4,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { isValidSubdomain } from "@workspace/ui/lib/subdomains";
 
+// Default logo URL - used when organization doesn't have a custom logo
+const DEFAULT_LOGO_URL =
+  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL ||
+  "https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png";
+
 export interface FaviconResponse {
   success: boolean;
   message?: string;
@@ -37,67 +42,26 @@ export async function getOrganizationFavicon(
       .single();
 
     if (error) {
-      // If organization not found, return fallback
-      const firstLetter = subdomain.charAt(0).toUpperCase();
-      const fallbackSvg = generateFallbackSvg(firstLetter);
-
+      // If organization not found, return default logo
       return {
         success: true,
-        fallbackSvg,
+        logoUrl: DEFAULT_LOGO_URL,
       };
     }
 
-    // If organization has a logo, return the URL
-    if (organization?.logo_url) {
-      return {
-        success: true,
-        logoUrl: organization.logo_url,
-      };
-    }
-
-    // Generate fallback SVG with first letter of subdomain
-    const firstLetter = subdomain.charAt(0).toUpperCase();
-    const fallbackSvg = generateFallbackSvg(firstLetter);
-
+    // If organization has a logo, return the URL, otherwise use default
     return {
       success: true,
-      fallbackSvg,
+      logoUrl: organization?.logo_url || DEFAULT_LOGO_URL,
     };
   } catch (error) {
     console.error("Get organization favicon error:", error);
 
-    // Return generic fallback on error
-    const fallbackSvg = generateFallbackSvg("?");
-
+    // Return default logo on error
     return {
       success: false,
       message: "Failed to fetch favicon",
-      fallbackSvg,
+      logoUrl: DEFAULT_LOGO_URL,
     };
   }
-}
-
-/**
- * Generate an SVG favicon with a letter
- */
-function generateFallbackSvg(letter: string): string {
-  return `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="6" fill="url(#gradient)"/>
-  <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <text 
-    x="50%" 
-    y="50%" 
-    dominant-baseline="central" 
-    text-anchor="middle" 
-    font-family="system-ui, -apple-system, sans-serif" 
-    font-size="18" 
-    font-weight="600" 
-    fill="white"
-  >${letter}</text>
-</svg>`;
 }
