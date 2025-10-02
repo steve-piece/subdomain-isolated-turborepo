@@ -234,7 +234,7 @@ export function RoleCapabilitiesManager({
                 Custom Role Capabilities
               </CardTitle>
               <CardDescription className="mt-2">
-                Customize what each role can do in {organizationName}. Changes
+                Customize what each role can do in your organization. Changes
                 apply immediately to all users with the selected role.
               </CardDescription>
             </div>

@@ -1,19 +1,36 @@
 // apps/protected/lib/stripe/server.ts
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error(
-    "STRIPE_SECRET_KEY is not set. Please add it to your environment variables."
-  );
+// Lazy initialization to avoid build-time errors
+let stripeInstance: Stripe | null = null;
+
+export function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error(
+        "STRIPE_SECRET_KEY is not set. Please add it to your environment variables."
+      );
+    }
+
+    // Initialize Stripe with the pinned API version (SDK default)
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      // Uses the SDK's pinned API version for stability
+      typescript: true,
+      appInfo: {
+        name: "Subdomain Isolated Turborepo",
+        version: "1.0.0",
+      },
+    });
+  }
+
+  return stripeInstance;
 }
 
-// Initialize Stripe with the pinned API version (SDK default)
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  // Uses the SDK's pinned API version for stability
-  typescript: true,
-  appInfo: {
-    name: "Subdomain Isolated Turborepo",
-    version: "1.0.0",
+// Backwards compatibility - but prefer using getStripe()
+export const stripe = new Proxy({} as Stripe, {
+  get: (_, prop) => {
+    const instance = getStripe();
+    return instance[prop as keyof Stripe];
   },
 });
 
@@ -49,5 +66,5 @@ export function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_APP_DOMAIN) {
     return `https://${process.env.NEXT_PUBLIC_APP_DOMAIN}`;
   }
-  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3003";
 }

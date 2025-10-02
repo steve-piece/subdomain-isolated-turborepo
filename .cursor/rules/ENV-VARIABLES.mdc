@@ -29,6 +29,21 @@ THE FOLLOWING VARIABLES AND THEIR NAMING CONVENTIONS SHOULD BE USED AS FOLLOWS:
 `RESEND_ENABLE_WELCOME_EMAILS`=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
 `RESEND_VERIFY_EMAILS`=true -> Resend Boolean settings for easy on/off toggling to simplify testing workflows.
 
+## Stripe Variables
+
+`STRIPE_SECRET_KEY`= **Private Variable** -> Stripe secret key. This is the secret key that will be used to access the Stripe database.
+`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`= **Private Variable** -> Stripe publishable key. This is the publishable key that will be used to access the Stripe database.
+`STRIPE_WEBHOOK_SECRET`= **Private Variable** -> Stripe webhook secret. This is the webhook secret that will be used to access the Stripe database.
+
+### Stripe Price IDs
+
+`STRIPE_FREE_MONTHLY_PRICE_ID`= **Private Variable** -> Stripe free monthly price ID. This is the price ID that will be used to access the Stripe database.
+`STRIPE_FREE_YEARLY_PRICE_ID`= **Private Variable** -> Stripe free yearly price ID. This is the price ID that will be used to access the Stripe database.
+`STRIPE_PRO_MONTHLY_PRICE_ID`= **Private Variable** -> Stripe pro monthly price ID. This is the price ID that will be used to access the Stripe database.
+`STRIPE_PRO_YEARLY_PRICE_ID`= **Private Variable** -> Stripe pro yearly price ID. This is the price ID that will be used to access the Stripe database.
+`STRIPE_ENTERPRISE_MONTHLY_PRICE_ID`= **Private Variable** -> Stripe enterprise monthly price ID. This is the price ID that will be used to access the Stripe database.
+`STRIPE_ENTERPRISE_YEARLY_PRICE_ID`= **Private Variable** -> Stripe enterprise yearly price ID. This is the price ID that will be used to access the Stripe database.
+
 ## Sentry Variables
 
 SENTRY_DSN= **Private Variable** -> Sentry DSN. This is the DSN that will be used to send errors to Sentry.
