@@ -11,10 +11,11 @@ export interface CompleteInvitationResponse {
 }
 
 /**
- * Complete invitation by setting password for newly invited user
+ * Complete invitation by setting password and display name for newly invited user
  */
 export async function completeInvitation(
   password: string,
+  fullName: string,
   redirectTo?: string
 ): Promise<CompleteInvitationResponse> {
   try {
@@ -32,8 +33,59 @@ export async function completeInvitation(
       };
     }
 
+    // Extract invitation metadata
+    const metadata = user.user_metadata as Record<string, unknown>;
+    const orgId = metadata.org_id as string | undefined;
+    const subdomain = metadata.subdomain as string | undefined;
+    const userRole = metadata.user_role as string | undefined;
+
+    if (!orgId || !subdomain || !userRole) {
+      Sentry.logger.error("complete_invitation_missing_metadata", {
+        userId: user.id,
+        hasOrgId: !!orgId,
+        hasSubdomain: !!subdomain,
+        hasUserRole: !!userRole,
+      });
+      return {
+        success: false,
+        message: "Invalid invitation data. Please request a new invitation.",
+      };
+    }
+
+    // Create user_profile row so custom claims work
+    const { error: profileError } = await supabase
+      .from("user_profiles")
+      .insert({
+        user_id: user.id,
+        email: user.email!,
+        full_name: fullName,
+        org_id: orgId,
+        role: userRole,
+      });
+
+    if (profileError) {
+      // If profile already exists (duplicate), that's fine
+      if (
+        !profileError.message.includes("duplicate") &&
+        !profileError.message.includes("already exists")
+      ) {
+        Sentry.logger.error("complete_invitation_profile_error", {
+          userId: user.id,
+          message: profileError.message,
+        });
+        return {
+          success: false,
+          message: "Failed to create user profile. Please contact support.",
+        };
+      }
+    }
+
+    // Set password and display name
     const { error } = await supabase.auth.updateUser({
       password,
+      data: {
+        full_name: fullName,
+      },
     });
 
     if (error) {
@@ -52,6 +104,9 @@ export async function completeInvitation(
         message: error.message,
       };
     }
+
+    // Force refresh session to get new JWT with custom claims
+    await supabase.auth.refreshSession();
 
     return {
       success: true,

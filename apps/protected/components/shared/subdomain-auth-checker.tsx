@@ -1,5 +1,12 @@
 // apps/protected/components/shared/subdomain-auth-checker.tsx
-// Client-side guard that verifies tenant claims and redirects appropriately
+/**
+ * @deprecated This component is DEPRECATED as of October 2, 2025
+ *
+ * ⚠️ DO NOT USE - Protected layout already handles auth ⚠️
+ *
+ * MIGRATION: Simply redirect to dashboard - no auth check needed
+ * See: /apps/protected/components/shared/DEPRECATED_AUTH_COMPONENTS.md
+ */
 "use client";
 
 import React from "react";

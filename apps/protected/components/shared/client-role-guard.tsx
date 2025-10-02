@@ -1,5 +1,12 @@
 // apps/protected/components/client-role-guard.tsx
-// Client-only guard that checks Supabase claims to enforce role-based UI access.
+/**
+ * @deprecated This component is DEPRECATED as of October 2, 2025
+ *
+ * ⚠️ DO NOT USE - Use useTenantClaims() instead ⚠️
+ *
+ * MIGRATION: Use useEffect with useTenantClaims() for role checks
+ * See: /apps/protected/components/shared/DEPRECATED_AUTH_COMPONENTS.md
+ */
 "use client";
 
 import React from "react";

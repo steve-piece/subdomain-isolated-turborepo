@@ -1,5 +1,12 @@
 // apps/protected/components/role-protected-action.tsx
-// Wraps interactive regions to enforce role-based access with client-side claims.
+/**
+ * @deprecated This component is DEPRECATED as of October 2, 2025
+ *
+ * ⚠️ DO NOT USE - Use useTenantClaims() instead ⚠️
+ *
+ * MIGRATION: Use conditional rendering with useTenantClaims()
+ * See: /apps/protected/components/shared/DEPRECATED_AUTH_COMPONENTS.md
+ */
 "use client";
 
 import React from "react";

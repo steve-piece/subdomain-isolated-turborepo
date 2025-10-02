@@ -11,6 +11,17 @@ export function generateMetadata(): Metadata {
   const appName = process.env.APP_NAME || "Your App Name";
 
   return {
+    title: {
+      default: appName,
+      template: `%s | ${appName}`,
+    },
+    icons: {
+      icon: [
+        { url: "/icon", sizes: "32x32", type: "image/png" },
+        { url: "/favicon.ico", sizes: "any" },
+      ],
+      apple: "/apple-touch-icon.png",
+    },
     other: {
       ...Sentry.getTraceData(),
     },

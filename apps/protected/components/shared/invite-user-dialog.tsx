@@ -94,6 +94,7 @@ export function InviteUserDialog({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
+                autoComplete="off"
               />
             </div>
 

@@ -20,6 +20,7 @@ export interface TenantClaims {
   // ===== Identity =====
   user_id: string;
   email: string;
+  full_name?: string;
 
   // ===== Organization Context =====
   org_id: string;
@@ -28,7 +29,7 @@ export interface TenantClaims {
   organization_logo_url?: string; // Note: Updates on next login
 
   // ===== Authorization =====
-  user_role: string;
+  user_role: "owner" | "superadmin" | "admin" | "member" | "view-only";
   capabilities: string[]; // Note: Updates on next login
 }
 

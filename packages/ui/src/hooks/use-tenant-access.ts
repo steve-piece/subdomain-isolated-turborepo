@@ -1,6 +1,57 @@
 // packages/ui/src/hooks/use-tenant-access.ts
-// Unified tenant access hook used by client components to validate Supabase claims, roles,
-// and trigger consistent UX (redirects, toasts, logging) when access is denied.
+/**
+ * @deprecated This hook is DEPRECATED as of October 2, 2025
+ *
+ * ⚠️ DO NOT USE IN NEW CODE ⚠️
+ *
+ * This hook made duplicate auth API calls on every render, causing:
+ * - 70+ unnecessary API calls per page load
+ * - Performance degradation
+ * - Excessive network traffic
+ *
+ * MIGRATION GUIDE:
+ * ================
+ *
+ * OLD PATTERN (❌ Don't use):
+ * ```tsx
+ * const access = useTenantAccess({
+ *   subdomain,
+ *   allowedRoles: ["owner", "admin"],
+ *   createClient,
+ * });
+ *
+ * if (access.state === "allowed") {
+ *   return <div>Content</div>;
+ * }
+ * ```
+ *
+ * NEW PATTERN (✅ Use this):
+ * ```tsx
+ * import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
+ *
+ * export function MyComponent() {
+ *   const claims = useTenantClaims(); // No API calls!
+ *
+ *   // Role check
+ *   if (!["owner", "admin"].includes(claims.user_role)) {
+ *     return <div>Access denied</div>;
+ *   }
+ *
+ *   return <div>Content for {claims.full_name}</div>;
+ * }
+ * ```
+ *
+ * WHY MIGRATE:
+ * - ✅ Zero API calls (reads from context)
+ * - ✅ Instant access to user data
+ * - ✅ Better performance
+ * - ✅ Simpler code
+ * - ✅ Type-safe with strict role typing
+ *
+ * See: /docs/AUTH_REFACTOR_PATTERN.md for full guide
+ *
+ * This hook will be REMOVED in a future version.
+ */
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";

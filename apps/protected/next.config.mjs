@@ -19,6 +19,9 @@ const nextConfig = {
       },
     ],
   },
+  serverActions: {
+    bodySizeLimit: "3mb", // Allow up to 3MB for avatar uploads (2MB max file + overhead)
+  },
 };
 
 const sentryWebpackPluginOptions = {

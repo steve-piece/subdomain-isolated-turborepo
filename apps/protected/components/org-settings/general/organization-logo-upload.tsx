@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { Button } from "@workspace/ui/components/button";
 import { useToast } from "@workspace/ui/components/toast";
+import { Info } from "lucide-react";
 import {
   uploadOrganizationLogo,
   removeOrganizationLogo,
@@ -188,8 +189,9 @@ export function OrganizationLogoUpload({
               "Click logo or drag & drop. SVG, PNG, JPG or WebP. Max 5MB."
             )}
           </p>
-          <p className="text-xs text-amber-600 dark:text-amber-500">
-            ℹ️ Logo updates in the sidebar will appear on your next login
+          <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
+            <Info className="h-3 w-3" />
+            Logo updates in the sidebar will appear on your next login
           </p>
         </div>
         <input

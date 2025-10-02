@@ -1,6 +1,7 @@
-// apps/protected/app/s/[subdomain]/icon.tsx
+// apps/protected/app/icon.tsx
 import { ImageResponse } from "next/og";
 import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
 
 export const runtime = "edge";
 export const size = {
@@ -11,54 +12,59 @@ export const contentType = "image/png";
 
 // Default logo URL - used when organization doesn't have a custom logo
 const DEFAULT_LOGO_URL =
-  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL ||
   "https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png";
 
 /**
  * Dynamic favicon generator for each organization
- * Uses organization logo if available, otherwise generates SVG with first letter
+ * Works WITHOUT authentication by extracting subdomain from hostname
+ * and querying the database directly
  */
-export default async function Icon({
-  params,
-}: {
-  params: Promise<{ subdomain: string }>;
-}) {
-  const { subdomain } = await params;
-
+export default async function Icon() {
   try {
+    // Get subdomain from hostname (works without auth)
+    const headersList = await headers();
+    const host = headersList.get("host") || "";
+    const subdomain = host.split(".")[0];
+
+    console.log(`[ICON ROOT] Host: ${host}, Subdomain: ${subdomain}`);
+
     const supabase = await createClient();
 
-    // Get logo from JWT claims (same as sidebar)
-    const { data: claims } = await supabase.auth.getClaims();
-    const logoUrl = claims?.claims.organization_logo_url as string | undefined;
-    const companyName = claims?.claims.company_name as string | undefined;
+    // Query database directly using subdomain (no auth required)
+    const { data: organization } = await supabase
+      .from("organizations")
+      .select("logo_url, company_name")
+      .eq("subdomain", subdomain)
+      .single();
 
-    console.log(`[ICON] Subdomain: ${subdomain}, Logo from JWT:`, logoUrl);
+    console.log(`[ICON ROOT] Organization:`, organization);
 
     // Use custom logo if available, otherwise use default logo
-    const finalLogoUrl = logoUrl || DEFAULT_LOGO_URL;
+    const finalLogoUrl = organization?.logo_url || DEFAULT_LOGO_URL;
 
-    console.log(`[ICON] Fetching logo from: ${finalLogoUrl}`);
+    console.log(`[ICON ROOT] Fetching logo from: ${finalLogoUrl}`);
     try {
       const response = await fetch(finalLogoUrl);
-      console.log(`[ICON] Logo fetch status: ${response.status}`);
+      console.log(`[ICON ROOT] Logo fetch status: ${response.status}`);
 
       if (response.ok) {
         const blob = await response.blob();
         return new Response(blob, {
           headers: {
             "Content-Type": response.headers.get("content-type") || "image/png",
-            "Cache-Control": "public, max-age=300, s-maxage=300",
+            "Cache-Control": "public, max-age=3600, s-maxage=3600, immutable",
           },
         });
       }
     } catch (error) {
-      console.error("[ICON] Error fetching logo:", error);
+      console.error("[ICON ROOT] Error fetching logo:", error);
       // Fall through to generated icon
     }
 
     // Generate a simple icon with the first letter
-    const firstLetter = (companyName || subdomain).charAt(0).toUpperCase();
+    const firstLetter = (organization?.company_name || subdomain)
+      .charAt(0)
+      .toUpperCase();
 
     return new ImageResponse(
       (
@@ -90,7 +96,7 @@ export default async function Icon({
       }
     );
   } catch (error) {
-    console.error("Error generating icon:", error);
+    console.error("[ICON ROOT] Error generating icon:", error);
 
     // Return a fallback icon
     return new ImageResponse(

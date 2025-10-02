@@ -2,7 +2,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { stripe, STRIPE_CONFIG, getBaseUrl } from "@/lib/stripe/server";
+import { stripe } from "@/lib/stripe/server";
 import { getOrCreateStripeCustomer } from "./stripe-customer";
 
 export interface CreateCheckoutSessionResponse {
@@ -44,7 +44,6 @@ export async function createCheckoutSession(
       };
     }
 
-    const baseUrl = getBaseUrl();
     const successUrl = `https://${subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/org-settings/billing?success=true`;
     const cancelUrl = `https://${subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/org-settings/billing?canceled=true`;
 

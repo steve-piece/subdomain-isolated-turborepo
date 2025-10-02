@@ -178,6 +178,7 @@ export default async function ProtectedLayout({
     // Identity
     user_id: user.id,
     email: user.email || "",
+    full_name: userFullName || undefined,
 
     // Organization Context
     org_id: claims.claims.org_id,
@@ -186,7 +187,7 @@ export default async function ProtectedLayout({
     organization_logo_url: claims.claims.organization_logo_url,
 
     // Authorization
-    user_role: userRole,
+    user_role: userRole as "owner" | "superadmin" | "admin" | "member" | "view-only",
     capabilities: userCapabilities,
   };
 

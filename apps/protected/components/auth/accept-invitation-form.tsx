@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { completeInvitation } from "@actions/invitations";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@workspace/ui/components/button";
@@ -19,6 +20,7 @@ export function AcceptInvitationForm({
   email,
   redirectTo = "/dashboard",
 }: AcceptInvitationFormProps) {
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +38,22 @@ export function AcceptInvitationForm({
   // Verify OTP on mount to establish session
   useEffect(() => {
     const verifyInvitation = async () => {
+      const startTime = performance.now();
+
+      Sentry.addBreadcrumb({
+        category: "auth.invitation",
+        message: "Starting invitation verification flow",
+        level: "info",
+        data: {
+          hasProvidedEmail: !!email,
+          redirectTo,
+        },
+      });
+
       try {
-        if (typeof window === "undefined") return;
+        if (typeof window === "undefined") {
+          return;
+        }
 
         const params = new URLSearchParams(window.location.search);
         const tokenHash = params.get("token_hash");
@@ -48,17 +64,70 @@ export function AcceptInvitationForm({
           type,
         });
 
+        Sentry.addBreadcrumb({
+          category: "auth.invitation",
+          message: "Parsed URL parameters",
+          level: "info",
+          data: {
+            hasTokenHash: !!tokenHash,
+            type,
+          },
+        });
+
         if (!tokenHash || type !== "invite") {
-          setError("Invalid or incomplete invitation link");
+          const errorMsg = "Invalid or incomplete invitation link";
+
+          Sentry.addBreadcrumb({
+            category: "auth.invitation",
+            message: "Missing or invalid URL parameters",
+            level: "warning",
+            data: {
+              hasTokenHash: !!tokenHash,
+              type,
+            },
+          });
+
+          Sentry.withScope((scope) => {
+            scope.setContext("invitation", {
+              hasTokenHash: !!tokenHash,
+              type,
+              redirectTo,
+              email: email || "unknown",
+            });
+            scope.setTag("component", "AcceptInvitationForm");
+            scope.setTag("step", "url_validation");
+            scope.setLevel("warning");
+            Sentry.captureMessage(errorMsg);
+          });
+
+          setError(errorMsg);
           setIsVerifying(false);
           return;
         }
 
         console.log("🔄 AcceptInvitationForm - Manually verifying OTP...");
 
+        Sentry.addBreadcrumb({
+          category: "auth.invitation",
+          message: "Verifying OTP token",
+          level: "info",
+        });
+
+        const verifyStartTime = performance.now();
         const { data, error: verifyError } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
           type: "invite",
+        });
+        const verifyDuration = performance.now() - verifyStartTime;
+
+        Sentry.addBreadcrumb({
+          category: "auth.invitation",
+          message: "OTP verification completed",
+          level: "info",
+          data: {
+            duration: `${verifyDuration.toFixed(2)}ms`,
+            success: !verifyError,
+          },
         });
 
         if (verifyError) {
@@ -66,22 +135,106 @@ export function AcceptInvitationForm({
             "🚨 AcceptInvitationForm - OTP verification failed:",
             verifyError
           );
+
+          Sentry.addBreadcrumb({
+            category: "auth.invitation",
+            message: "OTP verification failed",
+            level: "error",
+            data: {
+              error: verifyError.message,
+              code: verifyError.code,
+              duration: `${verifyDuration.toFixed(2)}ms`,
+            },
+          });
+
+          Sentry.withScope((scope) => {
+            scope.setContext("invitation", {
+              email: email || "unknown",
+              redirectTo,
+              errorCode: verifyError.code,
+              errorMessage: verifyError.message,
+              verifyDuration: `${verifyDuration.toFixed(2)}ms`,
+            });
+            scope.setTag("component", "AcceptInvitationForm");
+            scope.setTag("step", "otp_verification");
+            scope.setTag("error_code", verifyError.code || "unknown");
+            scope.setLevel("error");
+            Sentry.captureException(verifyError);
+          });
+
           setError(verifyError.message);
           setIsVerifying(false);
           return;
         }
 
-        if (data.session) {
+        if (data?.session) {
+          const userEmail = data.session.user.email;
+          const userId = data.session.user.id;
+
           console.log("✅ AcceptInvitationForm - Session established:", {
-            userEmail: data.session.user.email,
+            userEmail,
           });
-          setSessionEmail(data.session.user.email);
+
+          const totalDuration = performance.now() - startTime;
+
+          Sentry.addBreadcrumb({
+            category: "auth.invitation",
+            message: "Session established successfully",
+            level: "info",
+            data: {
+              userEmail,
+              totalDuration: `${totalDuration.toFixed(2)}ms`,
+            },
+          });
+
+          Sentry.setUser({
+            email: userEmail,
+            id: userId,
+          });
+
+          // Send successful verification event
+          Sentry.withScope((scope) => {
+            scope.setContext("invitation", {
+              email: userEmail,
+              redirectTo,
+              totalDuration: `${totalDuration.toFixed(2)}ms`,
+            });
+            scope.setTag("component", "AcceptInvitationForm");
+            scope.setTag("step", "verification_success");
+            scope.setLevel("info");
+            Sentry.captureMessage("Invitation OTP verified successfully");
+          });
+
+          setSessionEmail(userEmail);
           setError(null);
         }
 
         setIsVerifying(false);
       } catch (error) {
         console.error("🚨 AcceptInvitationForm - Unexpected error:", error);
+        const totalDuration = performance.now() - startTime;
+
+        Sentry.addBreadcrumb({
+          category: "auth.invitation",
+          message: "Unexpected error during verification",
+          level: "error",
+          data: {
+            totalDuration: `${totalDuration.toFixed(2)}ms`,
+          },
+        });
+
+        Sentry.withScope((scope) => {
+          scope.setContext("invitation", {
+            email: email || "unknown",
+            redirectTo,
+            totalDuration: `${totalDuration.toFixed(2)}ms`,
+          });
+          scope.setTag("component", "AcceptInvitationForm");
+          scope.setTag("step", "verification_unexpected");
+          scope.setLevel("error");
+          Sentry.captureException(error);
+        });
+
         setError(
           error instanceof Error ? error.message : "Failed to verify invitation"
         );
@@ -90,47 +243,205 @@ export function AcceptInvitationForm({
     };
 
     verifyInvitation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
 
+    const startTime = performance.now();
+
+    Sentry.addBreadcrumb({
+      category: "auth.invitation",
+      message: "User submitted password setup form",
+      level: "info",
+      data: {
+        hasSessionEmail: !!sessionEmail,
+        hasFullName: !!fullName,
+      },
+    });
+
+    // Validation
+    if (!fullName || fullName.trim().length < 2) {
+      const errorMsg = "Full name is required (minimum 2 characters)";
+
+      Sentry.addBreadcrumb({
+        category: "auth.invitation",
+        message: "Full name validation failed",
+        level: "warning",
+        data: {
+          fullNameLength: fullName.length,
+        },
+      });
+
+      setError(errorMsg);
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      const errorMsg = "Passwords do not match";
+
+      Sentry.addBreadcrumb({
+        category: "auth.invitation",
+        message: "Password validation failed: mismatch",
+        level: "warning",
+      });
+
+      setError(errorMsg);
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      const errorMsg = "Password must be at least 6 characters long";
+
+      Sentry.addBreadcrumb({
+        category: "auth.invitation",
+        message: "Password validation failed: too short",
+        level: "warning",
+        data: {
+          passwordLength: password.length,
+        },
+      });
+
+      setError(errorMsg);
       return;
     }
 
     setIsSubmitting(true);
 
-    const result = await completeInvitation(password, redirectTo);
-
-    setIsSubmitting(false);
-
-    if (!result.success) {
-      setError(result.message ?? "Unable to complete invitation");
-      addToast({
-        title: "Unable to finish setup",
-        description:
-          result.message ?? "Please try again or request a new link.",
-        variant: "error",
-      });
-      return;
-    }
-
-    addToast({
-      title: "Welcome aboard!",
-      description: "Your password has been set. Redirecting you now...",
-      variant: "success",
-      duration: 4000,
+    Sentry.addBreadcrumb({
+      category: "auth.invitation",
+      message: "Calling completeInvitation server action",
+      level: "info",
     });
 
-    router.push(result.redirectTo ?? redirectTo);
+    try {
+      const actionStartTime = performance.now();
+      const result = await completeInvitation(
+        password,
+        fullName.trim(),
+        redirectTo
+      );
+      const actionDuration = performance.now() - actionStartTime;
+
+      Sentry.addBreadcrumb({
+        category: "auth.invitation",
+        message: "CompleteInvitation server action completed",
+        level: "info",
+        data: {
+          success: result.success,
+          duration: `${actionDuration.toFixed(2)}ms`,
+        },
+      });
+
+      setIsSubmitting(false);
+
+      if (!result.success) {
+        Sentry.addBreadcrumb({
+          category: "auth.invitation",
+          message: "Invitation completion failed",
+          level: "error",
+          data: {
+            message: result.message,
+            duration: `${actionDuration.toFixed(2)}ms`,
+          },
+        });
+
+        Sentry.withScope((scope) => {
+          scope.setContext("invitation", {
+            email: sessionEmail || email || "unknown",
+            redirectTo,
+            resultMessage: result.message,
+            actionDuration: `${actionDuration.toFixed(2)}ms`,
+            totalDuration: `${(performance.now() - startTime).toFixed(2)}ms`,
+          });
+          scope.setTag("component", "AcceptInvitationForm");
+          scope.setTag("step", "complete_invitation");
+          scope.setLevel("error");
+          Sentry.captureMessage(
+            result.message ?? "Unable to complete invitation"
+          );
+        });
+
+        setError(result.message ?? "Unable to complete invitation");
+        addToast({
+          title: "Unable to finish setup",
+          description:
+            result.message ?? "Please try again or request a new link.",
+          variant: "error",
+        });
+
+        return;
+      }
+
+      const totalDuration = performance.now() - startTime;
+
+      Sentry.addBreadcrumb({
+        category: "auth.invitation",
+        message: "Invitation completed successfully",
+        level: "info",
+        data: {
+          redirectTo: result.redirectTo ?? redirectTo,
+          totalDuration: `${totalDuration.toFixed(2)}ms`,
+        },
+      });
+
+      // Send success event
+      Sentry.withScope((scope) => {
+        scope.setContext("invitation", {
+          email: sessionEmail || email || "unknown",
+          redirectTo: result.redirectTo ?? redirectTo,
+          totalDuration: `${totalDuration.toFixed(2)}ms`,
+        });
+        scope.setTag("component", "AcceptInvitationForm");
+        scope.setTag("step", "complete_success");
+        scope.setLevel("info");
+        Sentry.captureMessage("Invitation completed successfully");
+      });
+
+      addToast({
+        title: "Welcome aboard!",
+        description: "Your password has been set. Redirecting you now...",
+        variant: "success",
+        duration: 4000,
+      });
+
+      router.push(result.redirectTo ?? redirectTo);
+    } catch (error) {
+      setIsSubmitting(false);
+      const totalDuration = performance.now() - startTime;
+
+      Sentry.addBreadcrumb({
+        category: "auth.invitation",
+        message: "Unexpected error completing invitation",
+        level: "error",
+        data: {
+          totalDuration: `${totalDuration.toFixed(2)}ms`,
+        },
+      });
+
+      Sentry.withScope((scope) => {
+        scope.setContext("invitation", {
+          email: sessionEmail || email || "unknown",
+          redirectTo,
+          totalDuration: `${totalDuration.toFixed(2)}ms`,
+        });
+        scope.setTag("component", "AcceptInvitationForm");
+        scope.setTag("step", "complete_invitation_unexpected");
+        scope.setLevel("error");
+        Sentry.captureException(error);
+      });
+
+      const errorMsg =
+        error instanceof Error ? error.message : "An unexpected error occurred";
+      setError(errorMsg);
+      addToast({
+        title: "Unable to finish setup",
+        description: errorMsg,
+        variant: "error",
+      });
+    }
   };
 
   // Show loading state while verifying
@@ -185,6 +496,20 @@ export function AcceptInvitationForm({
           {email}
         </div>
       ) : null}
+
+      <div className="grid gap-2">
+        <Label htmlFor="full-name">Full Name</Label>
+        <Input
+          id="full-name"
+          type="text"
+          value={fullName}
+          onChange={(event) => setFullName(event.target.value)}
+          placeholder="Enter your full name"
+          minLength={2}
+          required
+          autoComplete="name"
+        />
+      </div>
 
       <div className="grid gap-2">
         <Label htmlFor="password">Create a password</Label>
@@ -297,16 +622,7 @@ export function AcceptInvitationForm({
 
       <div className="flex flex-col gap-3">
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Save password & continue"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={() => router.push(redirectTo)}
-          disabled={isSubmitting}
-        >
-          Skip for now
+          {isSubmitting ? "Saving..." : "Complete setup"}
         </Button>
       </div>
     </form>

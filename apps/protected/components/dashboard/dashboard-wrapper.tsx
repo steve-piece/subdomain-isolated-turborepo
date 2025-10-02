@@ -13,7 +13,9 @@ import {
 import Link from "next/link";
 import { RoleProtectedAction } from "@/components/shared/role-protected-action";
 import { ActivityFeed } from "./activity-feed";
+import { getRecentActivity } from "@/app/actions/activity/get-recent-activity";
 import type { ActivityItem } from "@/app/actions/activity/get-recent-activity";
+import { useState, useEffect } from "react";
 import {
   Building2,
   Users,
@@ -32,23 +34,33 @@ import {
 
 interface DashboardWrapperProps {
   subdomain: string;
-  activities: ActivityItem[];
-  userFullName?: string | null;
-  allowMemberInvites?: boolean | null;
 }
 
-export function DashboardWrapper({
-  subdomain,
-  activities,
-  userFullName,
-  allowMemberInvites,
-}: DashboardWrapperProps) {
+export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
   // ✅ Get user data from context - no API calls!
   const claims = useTenantClaims();
+  
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+
+  // Fetch activities on mount
+  useEffect(() => {
+    async function fetchActivities() {
+      try {
+        const data = await getRecentActivity(claims.org_id, 5);
+        setActivities(data);
+      } catch (error) {
+        console.error("Failed to fetch activities:", error);
+      } finally {
+        setIsLoadingActivities(false);
+      }
+    }
+    fetchActivities();
+  }, [claims.org_id]);
 
   const organizationName = claims.company_name || subdomain;
-  // Extract first name only from full name
-  const firstName = userFullName ? userFullName.trim().split(" ")[0] : "there";
+  // Extract first name only from full name (from context)
+  const firstName = claims.full_name ? claims.full_name.trim().split(" ")[0] : "there";
   const userName = firstName;
 
   return (
@@ -149,9 +161,8 @@ export function DashboardWrapper({
                 </Button>
               </Link>
 
-              {/* Show invite button based on role AND organization settings */}
-              {(["owner", "admin", "superadmin"].includes(claims.user_role) ||
-                allowMemberInvites) && (
+              {/* Show invite button based on role */}
+              {["owner", "admin", "superadmin"].includes(claims.user_role) && (
                 <Link href="/org-settings/team" className="w-full block">
                   <Button
                     className="w-full justify-start"

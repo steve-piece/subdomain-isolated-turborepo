@@ -25,9 +25,13 @@ import {
   Crown,
   PanelLeftClose,
   PanelLeftOpen,
+  Folder,
 } from "lucide-react";
 import type { AppRole } from "../../lib/types";
 import { hasRoleAccess } from "../../lib/utils/role-hierarchy";
+
+// Set to true to enable debug logging for sidebar access checks
+const DEBUG_SIDEBAR_ACCESS = false;
 
 // Default logo URL - used when organization doesn't have a custom logo
 const DEFAULT_LOGO_URL =
@@ -67,6 +71,13 @@ const navigationGroups: NavigationGroup[] = [
         href: "/dashboard",
         icon: Home,
         description: "Overview and quick actions",
+      },
+      {
+        title: "Projects",
+        href: "/projects",
+        icon: Folder,
+        description: "Manage your projects",
+        requiredCapabilities: ["projects.view"],
       },
       {
         title: "Admin Panel",
@@ -231,13 +242,15 @@ export function AppSidebar({
       if (item.requiredRoles && item.requiredRoles.length > 0) {
         const hasRole = hasRoleAccess(userRole, item.requiredRoles);
         if (!hasRole) {
-          console.log(
-            `⛔ Access denied to "${item.title}": role hierarchy check failed`,
-            {
-              userRole,
-              requiredRoles: item.requiredRoles,
-            }
-          );
+          if (DEBUG_SIDEBAR_ACCESS) {
+            console.log(
+              `⛔ Access denied to "${item.title}": role hierarchy check failed`,
+              {
+                userRole,
+                requiredRoles: item.requiredRoles,
+              }
+            );
+          }
           return false;
         }
       }
@@ -248,22 +261,26 @@ export function AppSidebar({
           userCapabilities.includes(cap)
         );
         if (!hasAllCapabilities) {
-          const missingCaps = item.requiredCapabilities.filter(
-            (cap) => !userCapabilities.includes(cap)
-          );
-          console.log(
-            `⛔ Access denied to "${item.title}": missing capabilities`,
-            {
-              required: item.requiredCapabilities,
-              missing: missingCaps,
-              userHas: userCapabilities,
-            }
-          );
+          if (DEBUG_SIDEBAR_ACCESS) {
+            const missingCaps = item.requiredCapabilities.filter(
+              (cap) => !userCapabilities.includes(cap)
+            );
+            console.log(
+              `⛔ Access denied to "${item.title}": missing capabilities`,
+              {
+                required: item.requiredCapabilities,
+                missing: missingCaps,
+                userHas: userCapabilities,
+              }
+            );
+          }
           return false;
         }
       }
 
-      console.log(`✅ Access granted to "${item.title}"`);
+      if (DEBUG_SIDEBAR_ACCESS) {
+        console.log(`✅ Access granted to "${item.title}"`);
+      }
       return true;
     },
     [userRole, userCapabilities]

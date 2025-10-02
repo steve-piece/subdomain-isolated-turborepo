@@ -8,14 +8,40 @@ import * as Sentry from "@sentry/nextjs";
 import type { Metadata } from "next";
 
 export function generateMetadata(): Metadata {
-  const appName = process.env.APP_NAME || "Your App Name";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
+  const description = "Transform your workflow with AI-powered tools";
+  const marketingDomain = process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "";
+  const siteUrl = `https://${marketingDomain}`;
 
   return {
     title: {
       default: appName,
       template: `%s | ${appName}`,
     },
-    description: "Transform your workflow with AI-powered tools",
+    description,
+    metadataBase: new URL(siteUrl),
+    openGraph: {
+      title: appName,
+      description,
+      url: siteUrl,
+      siteName: appName,
+      locale: "en_US",
+      type: "website",
+      images: [
+        {
+          url: "/web-app-manifest-512x512.png",
+          width: 512,
+          height: 512,
+          alt: `${appName} Logo`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary",
+      title: appName,
+      description,
+      images: ["/web-app-manifest-512x512.png"],
+    },
     icons: {
       icon: [
         { url: "/favicon.ico", sizes: "any" },
