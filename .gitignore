@@ -35,3 +35,9 @@ npm-debug.log*
 .DS_Store
 *.pem
 embedding_workflow
+
+# Other
+.cursor
+.cursorignore
+docs/*
+docs
