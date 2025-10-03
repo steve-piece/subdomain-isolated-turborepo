@@ -19,6 +19,7 @@
     "@stripe/stripe-js": "^8.0.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.4",
+    "@vercel/analytics": "^1.5.0",
     "@workspace/ui": "workspace:*",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.544.0",

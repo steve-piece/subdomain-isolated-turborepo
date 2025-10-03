@@ -1,9 +1,6 @@
 // components/projects/projects-wrapper.tsx
 "use client";
 
-import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { CreateProjectDialog } from "./create-project-dialog";
 import {
   Card,
@@ -25,72 +22,17 @@ interface Project {
 }
 
 interface ProjectsWrapperProps {
+  projects: Project[];
   subdomain: string;
+  canCreateProjects: boolean;
 }
 
-export function ProjectsWrapper({ subdomain }: ProjectsWrapperProps) {
-  // ✅ Get user data from context - no API calls!
-  const claims = useTenantClaims();
-  const supabase = createClient();
-
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const canCreateProjects = claims.capabilities.includes("projects.create");
-
-  // Fetch projects
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const { data } = await supabase
-          .from("projects")
-          .select(
-            `
-            id,
-            name,
-            description,
-            created_at,
-            project_permissions (
-              user_id
-            )
-          `
-          )
-          .eq("org_id", claims.org_id)
-          .eq("status", "active")
-          .order("created_at", { ascending: false });
-
-        // Transform data to include member count
-        const projectsWithCount =
-          data?.map(
-            (project: {
-              id: string;
-              name: string;
-              description: string;
-              created_at: string;
-              project_permissions?: unknown[];
-            }) => ({
-              id: project.id,
-              name: project.name,
-              description: project.description,
-              created_at: project.created_at,
-              member_count: project.project_permissions?.length || 0,
-            })
-          ) || [];
-
-        setProjects(projectsWithCount);
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchProjects();
-  }, [claims.org_id, supabase]);
-
-  if (isLoading) {
-    return <div className="p-6">Loading projects...</div>;
-  }
+export function ProjectsWrapper({
+  projects,
+  subdomain,
+  canCreateProjects,
+}: ProjectsWrapperProps) {
+  // ✅ Pure UI component - no data fetching
 
   return (
     <div className="container py-6 space-y-6">

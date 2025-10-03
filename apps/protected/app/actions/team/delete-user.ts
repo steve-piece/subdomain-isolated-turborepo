@@ -28,7 +28,7 @@ export async function deleteUser(
     // Get current user's claims
     const { data: claims } = await supabase.auth.getClaims();
     const currentUserRole = claims?.claims.user_role as UserRole;
-    const currentUserId = claims?.user_id;
+    const currentUserId = claims?.claims.sub;
 
     if (!currentUserRole || !currentUserId) {
       return { success: false, error: "Not authenticated" };

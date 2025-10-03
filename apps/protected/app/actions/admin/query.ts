@@ -49,7 +49,6 @@ export interface SystemHealth {
   api: { status: SystemStatus; responseTime?: number };
   database: { status: SystemStatus; responseTime?: number };
   storage: { status: SystemStatus };
-  lastBackup: string | null;
 }
 
 export async function getSystemHealth(): Promise<SystemHealth> {
@@ -75,6 +74,5 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     storage: {
       status: "operational",
     },
-    lastBackup: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
   };
 }

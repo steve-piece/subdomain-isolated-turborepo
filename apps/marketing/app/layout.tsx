@@ -6,6 +6,7 @@ import "@workspace/ui/globals.css";
 import { Providers } from "@/components/providers";
 import * as Sentry from "@sentry/nextjs";
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 
 export function generateMetadata(): Metadata {
   const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
@@ -77,6 +78,7 @@ export default function RootLayout({
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
       >
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
