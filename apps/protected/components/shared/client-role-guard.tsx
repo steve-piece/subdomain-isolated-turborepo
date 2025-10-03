@@ -51,55 +51,8 @@ export function ClientRoleGuard({
       error: "Authentication check failed",
     },
     createClient,
-    onDenied: (failure) => {
-      if (redirectToLogin) return;
-
-      switch (failure.reason) {
-        case "no_session":
-          addToast(
-            resolveGuardMessage(
-              failure,
-              undefined,
-              "Please sign in to access this content"
-            ),
-            "warning"
-          );
-          break;
-        case "wrong_subdomain":
-          addToast(
-            resolveGuardMessage(
-              failure,
-              undefined,
-              "You don't have access to this organization"
-            ),
-            "error"
-          );
-          break;
-        case "insufficient_role":
-          addToast(
-            resolveGuardMessage(
-              failure,
-              undefined,
-              fallbackMessage ||
-                `This content requires ${
-                  failure.allowed?.join(" or ") ?? "additional"
-                } permissions.`
-            ),
-            "warning"
-          );
-          break;
-        case "error":
-          addToast(
-            resolveGuardMessage(
-              failure,
-              undefined,
-              "Authentication check failed"
-            ),
-            "error"
-          );
-          break;
-      }
-    },
+    // Removed onDenied callback to prevent toast spam on page load
+    // This component is deprecated - use useTenantClaims() instead
   });
 
   if (access.state === "checking") {

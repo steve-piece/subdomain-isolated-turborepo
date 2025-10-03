@@ -59,26 +59,8 @@ export function RoleProtectedAction({
     showToast: false,
     messages: centralizedMessages,
     createClient,
-    onDenied: (failure: GuardFailure) => {
-      if (
-        failure.reason === "insufficient_role" ||
-        failure.reason === "wrong_subdomain"
-      ) {
-        const message = resolveGuardMessage(
-          failure,
-          centralizedMessages,
-          fallbackMessage ||
-            `This action requires ${allowedRoles.join(
-              " or "
-            )} permissions. Your current role: ${
-              failure.reason === "insufficient_role"
-                ? (failure.actual ?? "unknown")
-                : "unknown"
-            }`
-        );
-        addToast(message, "warning", 5000);
-      }
-    },
+    // Removed onDenied callback to prevent toast spam on page load
+    // Toasts will only show on actual user interaction via handleClick
   });
 
   const handleClick = (e: React.MouseEvent) => {

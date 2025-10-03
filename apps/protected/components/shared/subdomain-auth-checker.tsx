@@ -11,12 +11,7 @@
 
 import React from "react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  useTenantAccess,
-  type GuardFailure,
-  resolveGuardMessage,
-} from "@workspace/ui/hooks";
-import { useToast } from "@workspace/ui/components/toast";
+import { useTenantAccess, type GuardFailure } from "@workspace/ui/hooks";
 import { Building2, Search } from "lucide-react";
 
 interface SubdomainAuthCheckerProps {
@@ -24,7 +19,6 @@ interface SubdomainAuthCheckerProps {
 }
 
 export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
-  const { addToast } = useToast();
   const [shouldRedirect, setShouldRedirect] = React.useState(false);
 
   const access = useTenantAccess({
@@ -42,42 +36,18 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
       error: "We ran into a problem validating your access.",
     },
     onDenied: (failure: GuardFailure) => {
+      // Removed toast notifications to prevent spam - redirects provide feedback
       switch (failure.reason) {
         case "no_session":
           window.location.href = "/auth/login?reason=no_session";
           break;
         case "wrong_subdomain":
-          addToast(
-            resolveGuardMessage(
-              failure,
-              undefined,
-              "You don't have access to this organization"
-            ),
-            "error",
-            5000
-          );
           window.location.href = "/auth/login?error=unauthorized";
           break;
         case "insufficient_role":
-          addToast(
-            resolveGuardMessage(
-              failure,
-              undefined,
-              "Insufficient permissions for this organization"
-            ),
-            "warning"
-          );
           window.location.href = "/auth/login?error=insufficient_permissions";
           break;
         case "error":
-          addToast(
-            resolveGuardMessage(
-              failure,
-              undefined,
-              "Authentication check failed"
-            ),
-            "error"
-          );
           window.location.href = "/auth/login?error=auth_check_failed";
           break;
       }

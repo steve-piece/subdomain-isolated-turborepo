@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import Link from "next/link";
-import { RoleProtectedAction } from "@/components/shared/role-protected-action";
 import { ActivityFeed } from "./activity-feed";
 import { getRecentActivity } from "@/app/actions/activity/get-recent-activity";
 import type { ActivityItem } from "@/app/actions/activity/get-recent-activity";
@@ -240,14 +239,15 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
                     Add team members to collaborate
                   </p>
                 </div>
-                <RoleProtectedAction
-                  subdomain={subdomain}
-                  allowedRoles={["owner", "admin", "superadmin"]}
-                >
+                {["owner", "admin", "superadmin"].includes(claims.user_role) ? (
                   <Link href="/org-settings/team">
                     <Button size="sm">Start</Button>
                   </Link>
-                </RoleProtectedAction>
+                ) : (
+                  <Button size="sm" disabled>
+                    Start
+                  </Button>
+                )}
               </div>
 
               <div className="flex items-center gap-3 p-3 border rounded-lg opacity-60">
@@ -273,14 +273,15 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
                     Customize your organization preferences
                   </p>
                 </div>
-                <RoleProtectedAction
-                  subdomain={subdomain}
-                  allowedRoles={["owner", "admin", "superadmin"]}
-                >
+                {["owner", "admin", "superadmin"].includes(claims.user_role) ? (
                   <Link href="/org-settings">
                     <Button size="sm">Start</Button>
                   </Link>
-                </RoleProtectedAction>
+                ) : (
+                  <Button size="sm" disabled>
+                    Start
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
