@@ -134,7 +134,7 @@ The project includes a complete multi-tenant database setup script (`database-se
 - 🏢 **Organizations**: Company/group management
 - 🌐 **Tenants**: Subdomain to organization mapping
 - 👤 **User Profiles**: Extended user data with tenant relationships
-- 🔐 **Role-Based Access**: `superadmin` → `admin` → `member` → `view-only`
+- 🔐 **Role-Based Access**: `owner` → `superadmin` → `admin` → `member` → `view-only`
 - 🛡️ **Row Level Security**: Comprehensive RLS policies for tenant isolation
 
 ## Multi-Tenant Architecture
