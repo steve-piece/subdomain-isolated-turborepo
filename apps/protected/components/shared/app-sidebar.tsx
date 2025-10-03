@@ -38,6 +38,22 @@ const DEFAULT_LOGO_URL =
   process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL ||
   "https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png";
 
+/**
+ * Validates that navigation hrefs are internal paths only (no external URLs or injections)
+ * SECURITY: This prevents any potential URL injection even though all hrefs are static strings
+ */
+function isValidNavigationPath(href: string): boolean {
+  // Must start with / and not contain any suspicious patterns
+  return (
+    href.startsWith("/") &&
+    !href.includes("//") &&
+    !href.includes("javascript:") &&
+    !href.includes("data:") &&
+    !href.includes("<") &&
+    !href.includes(">")
+  );
+}
+
 interface AppSidebarProps {
   organizationName: string;
   userRole?: AppRole;
@@ -62,6 +78,9 @@ interface NavigationGroup {
 }
 
 // Define navigation structure with RBAC requirements
+// SECURITY NOTE: All href values in this array are static strings defined at build time.
+// User input (searchQuery) only filters which items are displayed - it never modifies href values.
+// This design prevents XSS attacks as navigation URLs cannot be manipulated by user input.
 const navigationGroups: NavigationGroup[] = [
   {
     title: "Main",
@@ -288,6 +307,8 @@ export function AppSidebar({
 
   /**
    * Filter navigation groups to show only accessible items
+   * SECURITY: Filtering logic only controls visibility - item.href values are never modified.
+   * searchQuery is used for string matching against title/description only, not URL construction.
    */
   const filteredGroups = React.useMemo(() => {
     let groups = navigationGroups
@@ -297,7 +318,7 @@ export function AppSidebar({
       }))
       .filter((group) => group.items.length > 0);
 
-    // Filter by search query if present
+    // Filter by search query if present (affects visibility only, not href values)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       groups = groups
@@ -317,6 +338,8 @@ export function AppSidebar({
 
   /**
    * Flat list of search results for dropdown
+   * SECURITY: Search only filters items - href values remain unchanged from static navigationGroups.
+   * User input (searchQuery) cannot modify URLs, preventing XSS/injection attacks.
    */
   const searchResults = React.useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -329,11 +352,11 @@ export function AppSidebar({
       groupTitle: string;
     }> = [];
 
-    // Add navigation items
+    // Add navigation items (href values are static, only filtering by searchQuery)
     filteredGroups.forEach((group) => {
       group.items.forEach((item) => {
         results.push({
-          ...item,
+          ...item, // Spreading static item properties including href
           groupTitle: group.title,
         });
       });
@@ -485,6 +508,15 @@ export function AppSidebar({
                   const Icon = result.icon;
                   const isSelected = index === selectedSearchIndex;
 
+                  // SECURITY: Validate href is a safe internal path (defensive check)
+                  if (!isValidNavigationPath(result.href)) {
+                    console.error(
+                      "Invalid navigation path detected:",
+                      result.href
+                    );
+                    return null;
+                  }
+
                   return (
                     <Link
                       key={result.href}
@@ -574,6 +606,15 @@ export function AppSidebar({
                       );
                       const isActive =
                         isExactMatch || (isNestedRoute && !hasSiblingMatch);
+
+                      // SECURITY: Validate href is a safe internal path (defensive check)
+                      if (!isValidNavigationPath(item.href)) {
+                        console.error(
+                          "Invalid navigation path detected:",
+                          item.href
+                        );
+                        return null;
+                      }
 
                       return (
                         <Link

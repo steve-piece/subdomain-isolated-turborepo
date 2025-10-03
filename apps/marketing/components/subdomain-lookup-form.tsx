@@ -3,7 +3,10 @@
 "use client";
 
 import { cn } from "@workspace/ui/lib/utils";
-import { isValidSubdomain } from "@workspace/ui/lib/subdomains";
+import {
+  isValidSubdomain,
+  buildSubdomainUrl,
+} from "@workspace/ui/lib/subdomains";
 import {
   searchTenants,
   verifyTenant,
@@ -81,6 +84,16 @@ export function SubdomainLookupForm({
   }, [searchTerm]);
 
   const handleSelectOrganization = (tenant: TenantSearchResult) => {
+    // Security: Validate subdomain before redirecting to prevent open redirect attacks
+    if (!isValidSubdomain(tenant.subdomain)) {
+      Sentry.logger.error("invalid_subdomain_redirect_attempt", {
+        subdomain: tenant.subdomain,
+        tenantName: tenant.name,
+      });
+      setError("Invalid organization subdomain");
+      return;
+    }
+
     setSearchTerm(tenant.name); // Show the friendly name in the input
     setShowDropdown(false);
 
@@ -88,9 +101,12 @@ export function SubdomainLookupForm({
     // If user has valid JWT: routes to dashboard
     // If no valid JWT: routes to login page
     const isDevelopment = process.env.NODE_ENV === "development";
-    const targetUrl = isDevelopment
-      ? `http://${tenant.subdomain}.localhost:3003/`
-      : `https://${tenant.subdomain}.${process.env.NEXT_PUBLIC_APP_DOMAIN}/`;
+    const targetUrl = buildSubdomainUrl(
+      tenant.subdomain,
+      "/",
+      isDevelopment,
+      process.env.NEXT_PUBLIC_APP_DOMAIN
+    );
 
     window.location.href = targetUrl;
   };
