@@ -192,15 +192,6 @@ See the individual documentation files for detailed implementation guides.
 
 This repo ships optional Cursor rules to standardize architecture and guardrails for AI/codegen.
 
-### Where Rules Live
-
-- `rules/global.mdc` (global standards: clean URLs, RLS, dependency alignment)
-- `rules/db-actions.mdc` (server actions: claims, tenant checks, RLS)
-- `rules/components.mdc` (wrappers, thin pages, clean links)
-- `rules/middleware-routing.mdc` (rewrite/redirect behavior)
-- `rules/auth-claims.mdc` (claims-first, tenant isolation)
-- `rules/tests.mdc` (testing conventions)
-
 ### How to Use in Cursor
 
 1. Open the repo in Cursor
@@ -237,7 +228,7 @@ Target structure for feature pages:
 │   ├── 📁 deployment/              # Deployment guides
 │   ├── 📁 database/                # Database documentation
 │   └── 📁 rbac-settings/           # RBAC system documentation
-├── 📁 rules/                      # Optional Cursor rules (.mdc)
+├── 📁 .cursor/rules/               # Optional Cursor rules (.mdc)
 ├── 📁 apps/
 │   ├── 📁 marketing/              # Landing page & tenant discovery
 │   └── 📁 protected/              # Multi-tenant workspaces
