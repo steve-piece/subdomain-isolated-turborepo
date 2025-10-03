@@ -41,3 +41,13 @@ embedding_workflow
 .cursorignore
 docs/*
 docs
+.npmrc
+docs/**
+docs/*
+docs/setup/*
+docs/architecture/*
+docs/deployment/*
+docs/database/*
+docs/rbac-settings/*
+docs/rbac-settings/**
+docs/rbac-settings/*

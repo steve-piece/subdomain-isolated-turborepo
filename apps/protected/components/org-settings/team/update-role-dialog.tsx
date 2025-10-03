@@ -19,10 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
+import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { useToast } from "@workspace/ui/components/toast";
 import { updateUserRole } from "@/app/actions/team/update-user-role";
 import { Loader2, UserCog } from "lucide-react";
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
+import { RolePermissionsPreview } from "./role-permissions-preview";
 
 type UserRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
 
@@ -94,7 +96,7 @@ export function UpdateRoleDialog({
           <UserCog className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Update Role</DialogTitle>
           <DialogDescription>
@@ -103,51 +105,45 @@ export function UpdateRoleDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Current Role</label>
-            <p className="text-sm text-muted-foreground capitalize">
-              {currentRole}
-            </p>
-          </div>
+        <ScrollArea className="max-h-[calc(90vh-200px)] pr-4">
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Current Role</label>
+                <p className="text-sm text-muted-foreground capitalize px-3 py-2 bg-muted rounded-md">
+                  {currentRole}
+                </p>
+              </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">New Role</label>
-            <Select
-              value={selectedRole}
-              onValueChange={(value) => setSelectedRole(value as UserRole)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableRoles.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    <span className="capitalize">{role}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">New Role</label>
+                <Select
+                  value={selectedRole}
+                  onValueChange={(value) => setSelectedRole(value as UserRole)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        <span className="capitalize">{role}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-          {/* Role descriptions */}
-          <div className="rounded-lg bg-muted p-3 text-sm">
-            <p className="font-medium mb-1">Role Permissions:</p>
-            <ul className="space-y-1 text-muted-foreground">
-              {selectedRole === "owner" && (
-                <li>• Full access to all organization features</li>
-              )}
-              {selectedRole === "superadmin" && (
-                <li>• Can manage admin and below users</li>
-              )}
-              {selectedRole === "admin" && (
-                <li>• Can manage member and view-only users</li>
-              )}
-              {selectedRole === "member" && <li>• Standard access</li>}
-              {selectedRole === "view-only" && <li>• Read-only access</li>}
-            </ul>
+            {/* Permissions Preview */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Permissions for {selectedRole} role
+              </label>
+              <RolePermissionsPreview role={selectedRole} />
+            </div>
           </div>
-        </div>
+        </ScrollArea>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
