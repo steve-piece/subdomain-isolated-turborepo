@@ -335,6 +335,7 @@ export function OnboardingModal({
           ) : (
             <div className="relative">
               <div className="flex h-48 items-center justify-center rounded-lg border-2 border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={logoPreview}
                   alt="Logo preview"

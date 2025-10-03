@@ -16,11 +16,10 @@ import Link from "next/link";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
 interface MagicLinkVerifyProps {
-  subdomain: string;
   type: "magiclink" | "reauthenticate";
 }
 
-export function MagicLinkVerify({ subdomain, type }: MagicLinkVerifyProps) {
+export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
   const [status, setStatus] = useState<
     "verifying" | "success" | "error" | "expired"
   >("verifying");
@@ -105,7 +104,7 @@ export function MagicLinkVerify({ subdomain, type }: MagicLinkVerifyProps) {
     };
 
     verifyMagicLink();
-  }, [type, router]); // Removed supabase from dependencies since it's memoized
+  }, [type, router, supabase]);
 
   if (status === "verifying") {
     return (

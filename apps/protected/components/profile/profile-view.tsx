@@ -54,7 +54,7 @@ export function ProfileView({ initialData }: ProfileViewProps) {
           variant: "error",
         });
       }
-    } catch (error) {
+    } catch {
       addToast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -87,7 +87,7 @@ export function ProfileView({ initialData }: ProfileViewProps) {
           variant: "error",
         });
       }
-    } catch (error) {
+    } catch {
       addToast({
         title: "Error",
         description: "An unexpected error occurred",

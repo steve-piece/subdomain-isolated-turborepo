@@ -19,11 +19,8 @@ interface SecurityWrapperProps {
   lastSignIn: string;
 }
 
-export function SecurityWrapper({
-  subdomain,
-  lastSignIn,
-}: SecurityWrapperProps) {
-  const claims = useTenantClaims();
+export function SecurityWrapper({ lastSignIn }: SecurityWrapperProps) {
+  useTenantClaims();
 
   return (
     <div className="space-y-6">

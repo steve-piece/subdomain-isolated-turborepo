@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
   await supabaseAdmin.from("stripe_webhook_events").insert({
     stripe_event_id: event.id,
     event_type: event.type,
-    payload: event.data.object as any,
+    payload: event.data.object as unknown as Record<string, unknown>,
   });
 
   try {

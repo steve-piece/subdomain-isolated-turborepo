@@ -61,13 +61,21 @@ export function ProjectsWrapper({ subdomain }: ProjectsWrapperProps) {
 
         // Transform data to include member count
         const projectsWithCount =
-          data?.map((project: any) => ({
-            id: project.id,
-            name: project.name,
-            description: project.description,
-            created_at: project.created_at,
-            member_count: project.project_permissions?.length || 0,
-          })) || [];
+          data?.map(
+            (project: {
+              id: string;
+              name: string;
+              description: string;
+              created_at: string;
+              project_permissions?: unknown[];
+            }) => ({
+              id: project.id,
+              name: project.name,
+              description: project.description,
+              created_at: project.created_at,
+              member_count: project.project_permissions?.length || 0,
+            })
+          ) || [];
 
         setProjects(projectsWithCount);
       } catch (error) {
@@ -90,16 +98,19 @@ export function ProjectsWrapper({ subdomain }: ProjectsWrapperProps) {
         <div>
           <h1 className="text-3xl font-bold">Projects</h1>
           <p className="text-muted-foreground">
-            Manage your organization's projects
+            Manage your organization&apos;s projects
           </p>
         </div>
         {canCreateProjects && (
-          <CreateProjectDialog subdomain={subdomain}>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
-          </CreateProjectDialog>
+          <CreateProjectDialog
+            subdomain={subdomain}
+            trigger={
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Project
+              </Button>
+            }
+          />
         )}
       </div>
 
@@ -112,12 +123,15 @@ export function ProjectsWrapper({ subdomain }: ProjectsWrapperProps) {
               Get started by creating your first project
             </p>
             {canCreateProjects && (
-              <CreateProjectDialog subdomain={subdomain}>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Project
-                </Button>
-              </CreateProjectDialog>
+              <CreateProjectDialog
+                subdomain={subdomain}
+                trigger={
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Project
+                  </Button>
+                }
+              />
             )}
           </CardContent>
         </Card>

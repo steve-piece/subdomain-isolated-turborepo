@@ -42,3 +42,4 @@ export default async function DashboardPage({
   // ✅ No auth calls - layout provides via context
   // Data fetching moved to wrapper component which reads from context
   return <DashboardWrapper subdomain={subdomain} />;
+}

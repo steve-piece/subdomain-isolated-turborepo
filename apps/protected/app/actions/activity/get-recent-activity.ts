@@ -59,8 +59,12 @@ export async function getRecentActivity(
 
     // Add project activities
     if (projects) {
-      projects.forEach((project: any) => {
-        const ownerName = project.user_profiles?.full_name || "Someone";
+      projects.forEach((project) => {
+        // Supabase returns user_profiles as an array due to the join
+        const userProfile = Array.isArray(project.user_profiles)
+          ? project.user_profiles[0]
+          : project.user_profiles;
+        const ownerName = userProfile?.full_name || "Someone";
         activities.push({
           id: `project-${project.id}`,
           type: "project_created",
@@ -74,7 +78,7 @@ export async function getRecentActivity(
 
     // Add member activities
     if (members) {
-      members.forEach((member: any, index: number) => {
+      members.forEach((member, index: number) => {
         // Skip the first member (org owner) to avoid showing "created" event
         if (index > 0) {
           const memberName = member.full_name || "New member";

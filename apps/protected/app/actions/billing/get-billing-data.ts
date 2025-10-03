@@ -97,7 +97,12 @@ export async function getBillingData(orgId: string): Promise<BillingData> {
   return {
     subscription: subscription
       ? {
-          tier: (subscription as any).subscription_tiers?.name || "Free",
+          tier:
+            (
+              subscription as unknown as {
+                subscription_tiers?: { name: string };
+              }
+            ).subscription_tiers?.name || "Free",
           status: subscription.status,
           currentPeriodEnd: subscription.current_period_end,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,

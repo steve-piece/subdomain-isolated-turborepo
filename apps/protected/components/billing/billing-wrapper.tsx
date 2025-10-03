@@ -21,7 +21,7 @@ interface BillingWrapperProps {
     name: string;
     price_monthly: number;
     stripe_price_id: string | null;
-    features: any;
+    features: Record<string, unknown>;
   }>;
 }
 
@@ -259,7 +259,7 @@ export function BillingWrapper({
             <CardTitle>Usage Statistics</CardTitle>
           </div>
           <CardDescription>
-            Track your organization's usage this month
+            Track your organization&apos;s usage this month
           </CardDescription>
         </CardHeader>
         <CardContent>

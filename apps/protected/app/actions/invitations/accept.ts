@@ -52,32 +52,29 @@ export async function completeInvitation(
       };
     }
 
-    // Create user_profile row so custom claims work
-    const { error: profileError } = await supabase
-      .from("user_profiles")
-      .insert({
+    // Create or update user_profile row so custom claims work (idempotent upsert)
+    const { error: profileError } = await supabase.from("user_profiles").upsert(
+      {
         user_id: user.id,
         email: user.email!,
         full_name: fullName,
         org_id: orgId,
         role: userRole,
-      });
+      },
+      {
+        onConflict: "user_id", // Primary key provides unique constraint
+      }
+    );
 
     if (profileError) {
-      // If profile already exists (duplicate), that's fine
-      if (
-        !profileError.message.includes("duplicate") &&
-        !profileError.message.includes("already exists")
-      ) {
-        Sentry.logger.error("complete_invitation_profile_error", {
-          userId: user.id,
-          message: profileError.message,
-        });
-        return {
-          success: false,
-          message: "Failed to create user profile. Please contact support.",
-        };
-      }
+      Sentry.logger.error("complete_invitation_profile_error", {
+        userId: user.id,
+        message: profileError.message,
+      });
+      return {
+        success: false,
+        message: "Failed to create user profile. Please contact support.",
+      };
     }
 
     // Set password and display name

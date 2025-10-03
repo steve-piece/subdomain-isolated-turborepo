@@ -93,7 +93,6 @@ export async function createProject(
       return {
         success: false,
         message: createError?.message || "Failed to create project",
-        error: createError?.message,
       };
     }
 

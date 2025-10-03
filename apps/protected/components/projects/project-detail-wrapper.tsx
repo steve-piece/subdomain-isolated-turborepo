@@ -20,11 +20,7 @@ import {
 import { InviteToProjectDialog } from "./invite-to-project-dialog";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { ManagePermissionDialog } from "./manage-permission-dialog";
-import {
-  revokeProjectPermission,
-  archiveProject,
-  leaveProject,
-} from "@actions/projects";
+import { revokeProjectPermission, leaveProject } from "@actions/projects";
 import { useToast } from "@workspace/ui/components/toast";
 import {
   ArrowLeft,
@@ -86,7 +82,6 @@ export function ProjectDetailWrapper({
   >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
-  const [isArchiving, startArchivingTransition] = useTransition();
   const [isLeaving, startLeavingTransition] = useTransition();
 
   // Fetch project data
@@ -125,18 +120,27 @@ export function ProjectDetailWrapper({
           .eq("project_id", projectId);
 
         const projectMembers =
-          permissions?.map((perm: any) => {
-            const profile = Array.isArray(perm.user_profiles)
-              ? perm.user_profiles[0]
-              : perm.user_profiles;
-            return {
-              user_id: perm.user_id,
-              full_name: profile?.full_name || null,
-              email: profile?.email || "",
-              permission_level: perm.permission_level,
-              granted_at: perm.granted_at,
-            };
-          }) || [];
+          permissions?.map(
+            (perm: {
+              user_id: string;
+              permission_level: string;
+              granted_at: string;
+              user_profiles:
+                | { full_name?: string; email: string }
+                | { full_name?: string; email: string }[];
+            }) => {
+              const profile = Array.isArray(perm.user_profiles)
+                ? perm.user_profiles[0]
+                : perm.user_profiles;
+              return {
+                user_id: perm.user_id,
+                full_name: profile?.full_name || null,
+                email: profile?.email || "",
+                permission_level: perm.permission_level,
+                granted_at: perm.granted_at,
+              };
+            }
+          ) || [];
 
         setMembers(projectMembers);
 
@@ -200,26 +204,6 @@ export function ProjectDetailWrapper({
     } finally {
       setRemovingUserId(null);
     }
-  };
-
-  const handleArchive = () => {
-    startArchivingTransition(async () => {
-      const result = await archiveProject(projectId, subdomain);
-      if (result.success) {
-        addToast({
-          title: "Success",
-          description: result.message,
-          variant: "success",
-        });
-        router.push(`/s/${subdomain}/projects`);
-      } else {
-        addToast({
-          title: "Error",
-          description: result.message,
-          variant: "error",
-        });
-      }
-    });
   };
 
   const handleLeave = () => {
@@ -344,20 +328,12 @@ export function ProjectDetailWrapper({
                   <div className="flex items-center gap-2">
                     <ManagePermissionDialog
                       projectId={projectId}
-                      memberId={member.user_id}
-                      currentLevel={
+                      subdomain={subdomain}
+                      userId={member.user_id}
+                      userName={member.full_name || member.email}
+                      currentPermission={
                         member.permission_level as "read" | "write" | "admin"
                       }
-                      memberName={member.full_name || member.email}
-                      onPermissionChanged={(newLevel) => {
-                        setMembers((prev) =>
-                          prev.map((m) =>
-                            m.user_id === member.user_id
-                              ? { ...m, permission_level: newLevel }
-                              : m
-                          )
-                        );
-                      }}
                     />
                     <Button
                       variant="ghost"
@@ -399,8 +375,7 @@ export function ProjectDetailWrapper({
               <DeleteProjectDialog
                 projectId={projectId}
                 projectName={project.name}
-                onArchive={handleArchive}
-                isArchiving={isArchiving}
+                subdomain={subdomain}
               />
             </div>
           </CardContent>

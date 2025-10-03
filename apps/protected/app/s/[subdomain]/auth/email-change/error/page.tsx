@@ -56,8 +56,7 @@ export default async function EmailChangeErrorPage({
   const messageParam = query.message;
   const resolved = resolveCopy(query.reason);
   const message = Array.isArray(messageParam) ? messageParam[0] : messageParam;
-  const fallbackAction = "Back to login";
-  const { title, description, action } = resolved;
+  const { title, description } = resolved;
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">

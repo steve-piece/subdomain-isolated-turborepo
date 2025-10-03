@@ -227,7 +227,7 @@ export async function revokeProjectPermission(
       .eq("project_id", projectId)
       .eq("permission_level", "admin");
 
-    if (admins && admins.length === 1 && admins[0].user_id === userId) {
+    if (admins && admins.length === 1 && admins[0]?.user_id === userId) {
       return { success: false, message: "Cannot remove the last admin" };
     }
 

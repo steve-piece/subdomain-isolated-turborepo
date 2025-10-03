@@ -118,7 +118,7 @@ export function UpdatePasswordForm({
     };
 
     setupSession();
-  }, [isResetFlow, userEmail]);
+  }, [isResetFlow, userEmail, supabase.auth]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();

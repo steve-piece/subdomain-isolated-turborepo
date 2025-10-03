@@ -12,6 +12,7 @@ export default async function SubdomainPage({
   params: Promise<{ subdomain: string }>;
 }) {
   await params;
+  // Add subdomain validation if needed
 
   // ✅ No auth checks - layout already verified access
   // Simply redirect to dashboard

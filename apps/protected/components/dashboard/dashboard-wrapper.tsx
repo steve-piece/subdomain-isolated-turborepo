@@ -39,9 +39,9 @@ interface DashboardWrapperProps {
 export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
   // ✅ Get user data from context - no API calls!
   const claims = useTenantClaims();
-  
+
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+  const [, setIsLoadingActivities] = useState(true);
 
   // Fetch activities on mount
   useEffect(() => {
@@ -60,7 +60,9 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
 
   const organizationName = claims.company_name || subdomain;
   // Extract first name only from full name (from context)
-  const firstName = claims.full_name ? claims.full_name.trim().split(" ")[0] : "there";
+  const firstName = claims.full_name
+    ? claims.full_name.trim().split(" ")[0]
+    : "there";
   const userName = firstName;
 
   return (

@@ -5,15 +5,6 @@ import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/lib/stripe/server";
 import type Stripe from "stripe";
 
-// Extended Stripe types to handle properties not in the strict type definitions
-interface StripeSubscriptionExtended extends Stripe.Subscription {
-  current_period_start: number;
-  current_period_end: number;
-  cancel_at_period_end: boolean;
-  canceled_at: number | null;
-  trial_end: number | null;
-}
-
 interface StripeInvoiceExtended extends Stripe.Invoice {
   subscription: string | Stripe.Subscription | null;
   tax: number | null;
@@ -40,7 +31,13 @@ export async function syncSubscription(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Type assertion for Stripe properties that come as snake_case from the API
-    const sub = subscription as any;
+    const sub = subscription as unknown as {
+      current_period_start: number;
+      current_period_end: number;
+      cancel_at_period_end: boolean;
+      canceled_at: number | null;
+      trial_end: number | null;
+    };
     const orgId = subscription.metadata.org_id;
 
     if (!orgId) {

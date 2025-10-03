@@ -99,7 +99,6 @@ const DEFAULT_CAPABILITIES: Record<string, UserRole[]> = {
 export function RoleCapabilitiesManager({
   allCapabilities,
   customCapabilities,
-  orgId,
 }: RoleCapabilitiesManagerProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>("member");
   const [loading, setLoading] = useState<string | null>(null);

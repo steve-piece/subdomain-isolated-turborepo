@@ -64,7 +64,7 @@ export function ForceLogoutControls() {
           message: response.message,
         });
       }
-    } catch (error) {
+    } catch {
       setResult({
         type: "error",
         message: "An unexpected error occurred",
@@ -92,7 +92,7 @@ export function ForceLogoutControls() {
           message: response.message,
         });
       }
-    } catch (error) {
+    } catch {
       setResult({
         type: "error",
         message: "An unexpected error occurred",
