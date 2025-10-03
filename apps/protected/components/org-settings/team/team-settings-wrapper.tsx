@@ -12,14 +12,19 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
-import { UserPlus, Users } from "lucide-react";
+import { Badge } from "@workspace/ui/components/badge";
+import { UserPlus, Users, Shield, Lock } from "lucide-react";
 import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
+import { UpdateRoleDialog } from "./update-role-dialog";
+import { DeleteUserDialog } from "./delete-user-dialog";
+
+type UserRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
 
 interface TeamMember {
   user_id: string;
   full_name: string | null;
-  role: string;
-  email?: string;
+  role: UserRole;
+  email: string;
 }
 
 interface TeamSettingsWrapperProps {
@@ -71,8 +76,67 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
     return <div className="p-6">Loading team members...</div>;
   }
 
+  // Helper to determine if current user can modify target user
+  const canModifyUser = (targetRole: UserRole): boolean => {
+    const currentRole = claims.user_role as UserRole;
+
+    if (currentRole === "owner") return true;
+    if (currentRole === "superadmin") {
+      return !["owner", "superadmin"].includes(targetRole);
+    }
+    if (currentRole === "admin") {
+      return ["member", "view-only"].includes(targetRole);
+    }
+    return false;
+  };
+
+  // Helper to get role badge variant
+  const getRoleBadgeVariant = (role: UserRole) => {
+    switch (role) {
+      case "owner":
+        return "default";
+      case "superadmin":
+        return "secondary";
+      case "admin":
+        return "outline";
+      default:
+        return "secondary";
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Custom Roles Feature (Locked) */}
+      <Card className="border-dashed">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Lock className="h-5 w-5" />
+            Custom Roles & Permissions
+          </CardTitle>
+          <CardDescription>
+            Create custom roles with granular permissions for your team
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg bg-muted p-4 flex items-start gap-3">
+            <Lock className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium mb-1">
+                Available on Business & Enterprise plans
+              </p>
+              <p className="text-sm text-muted-foreground mb-3">
+                Unlock advanced permission management with custom roles tailored
+                to your organization&apos;s needs.
+              </p>
+              <Button variant="outline" size="sm">
+                View Plans
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Team Members List */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -95,27 +159,66 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
           />
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {teamMembers.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No team members yet. Invite your first team member!
               </p>
             ) : (
-              teamMembers.map((member) => (
-                <div
-                  key={member.user_id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {member.full_name || "No name"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {member.role}
-                    </p>
+              teamMembers.map((member) => {
+                const isCurrentUser = member.user_id === claims.user_id;
+                const canModify = canModifyUser(member.role) && !isCurrentUser;
+
+                return (
+                  <div
+                    key={member.user_id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium">
+                          {member.full_name || "No name"}
+                          {isCurrentUser && (
+                            <span className="text-muted-foreground ml-2">
+                              (You)
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {member.email}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Shield className="h-3 w-3 text-muted-foreground" />
+                        <Badge
+                          variant={getRoleBadgeVariant(member.role)}
+                          className="capitalize"
+                        >
+                          {member.role}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Role Management Actions */}
+                    {canModify && (
+                      <div className="flex items-center gap-1">
+                        <UpdateRoleDialog
+                          userId={member.user_id}
+                          userName={member.full_name || member.email}
+                          currentRole={member.role}
+                          orgId={claims.org_id}
+                        />
+                        <DeleteUserDialog
+                          userId={member.user_id}
+                          userName={member.full_name || member.email}
+                          userEmail={member.email}
+                          orgId={claims.org_id}
+                        />
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </CardContent>
