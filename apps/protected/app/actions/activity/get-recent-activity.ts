@@ -27,32 +27,29 @@ export async function getRecentActivity(
     // Fetch recent projects
     const { data: projects } = await supabase
       .from("projects")
-      .select(
-        `
-        id,
-        name,
-        created_at,
-        owner_id,
-        user_profiles!projects_owner_id_fkey (
-          full_name,
-          user_id
-        )
-      `
-      )
+      .select("id, name, created_at, owner_id")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(5);
 
+    // Fetch user profiles for project owners
+    const ownerIds = projects?.map((p) => p.owner_id) || [];
+    const { data: owners } = ownerIds.length
+      ? await supabase
+          .from("user_profiles")
+          .select("user_id, full_name")
+          .in("user_id", ownerIds)
+      : { data: [] };
+
+    // Create owner lookup map
+    const ownerMap = new Map(
+      owners?.map((o) => [o.user_id, o.full_name]) || []
+    );
+
     // Fetch recent team members
     const { data: members } = await supabase
       .from("user_profiles")
-      .select(
-        `
-        user_id,
-        full_name,
-        created_at
-      `
-      )
+      .select("user_id, full_name, created_at")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(5);
@@ -60,11 +57,7 @@ export async function getRecentActivity(
     // Add project activities
     if (projects) {
       projects.forEach((project) => {
-        // Supabase returns user_profiles as an array due to the join
-        const userProfile = Array.isArray(project.user_profiles)
-          ? project.user_profiles[0]
-          : project.user_profiles;
-        const ownerName = userProfile?.full_name || "Someone";
+        const ownerName = ownerMap.get(project.owner_id) || "Someone";
         activities.push({
           id: `project-${project.id}`,
           type: "project_created",
