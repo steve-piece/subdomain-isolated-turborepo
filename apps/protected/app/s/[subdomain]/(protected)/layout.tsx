@@ -84,7 +84,7 @@ export default async function ProtectedLayout({
         // Force logout
         await supabase.auth.signOut();
         redirect(
-          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`
+          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`,
         );
       }
     } catch (error) {
@@ -187,7 +187,12 @@ export default async function ProtectedLayout({
     organization_logo_url: claims.claims.organization_logo_url,
 
     // Authorization
-    user_role: userRole as "owner" | "superadmin" | "admin" | "member" | "view-only",
+    user_role: userRole as
+      | "owner"
+      | "superadmin"
+      | "admin"
+      | "member"
+      | "view-only",
     capabilities: userCapabilities,
   };
 

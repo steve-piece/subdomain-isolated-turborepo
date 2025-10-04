@@ -11,7 +11,7 @@ import { canCustomizeRoles, type CustomCapabilityResponse } from "./query";
  */
 export async function grantCustomCapability(
   role: string,
-  capabilityKey: string
+  capabilityKey: string,
 ): Promise<CustomCapabilityResponse> {
   try {
     const supabase = await createClient();
@@ -72,7 +72,7 @@ export async function grantCustomCapability(
       },
       {
         onConflict: "org_id,role,capability_id",
-      }
+      },
     );
 
     if (error) {
@@ -106,7 +106,7 @@ export async function grantCustomCapability(
  */
 export async function revokeCustomCapability(
   role: string,
-  capabilityKey: string
+  capabilityKey: string,
 ): Promise<CustomCapabilityResponse> {
   try {
     const supabase = await createClient();
@@ -167,7 +167,7 @@ export async function revokeCustomCapability(
       },
       {
         onConflict: "org_id,role,capability_id",
-      }
+      },
     );
 
     if (error) {

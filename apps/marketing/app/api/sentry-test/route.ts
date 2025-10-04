@@ -1,4 +1,4 @@
-// apps/marketing/app/api/sentry-test/route.ts 
+// apps/marketing/app/api/sentry-test/route.ts
 // Test API route to verify Sentry error capture
 import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
@@ -23,7 +23,7 @@ export async function GET() {
 
     // Intentionally throw an error to test Sentry
     const testError = new Error(
-      "Sentry Test Error - This is intentional for testing purposes"
+      "Sentry Test Error - This is intentional for testing purposes",
     );
     testError.name = "SentryTestError";
     throw testError;
@@ -63,7 +63,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
         debug: "Check server logs for Sentry debug info",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

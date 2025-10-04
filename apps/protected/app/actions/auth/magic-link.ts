@@ -16,7 +16,7 @@ export interface SendMagicLinkResponse {
 export async function sendMagicLink(
   email: string,
   subdomain?: string,
-  redirectTo?: string
+  redirectTo?: string,
 ): Promise<SendMagicLinkResponse> {
   const supabase = await createClient();
 
@@ -84,6 +84,6 @@ export async function sendMagicLink(
       } finally {
         span.end();
       }
-    }
+    },
   );
 }

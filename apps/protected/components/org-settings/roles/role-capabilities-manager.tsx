@@ -116,13 +116,13 @@ export function RoleCapabilitiesManager({
       acc[category]!.push(cap);
       return acc;
     },
-    {} as Record<string, Capability[]>
+    {} as Record<string, Capability[]>,
   );
 
   // Get custom override for a specific capability and role
   const getCustomOverride = (capabilityKey: string, role: UserRole) => {
     return customCapabilities.find(
-      (cc) => cc.capabilities?.key === capabilityKey && cc.role === role
+      (cc) => cc.capabilities?.key === capabilityKey && cc.role === role,
     );
   };
 
@@ -218,7 +218,7 @@ export function RoleCapabilitiesManager({
 
   // Count customizations for selected role
   const customizationCount = customCapabilities.filter(
-    (cc) => cc.role === selectedRole
+    (cc) => cc.role === selectedRole,
   ).length;
 
   return (
@@ -279,7 +279,7 @@ export function RoleCapabilitiesManager({
               const isSelected = selectedRole === role;
               const isOwner = role === "owner";
               const roleCustomCount = customCapabilities.filter(
-                (cc) => cc.role === role
+                (cc) => cc.role === role,
               ).length;
 
               return (
@@ -380,15 +380,15 @@ export function RoleCapabilitiesManager({
               {caps.map((capability) => {
                 const defaultState = getDefaultState(
                   capability.key,
-                  selectedRole
+                  selectedRole,
                 );
                 const customOverride = getCustomOverride(
                   capability.key,
-                  selectedRole
+                  selectedRole,
                 );
                 const currentState = getCurrentState(
                   capability.key,
-                  selectedRole
+                  selectedRole,
                 );
                 const isCustomized = customOverride !== undefined;
                 const isLoading = loading === capability.key;

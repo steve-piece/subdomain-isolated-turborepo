@@ -17,7 +17,7 @@ export async function grantProjectPermission(
   projectId: string,
   userId: string,
   permissionLevel: "read" | "write" | "admin",
-  subdomain: string
+  subdomain: string,
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -126,7 +126,7 @@ export async function updateProjectPermission(
   projectId: string,
   userId: string,
   permissionLevel: "read" | "write" | "admin",
-  subdomain: string
+  subdomain: string,
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -193,7 +193,7 @@ export async function updateProjectPermission(
 export async function revokeProjectPermission(
   projectId: string,
   userId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();

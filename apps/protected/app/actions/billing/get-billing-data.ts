@@ -49,7 +49,7 @@ export async function getBillingData(orgId: string): Promise<BillingData> {
       subscription_tiers (
         name
       )
-    `
+    `,
     )
     .eq("org_id", orgId)
     .single();

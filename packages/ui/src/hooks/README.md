@@ -1,4 +1,5 @@
 <!-- packages/ui/src/hooks/README.md -->
+
 # Hooks
 
 ## `useTenantAccess`
@@ -47,7 +48,7 @@ const guard = useTenantAccess({
         break;
       case "insufficient_role":
         toast.error(
-          `Requires ${failure.allowed.join(" or ")} role. Your role: ${failure.actual ?? "unknown"}`
+          `Requires ${failure.allowed.join(" or ")} role. Your role: ${failure.actual ?? "unknown"}`,
         );
         break;
     }

@@ -17,7 +17,7 @@ export interface UploadAvatarResponse {
  * Users can upload their own avatar
  */
 export async function uploadProfileAvatar(
-  formData: FormData
+  formData: FormData,
 ): Promise<UploadAvatarResponse> {
   try {
     const supabase = await createClient();

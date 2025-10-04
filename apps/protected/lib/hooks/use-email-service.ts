@@ -1,4 +1,4 @@
-// apps/protected/lib/hooks/use-email-service.ts 
+// apps/protected/lib/hooks/use-email-service.ts
 import { createClient } from "@/lib/supabase/client";
 
 interface CustomEmailPayload {
@@ -33,7 +33,7 @@ export function useEmailService() {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(payload),
-      }
+      },
     );
 
     if (!response.ok) {

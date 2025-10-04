@@ -64,7 +64,7 @@ export default async function RequireUsageAuth({
   // Ensure the feature is entitled for this org (by subscription tier)
   const entitlements = await getOrgEntitlements(orgId!);
   const entitled = entitlements.some(
-    (e: { feature_key: string }) => e.feature_key === featureKey
+    (e: { feature_key: string }) => e.feature_key === featureKey,
   );
   if (!entitled) {
     if (fallback) return <>{fallback}</>;

@@ -22,7 +22,7 @@ interface UpdateRoleResult {
 export async function updateUserRole(
   targetUserId: string,
   newRole: UserRole,
-  orgId: string
+  orgId: string,
 ): Promise<UpdateRoleResult> {
   const supabase = await createClient();
 

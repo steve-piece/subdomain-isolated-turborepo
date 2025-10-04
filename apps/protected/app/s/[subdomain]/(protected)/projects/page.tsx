@@ -38,7 +38,7 @@ export default async function ProjectsPage({
       project_permissions (
         user_id
       )
-    `
+    `,
     )
     .eq("org_id", orgId)
     .eq("status", "active")

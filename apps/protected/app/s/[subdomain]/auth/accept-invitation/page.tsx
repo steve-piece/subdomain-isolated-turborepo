@@ -102,7 +102,7 @@ export default async function AcceptInvitationPage({
   }
 
   console.log(
-    "🔄 AcceptInvitationPage - Rendering client-side form for invite type"
+    "🔄 AcceptInvitationPage - Rendering client-side form for invite type",
   );
 
   // Render the client-side form that will:

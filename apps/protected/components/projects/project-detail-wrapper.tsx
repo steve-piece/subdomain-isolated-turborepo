@@ -115,7 +115,7 @@ export function ProjectDetailWrapper({
               full_name,
               email
             )
-          `
+          `,
           )
           .eq("project_id", projectId);
 
@@ -139,17 +139,17 @@ export function ProjectDetailWrapper({
                 permission_level: perm.permission_level,
                 granted_at: perm.granted_at,
               };
-            }
+            },
           ) || [];
 
         setMembers(projectMembers);
 
         // Get current user's permission level
         const userPerm = projectMembers.find(
-          (m) => m.user_id === claims.user_id
+          (m) => m.user_id === claims.user_id,
         );
         setUserPermission(
-          (userPerm?.permission_level as "read" | "write" | "admin") || null
+          (userPerm?.permission_level as "read" | "write" | "admin") || null,
         );
 
         // Fetch all org members for invite dialog
@@ -177,7 +177,7 @@ export function ProjectDetailWrapper({
       const result = await revokeProjectPermission(
         projectId,
         userId,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {

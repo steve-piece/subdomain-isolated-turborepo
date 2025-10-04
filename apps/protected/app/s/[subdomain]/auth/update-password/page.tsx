@@ -88,7 +88,7 @@ export default async function UpdatePasswordPage({
   // Do NOT verify OTP server-side as it consumes the single-use token
   if (token_hash && type === "recovery") {
     console.log(
-      "🔄 UpdatePasswordPage - Recovery tokens detected, rendering form for client-side handling"
+      "🔄 UpdatePasswordPage - Recovery tokens detected, rendering form for client-side handling",
     );
 
     return (
@@ -108,7 +108,7 @@ export default async function UpdatePasswordPage({
   if (token_hash && type) {
     console.log(
       "🔄 UpdatePasswordPage - Server-side OTP verification starting for type:",
-      type
+      type,
     );
 
     try {
@@ -123,7 +123,7 @@ export default async function UpdatePasswordPage({
       if (verifyError) {
         console.error(
           "🚨 UpdatePasswordPage - Server-side OTP verification failed:",
-          verifyError
+          verifyError,
         );
 
         return (
@@ -161,7 +161,7 @@ export default async function UpdatePasswordPage({
 
       if (!data.user) {
         console.error(
-          "🚨 UpdatePasswordPage - OTP verified but no user returned"
+          "🚨 UpdatePasswordPage - OTP verified but no user returned",
         );
 
         return (
@@ -203,7 +203,7 @@ export default async function UpdatePasswordPage({
           userId: data.user.id,
           userEmail: data.user.email,
           subdomain,
-        }
+        },
       );
 
       // Server-side verification successful, render form with tenant context
@@ -222,7 +222,7 @@ export default async function UpdatePasswordPage({
     } catch (error) {
       console.error(
         "🚨 UpdatePasswordPage - Server-side verification error:",
-        error
+        error,
       );
 
       return (
@@ -263,7 +263,7 @@ export default async function UpdatePasswordPage({
 
   // No reset tokens - render form for authenticated users
   console.log(
-    "🔍 UpdatePasswordPage - No reset tokens, rendering form for authenticated users"
+    "🔍 UpdatePasswordPage - No reset tokens, rendering form for authenticated users",
   );
 
   return (

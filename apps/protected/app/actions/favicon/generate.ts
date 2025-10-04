@@ -21,7 +21,7 @@ export interface FaviconResponse {
  * Returns logo URL if available, otherwise generates an SVG fallback
  */
 export async function getOrganizationFavicon(
-  subdomain: string
+  subdomain: string,
 ): Promise<FaviconResponse> {
   try {
     // Validate subdomain

@@ -15,7 +15,7 @@ export interface VerifyReauthenticationResponse {
  */
 export async function verifyReauthentication(
   token: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<VerifyReauthenticationResponse> {
   return Sentry.startSpan(
     {
@@ -91,6 +91,6 @@ export async function verifyReauthentication(
       } finally {
         span.end();
       }
-    }
+    },
   );
 }

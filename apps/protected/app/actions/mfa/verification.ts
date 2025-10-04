@@ -19,7 +19,7 @@ export interface VerifyMFAResponse {
  * Challenge MFA - Send verification code to user's email
  */
 export async function challengeMFA(
-  factorId: string
+  factorId: string,
 ): Promise<ChallengeMFAResponse> {
   try {
     const supabase = await createClient();
@@ -62,7 +62,7 @@ export async function challengeMFA(
 export async function verifyMFA(
   factorId: string,
   challengeId: string,
-  code: string
+  code: string,
 ): Promise<VerifyMFAResponse> {
   try {
     const supabase = await createClient();

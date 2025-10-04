@@ -101,7 +101,7 @@ export type GuardMessageOverrides = Partial<{
 export function resolveGuardMessage(
   failure: GuardFailure,
   overrides: GuardMessageOverrides | undefined,
-  defaultMessage: string
+  defaultMessage: string,
 ): string {
   switch (failure.reason) {
     case "no_session": {
@@ -142,7 +142,7 @@ type GuardOptions = {
   toast?: (
     message: string,
     variant?: "warning" | "error",
-    duration?: number
+    duration?: number,
   ) => void;
   createClient: () => SupabaseClient | Promise<SupabaseClient>;
 };
@@ -239,10 +239,10 @@ export function useTenantAccess({
               resolveGuardMessage(
                 failure,
                 messages,
-                "Please sign in to access this content"
+                "Please sign in to access this content",
               ),
               "warning",
-              5000
+              5000,
             );
             break;
           case "wrong_subdomain":
@@ -250,10 +250,10 @@ export function useTenantAccess({
               resolveGuardMessage(
                 failure,
                 messages,
-                "You don't have access to this organization"
+                "You don't have access to this organization",
               ),
               "error",
-              5000
+              5000,
             );
             break;
           case "insufficient_role":
@@ -261,10 +261,10 @@ export function useTenantAccess({
               resolveGuardMessage(
                 failure,
                 messages,
-                "You don't have permission to perform this action"
+                "You don't have permission to perform this action",
               ),
               "warning",
-              5000
+              5000,
             );
             break;
           case "error":
@@ -272,10 +272,10 @@ export function useTenantAccess({
               resolveGuardMessage(
                 failure,
                 messages,
-                "Authentication check failed"
+                "Authentication check failed",
               ),
               "error",
-              5000
+              5000,
             );
             break;
         }

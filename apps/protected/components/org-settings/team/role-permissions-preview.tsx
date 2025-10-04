@@ -48,7 +48,7 @@ export function RolePermissionsPreview({
     addToast(
       "Custom permissions are available on Business & Enterprise plans. Upgrade to customize role permissions.",
       "warning",
-      6000
+      6000,
     );
   };
 

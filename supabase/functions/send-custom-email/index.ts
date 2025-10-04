@@ -1,4 +1,4 @@
-// supabase/functions/send-custom-email/index.ts 
+// supabase/functions/send-custom-email/index.ts
 // Follow this setup guide to integrate the Deno language server with your editor:
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
             company_name,
             subdomain
           )
-        `
+        `,
       )
       .eq("user_id", body.userId)
       .single();
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
         notificationMessage: body.templateData.message,
         actionUrl: body.templateData.actionUrl,
         actionText: body.templateData.actionText,
-      })
+      }),
     );
 
     const result = await resend.emails.send({
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Custom email error", error);

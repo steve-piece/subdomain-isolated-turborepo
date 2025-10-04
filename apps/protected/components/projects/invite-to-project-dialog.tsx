@@ -50,7 +50,7 @@ export function InviteToProjectDialog({
 
   // Filter out members already in the project
   const availableMembers = orgMembers.filter(
-    (member) => !currentMembers.includes(member.user_id)
+    (member) => !currentMembers.includes(member.user_id),
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +64,7 @@ export function InviteToProjectDialog({
         projectId,
         selectedUserId,
         permissionLevel,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -144,7 +144,7 @@ export function InviteToProjectDialog({
                 value={permissionLevel}
                 onChange={(e) =>
                   setPermissionLevel(
-                    e.target.value as "read" | "write" | "admin"
+                    e.target.value as "read" | "write" | "admin",
                   )
                 }
                 disabled={isLoading}

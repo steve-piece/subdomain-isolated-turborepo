@@ -10,13 +10,8 @@
 "use client";
 
 import React from "react";
-import { useToast } from "@workspace/ui/components/toast";
 import { createClient } from "@/lib/supabase/client";
-import {
-  type AppRole,
-  useTenantAccess,
-  resolveGuardMessage,
-} from "@workspace/ui/hooks";
+import { type AppRole, useTenantAccess } from "@workspace/ui/hooks";
 
 interface ClientRoleGuardProps {
   subdomain: string;
@@ -33,7 +28,6 @@ export function ClientRoleGuard({
   redirectToLogin = false,
   fallbackMessage,
 }: ClientRoleGuardProps) {
-  const { addToast } = useToast();
   const access = useTenantAccess({
     subdomain,
     allowedRoles,

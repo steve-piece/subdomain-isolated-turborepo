@@ -20,7 +20,7 @@ export interface UpdatePasswordResponse {
  */
 export async function updatePassword(
   password: string,
-  accessToken?: string
+  accessToken?: string,
 ): Promise<UpdatePasswordResponse> {
   try {
     const supabase = await createClient();

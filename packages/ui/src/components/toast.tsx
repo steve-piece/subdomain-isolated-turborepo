@@ -46,7 +46,7 @@ interface ToastContextType {
   addToast: (
     toast: ToastInput | string,
     variant?: ToastVariant,
-    duration?: number
+    duration?: number,
   ) => string;
   removeToast: (id: string) => void;
   removeAll: () => void;
@@ -75,7 +75,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       clearTimer(id);
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
     },
-    [clearTimer]
+    [clearTimer],
   );
 
   const scheduleRemoval = useCallback(
@@ -88,7 +88,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const timer = setTimeout(() => removeToast(id), duration);
       timers.current.set(id, timer);
     },
-    [clearTimer, removeToast]
+    [clearTimer, removeToast],
   );
 
   const clampDuration = useCallback((duration?: number) => {
@@ -107,7 +107,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (
       toastInput: ToastInput | string,
       legacyVariant?: ToastVariant,
-      legacyDuration?: number
+      legacyDuration?: number,
     ) => {
       const parsed: ToastInput =
         typeof toastInput === "string"
@@ -122,7 +122,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const id = parsed.id ?? Math.random().toString(36).slice(2, 11);
       const variant = parsed.variant ?? legacyVariant ?? "info";
       const duration = clampDuration(
-        typeof parsed.duration === "number" ? parsed.duration : legacyDuration
+        typeof parsed.duration === "number" ? parsed.duration : legacyDuration,
       );
 
       const toast: Toast = {
@@ -144,7 +144,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
       return id;
     },
-    [clampDuration, scheduleRemoval]
+    [clampDuration, scheduleRemoval],
   );
 
   const removeAll = useCallback(() => {
@@ -169,7 +169,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       removeToast,
       removeAll,
     }),
-    [addToast, removeAll, removeToast, toasts]
+    [addToast, removeAll, removeToast, toasts],
   );
 
   return (
@@ -287,7 +287,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
           "before:absolute before:-left-12 before:top-1/2 before:h-32 before:w-32 before:-translate-y-1/2 before:rounded-full before:blur-3xl before:content-['']",
           accent,
           border,
-          isVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+          isVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
         )}
       >
         <div
@@ -296,7 +296,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
           <span
             className={cn(
               "mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-white/60 text-lg dark:bg-white/5",
-              iconAccent
+              iconAccent,
             )}
           >
             <Icon className="h-5 w-5" aria-hidden="true" />

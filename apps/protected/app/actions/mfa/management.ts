@@ -24,7 +24,7 @@ export interface GetMFAFactorsResponse {
  * Unenroll from MFA - Disable 2FA
  */
 export async function unenrollMFA(
-  factorId: string
+  factorId: string,
 ): Promise<UnenrollMFAResponse> {
   try {
     const supabase = await createClient();

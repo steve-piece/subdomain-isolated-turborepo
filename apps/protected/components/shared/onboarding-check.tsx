@@ -25,7 +25,7 @@ export function OnboardingCheck({
     // 2. User is the owner
     // 3. Not already dismissed (check sessionStorage)
     const dismissed = sessionStorage.getItem(
-      `onboarding-dismissed-${subdomain}`
+      `onboarding-dismissed-${subdomain}`,
     );
 
     if (needsOnboarding && isOwner && !dismissed) {

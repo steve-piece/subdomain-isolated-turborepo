@@ -48,7 +48,7 @@ export async function canCustomizeRoles(): Promise<CustomCapabilityResponse> {
           name,
           allows_custom_permissions
         )
-      `
+      `,
       )
       .eq("org_id", orgId)
       .single();
@@ -118,7 +118,7 @@ export async function getOrgCustomCapabilities(): Promise<OrgCapabilitiesRespons
           description,
           category
         )
-      `
+      `,
       )
       .eq("org_id", orgId)
       .order("role", { ascending: true });

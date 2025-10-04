@@ -119,7 +119,7 @@ export default async function OgImage({
       ),
       {
         ...size,
-      }
+      },
     );
   } catch (error) {
     console.error("Error generating OpenGraph image:", error);
@@ -149,7 +149,7 @@ export default async function OgImage({
       ),
       {
         ...size,
-      }
+      },
     );
   }
 }

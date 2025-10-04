@@ -19,7 +19,7 @@ export interface InviteUserResponse {
 export async function inviteUserToOrganization(
   email: string,
   role: "admin" | "member" | "view-only",
-  subdomain: string
+  subdomain: string,
 ): Promise<InviteUserResponse> {
   try {
     const supabase = await createClient();

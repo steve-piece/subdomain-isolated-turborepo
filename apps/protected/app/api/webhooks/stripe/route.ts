@@ -26,7 +26,7 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  }
+  },
 );
 
 // Disable body parsing so we can get raw body for signature verification
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (!signature) {
     return NextResponse.json(
       { error: "No signature provided" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     console.error("STRIPE_WEBHOOK_SECRET is not configured");
     return NextResponse.json(
       { error: "Webhook secret not configured" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      STRIPE_CONFIG.webhookSecret
+      STRIPE_CONFIG.webhookSecret,
     );
   } catch (error) {
     console.error("Webhook signature verification failed:", error);
@@ -79,31 +79,31 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
         result = await syncSubscription(
-          event.data.object as Stripe.Subscription
+          event.data.object as Stripe.Subscription,
         );
         break;
 
       case "customer.subscription.deleted":
         result = await syncSubscriptionDeleted(
-          event.data.object as Stripe.Subscription
+          event.data.object as Stripe.Subscription,
         );
         break;
 
       case "checkout.session.completed":
         result = await syncCheckoutCompleted(
-          event.data.object as Stripe.Checkout.Session
+          event.data.object as Stripe.Checkout.Session,
         );
         break;
 
       case "customer.updated":
         result = await syncCustomerUpdated(
-          event.data.object as Stripe.Customer
+          event.data.object as Stripe.Customer,
         );
         break;
 
       case "customer.deleted":
         result = await syncCustomerDeleted(
-          event.data.object as Stripe.Customer
+          event.data.object as Stripe.Customer,
         );
         break;
 
@@ -113,31 +113,31 @@ export async function POST(req: NextRequest) {
 
       case "invoice.payment_failed":
         result = await syncInvoicePaymentFailed(
-          event.data.object as Stripe.Invoice
+          event.data.object as Stripe.Invoice,
         );
         break;
 
       case "invoice.finalized":
         result = await syncInvoiceFinalized(
-          event.data.object as Stripe.Invoice
+          event.data.object as Stripe.Invoice,
         );
         break;
 
       case "payment_method.attached":
         result = await syncPaymentMethodAttached(
-          event.data.object as Stripe.PaymentMethod
+          event.data.object as Stripe.PaymentMethod,
         );
         break;
 
       case "payment_method.detached":
         result = await syncPaymentMethodDetached(
-          event.data.object as Stripe.PaymentMethod
+          event.data.object as Stripe.PaymentMethod,
         );
         break;
 
       case "payment_method.updated":
         result = await syncPaymentMethodUpdated(
-          event.data.object as Stripe.PaymentMethod
+          event.data.object as Stripe.PaymentMethod,
         );
         break;
 
@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Webhook processing failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

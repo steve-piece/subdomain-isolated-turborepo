@@ -19,7 +19,7 @@ export function createAdminClient() {
 
   if (!supabaseUrl || !supabaseSecretKey) {
     throw new Error(
-      "Missing required environment variables: SUPABASE_URL and/or SUPABASE_SECRET_KEY"
+      "Missing required environment variables: SUPABASE_URL and/or SUPABASE_SECRET_KEY",
     );
   }
 

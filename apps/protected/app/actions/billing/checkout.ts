@@ -17,7 +17,7 @@ export interface CreateCheckoutSessionResponse {
 export async function createCheckoutSession(
   orgId: string,
   priceId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<CreateCheckoutSessionResponse> {
   try {
     const supabase = await createClient();
@@ -95,7 +95,7 @@ export async function createCheckoutSession(
  */
 export async function createBillingPortalSession(
   orgId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<CreateCheckoutSessionResponse> {
   try {
     const supabase = await createClient();
@@ -154,7 +154,7 @@ export async function createBillingPortalSession(
  * Cancel subscription at period end
  */
 export async function cancelSubscriptionAtPeriodEnd(
-  orgId: string
+  orgId: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();

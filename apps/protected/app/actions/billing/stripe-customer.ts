@@ -15,7 +15,7 @@ export interface CreateStripeCustomerResponse {
  * Get or create a Stripe customer for an organization
  */
 export async function getOrCreateStripeCustomer(
-  orgId: string
+  orgId: string,
 ): Promise<CreateStripeCustomerResponse> {
   try {
     const supabase = await createClient();
@@ -91,7 +91,7 @@ export async function getOrCreateStripeCustomer(
  */
 export async function updateBillingEmail(
   orgId: string,
-  email: string
+  email: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();

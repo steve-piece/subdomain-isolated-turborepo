@@ -29,7 +29,7 @@ export function EmailComposer({ userId }: { userId: string }) {
       alert(
         error instanceof Error
           ? `Error: ${error.message}`
-          : "Error sending email"
+          : "Error sending email",
       );
     } finally {
       setIsLoading(false);

@@ -1,4 +1,4 @@
-// apps/protected/lib/billing/entitlements.ts 
+// apps/protected/lib/billing/entitlements.ts
 /**
  * Entitlements helpers used on the server:
  * - getOrgEntitlements: returns feature keys and limits for the org's active subscription
@@ -23,7 +23,7 @@ export type UsageCheck = {
  * resolves the current active subscription and tier mapping.
  */
 export async function getOrgEntitlements(
-  org_id: string
+  org_id: string,
 ): Promise<Entitlement[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -41,7 +41,7 @@ export async function getOrgEntitlements(
  */
 export async function ensureWithinUsageAndIncrement(
   org_id: string,
-  feature_key: string
+  feature_key: string,
 ): Promise<UsageCheck> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(
@@ -49,7 +49,7 @@ export async function ensureWithinUsageAndIncrement(
     {
       p_org_id: org_id,
       p_feature_key: feature_key,
-    }
+    },
   );
   if (error) throw error;
   return (data ?? { allowed: false, remaining: 0 }) as UsageCheck;

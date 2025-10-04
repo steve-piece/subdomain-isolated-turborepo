@@ -142,7 +142,7 @@ export function OrganizationSignUpForm({
   // Field validators
   const validateField = (
     fieldName: keyof typeof fieldErrors,
-    value: string
+    value: string,
   ) => {
     let err: string | null = null;
     switch (fieldName) {
@@ -174,14 +174,14 @@ export function OrganizationSignUpForm({
 
   const handleFieldBlur = (
     fieldName: keyof typeof touchedFields,
-    value: string
+    value: string,
   ) => {
     setTouchedFields((prev) => ({ ...prev, [fieldName]: true }));
     validateField(fieldName, value);
   };
 
   const handleOrganizationNameChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const name = e.target.value;
     setOrganizationName(name);
@@ -227,7 +227,7 @@ export function OrganizationSignUpForm({
   };
 
   const handleRepeatPasswordChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const pwd = e.target.value;
     setRepeatPassword(pwd);
@@ -253,7 +253,7 @@ export function OrganizationSignUpForm({
         throw new Error(
           subdomainTaken
             ? "This subdomain is already taken. Please choose another."
-            : "Please choose a valid subdomain."
+            : "Please choose a valid subdomain.",
         );
       }
 
@@ -372,7 +372,7 @@ export function OrganizationSignUpForm({
                     className={cn(
                       "rounded-r-none",
                       subdomainValidation === "valid" && "border-green-500",
-                      subdomainValidation === "invalid" && "border-red-500"
+                      subdomainValidation === "invalid" && "border-red-500",
                     )}
                   />
                   <span className="bg-muted px-3 py-2 border border-l-0 rounded-r-md text-muted-foreground">
@@ -390,7 +390,7 @@ export function OrganizationSignUpForm({
                     "text-sm",
                     subdomainValidation === "valid" && "text-green-600",
                     subdomainValidation === "invalid" && "text-red-600",
-                    !subdomainValidation && "text-muted-foreground"
+                    !subdomainValidation && "text-muted-foreground",
                   )}
                 >
                   {subdomainValidation === "invalid" && subdomain
@@ -464,7 +464,7 @@ export function OrganizationSignUpForm({
                       "pr-10",
                       touchedFields.password && fieldErrors.password
                         ? "border-red-500"
-                        : ""
+                        : "",
                     )}
                   />
                   <button
@@ -528,7 +528,7 @@ export function OrganizationSignUpForm({
                       "pr-10",
                       touchedFields.repeatPassword && fieldErrors.repeatPassword
                         ? "border-red-500"
-                        : ""
+                        : "",
                     )}
                   />
                   <button
@@ -613,7 +613,7 @@ export function OrganizationSignUpForm({
                 type="submit"
                 className={cn(
                   "w-full transition-all",
-                  success && "bg-green-600 hover:bg-green-700"
+                  success && "bg-green-600 hover:bg-green-700",
                 )}
                 aria-label="Create organization"
                 disabled={

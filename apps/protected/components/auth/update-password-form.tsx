@@ -65,7 +65,7 @@ export function UpdatePasswordForm({
             if (verifyError) {
               console.error(
                 "🚨 UpdatePasswordForm - OTP verification failed:",
-                verifyError
+                verifyError,
               );
               setSessionInfo("❌ Reset link invalid or expired");
               setError(verifyError.message);
@@ -99,7 +99,7 @@ export function UpdatePasswordForm({
           setSessionInfo(
             isResetFlow
               ? "⏳ Verifying reset link..."
-              : "❌ No active session - please login"
+              : "❌ No active session - please login",
           );
           if (!isResetFlow) {
             setError("No active session found. Please login first.");
@@ -112,7 +112,7 @@ export function UpdatePasswordForm({
       } catch (error) {
         console.error("🚨 UpdatePasswordForm - Session setup error:", error);
         setError(
-          `Session Error: ${error instanceof Error ? error.message : "Unknown error"}`
+          `Session Error: ${error instanceof Error ? error.message : "Unknown error"}`,
         );
       }
     };
@@ -131,7 +131,7 @@ export function UpdatePasswordForm({
       // Update password directly with Supabase client
       // For recovery flows, the session is automatically established via the recovery token
       console.log(
-        "🔄 UpdatePasswordForm - Calling supabase.auth.updateUser..."
+        "🔄 UpdatePasswordForm - Calling supabase.auth.updateUser...",
       );
       const { data, error: updateError } = await supabase.auth.updateUser({
         password,
@@ -140,7 +140,7 @@ export function UpdatePasswordForm({
       if (updateError) {
         console.error(
           "🚨 UpdatePasswordForm - Update password failed:",
-          updateError
+          updateError,
         );
         throw updateError;
       }
@@ -154,15 +154,15 @@ export function UpdatePasswordForm({
 
       router.push(
         `/auth/login?message=${encodeURIComponent(
-          "Password updated successfully! Please login with your new password."
-        )}`
+          "Password updated successfully! Please login with your new password.",
+        )}`,
       );
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "An error occurred";
       console.error(
         "🚨 UpdatePasswordForm - Password update error:",
-        errorMessage
+        errorMessage,
       );
       setError(errorMessage);
     } finally {

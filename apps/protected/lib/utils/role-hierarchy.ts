@@ -37,7 +37,7 @@ export function getRoleRank(role: AppRole): number {
  */
 export function hasMinimumRole(
   userRole: AppRole,
-  requiredRole: AppRole
+  requiredRole: AppRole,
 ): boolean {
   return getRoleRank(userRole) >= getRoleRank(requiredRole);
 }
@@ -52,13 +52,13 @@ export function hasMinimumRole(
  */
 export function hasRoleAccess(
   userRole: AppRole,
-  allowedRoles: AppRole[]
+  allowedRoles: AppRole[],
 ): boolean {
   if (allowedRoles.length === 0) return true;
 
   // Find the lowest (minimum) role in the allowed roles
   const minRequiredRank = Math.min(
-    ...allowedRoles.map((role) => getRoleRank(role))
+    ...allowedRoles.map((role) => getRoleRank(role)),
   );
 
   return getRoleRank(userRole) >= minRequiredRank;
@@ -74,7 +74,7 @@ export function hasRoleAccess(
  */
 export function getEffectiveCapabilities(
   userRole: AppRole,
-  capabilitiesByRole: Map<AppRole, string[]>
+  capabilitiesByRole: Map<AppRole, string[]>,
 ): string[] {
   const userRank = getRoleRank(userRole);
   const allCapabilities = new Set<string>();

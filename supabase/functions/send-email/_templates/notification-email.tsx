@@ -36,13 +36,13 @@ export function NotificationEmail({
       React.createElement(
         "div",
         { style: { textAlign: "center", margin: "32px 0" } },
-        React.createElement(EmailButton, { href: actionUrl }, actionText)
+        React.createElement(EmailButton, { href: actionUrl }, actionText),
       ),
 
     React.createElement(
       EmailText,
       { style: { fontSize: "14px", color: "#6b7280" } },
-      `From your ${organizationName} team`
-    )
+      `From your ${organizationName} team`,
+    ),
   );
 }

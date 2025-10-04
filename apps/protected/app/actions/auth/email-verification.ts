@@ -24,7 +24,7 @@ export interface ConfirmEmailResponse {
 export async function resendEmailVerification(
   email: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _subdomain: string
+  _subdomain: string,
 ): Promise<ResendVerificationResponse> {
   const supabase = await createClient();
 
@@ -61,7 +61,7 @@ export async function resendEmailVerification(
 export async function confirmEmailAndBootstrap(
   token_hash: string,
   type: EmailOtpType,
-  subdomain: string
+  subdomain: string,
 ): Promise<ConfirmEmailResponse> {
   try {
     const supabase = await createClient();
@@ -169,7 +169,7 @@ export async function handleAuthConfirmation(
   token_hash: string,
   type: EmailOtpType,
   subdomain: string,
-  redirectHint?: string
+  redirectHint?: string,
 ): Promise<ConfirmEmailResponse> {
   const typeValue = type as string;
 
@@ -177,7 +177,7 @@ export async function handleAuthConfirmation(
     const signupResult = await confirmEmailAndBootstrap(
       token_hash,
       type,
-      subdomain
+      subdomain,
     );
     if (signupResult.success && redirectHint) {
       return { ...signupResult, redirectTo: redirectHint };

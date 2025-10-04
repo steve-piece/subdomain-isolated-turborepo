@@ -32,7 +32,7 @@ export interface UserPermissions {
  */
 export async function getUserPermissions(
   userId: string,
-  orgId: string
+  orgId: string,
 ): Promise<UserPermissions | null> {
   const supabase = await createClient();
 
@@ -59,7 +59,7 @@ export async function getUserPermissions(
           max_projects,
           max_team_members
         )
-      `
+      `,
       )
       .eq("org_id", orgId)
       .single();
@@ -68,7 +68,7 @@ export async function getUserPermissions(
     const capabilities = await getUserCapabilities(
       userId,
       orgId,
-      profile.role as UserRole
+      profile.role as UserRole,
     );
 
     const subscriptionTiers = subscription?.subscription_tiers as unknown as {
@@ -105,7 +105,7 @@ export async function getUserPermissions(
 async function getUserCapabilities(
   userId: string,
   orgId: string,
-  role: UserRole
+  role: UserRole,
 ): Promise<string[]> {
   const supabase = await createClient();
 
@@ -118,7 +118,7 @@ async function getUserCapabilities(
         capability_id,
         granted,
         capabilities (key)
-      `
+      `,
       )
       .eq("org_id", orgId)
       .eq("role", role);
@@ -131,7 +131,7 @@ async function getUserCapabilities(
         capability_id,
         is_default,
         capabilities (key)
-      `
+      `,
       )
       .eq("role", role)
       .eq("is_default", true);
@@ -179,7 +179,7 @@ async function getUserCapabilities(
 export async function userHasCapability(
   userId: string,
   orgId: string,
-  capabilityKey: string
+  capabilityKey: string,
 ): Promise<boolean> {
   const permissions = await getUserPermissions(userId, orgId);
   return permissions?.capabilities.includes(capabilityKey) || false;
@@ -191,7 +191,7 @@ export async function userHasCapability(
 export async function userHasAnyCapability(
   userId: string,
   orgId: string,
-  capabilityKeys: string[]
+  capabilityKeys: string[],
 ): Promise<boolean> {
   const permissions = await getUserPermissions(userId, orgId);
   if (!permissions) return false;
@@ -205,7 +205,7 @@ export async function userHasAnyCapability(
 export async function userHasAllCapabilities(
   userId: string,
   orgId: string,
-  capabilityKeys: string[]
+  capabilityKeys: string[],
 ): Promise<boolean> {
   const permissions = await getUserPermissions(userId, orgId);
   if (!permissions) return false;
@@ -218,7 +218,7 @@ export async function userHasAllCapabilities(
  */
 export function hasRole(
   permissions: UserPermissions | null,
-  allowedRoles: UserRole[]
+  allowedRoles: UserRole[],
 ): boolean {
   return permissions ? allowedRoles.includes(permissions.role) : false;
 }
@@ -228,7 +228,7 @@ export function hasRole(
  */
 export async function checkUsageLimit(
   orgId: string,
-  limitType: "projects" | "team_members" | "storage"
+  limitType: "projects" | "team_members" | "storage",
 ): Promise<{
   reached: boolean;
   current: number;
@@ -246,7 +246,7 @@ export async function checkUsageLimit(
           max_projects,
           max_team_members
         )
-      `
+      `,
       )
       .eq("org_id", orgId)
       .single();
@@ -362,7 +362,7 @@ export interface NavigationItem {
 
 export function filterNavigationByPermissions(
   items: NavigationItem[],
-  permissions: UserPermissions | null
+  permissions: UserPermissions | null,
 ): NavigationItem[] {
   if (!permissions) return [];
 
@@ -375,7 +375,7 @@ export function filterNavigationByPermissions(
     // Check capability requirements
     if (item.requiredCapabilities) {
       return item.requiredCapabilities.some((cap) =>
-        permissions.capabilities.includes(cap)
+        permissions.capabilities.includes(cap),
       );
     }
 

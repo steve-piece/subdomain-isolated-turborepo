@@ -17,7 +17,7 @@ export interface UploadLogoResponse {
  * Only organization owners and admins can upload logos
  */
 export async function uploadOrganizationLogo(
-  formData: FormData
+  formData: FormData,
 ): Promise<UploadLogoResponse> {
   try {
     const supabase = await createClient();

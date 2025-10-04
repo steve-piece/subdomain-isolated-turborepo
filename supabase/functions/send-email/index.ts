@@ -111,7 +111,7 @@ function composeTenantUrl(
     query?: Record<string, string | undefined>;
     hash?: Record<string, string | undefined>;
     preserveExistingPath?: boolean;
-  } = {}
+  } = {},
 ): string | undefined {
   const { redirectTo, siteUrl, query, hash, preserveExistingPath } = options;
 
@@ -156,7 +156,7 @@ function composeTenantUrl(
         JSON.stringify({
           candidate,
           error: error instanceof Error ? error.message : String(error),
-        })
+        }),
       );
       continue;
     }
@@ -220,7 +220,7 @@ function buildAuthUrl(
     query?: Record<string, string | undefined>;
     hash?: Record<string, string | undefined>;
     preserveExistingPath?: boolean;
-  } = {}
+  } = {},
 ): string | undefined {
   const path = AuthPaths[pathKey];
   return composeTenantUrl(subdomain, path, {
@@ -237,7 +237,7 @@ function buildConfirmationUrl(
   tokenHash: string,
   redirectTo?: string,
   siteUrl?: string,
-  subdomain?: string
+  subdomain?: string,
 ): string | undefined {
   return buildAuthUrl(subdomain, action, {
     redirectTo,
@@ -252,7 +252,7 @@ function buildConfirmationUrl(
 function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
   const metadata = mapMetadata(email_data.data);
   const userMetadata = mapMetadata(
-    user.user_metadata as Record<string, unknown> | undefined
+    user.user_metadata as Record<string, unknown> | undefined,
   );
 
   const subdomain = metadata.subdomain ?? userMetadata.subdomain;
@@ -282,7 +282,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
           email_data.token_hash,
           email_data.redirect_to,
           email_data.site_url,
-          subdomain
+          subdomain,
         ) ?? "";
 
       return {
@@ -354,7 +354,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
           email_data.token_hash,
           email_data.redirect_to,
           email_data.site_url,
-          subdomain
+          subdomain,
         ) ?? email_data.token;
 
       return {
@@ -377,7 +377,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
         email_data.token_hash,
         email_data.redirect_to,
         email_data.site_url,
-        subdomain
+        subdomain,
       );
       return {
         subject: "Confirm your email change",
@@ -437,7 +437,7 @@ Deno.serve(async (req: Request) => {
         redirectTo: event.email_data.redirect_to,
         siteUrl: event.email_data.site_url,
         metadata: event.email_data.data,
-      })
+      }),
     );
 
     const resolvedEmail = resolveEmail(event);
@@ -482,7 +482,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         subject: resolvedEmail.subject,
         messageId: sendResult.data?.id,
-      })
+      }),
     );
 
     return new Response(JSON.stringify({ success: true }), {

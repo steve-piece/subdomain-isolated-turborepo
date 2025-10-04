@@ -1,4 +1,4 @@
-// apps/marketing/instrumentation.ts 
+// apps/marketing/instrumentation.ts
 import * as Sentry from "@sentry/nextjs";
 
 export async function register() {

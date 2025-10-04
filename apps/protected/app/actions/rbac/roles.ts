@@ -10,7 +10,7 @@ import type { CustomCapabilityResponse } from "./query";
  * Removes all custom overrides for a specific role
  */
 export async function resetRoleToDefaults(
-  role: string
+  role: string,
 ): Promise<CustomCapabilityResponse> {
   try {
     const supabase = await createClient();

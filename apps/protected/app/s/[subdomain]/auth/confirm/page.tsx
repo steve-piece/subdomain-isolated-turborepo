@@ -26,7 +26,7 @@ export default async function ConfirmPage({
 
   if (!tokenHash || !type) {
     redirect(
-      "/auth/resend-verification?error=missing&message=Invalid verification link. Please request a new one."
+      "/auth/resend-verification?error=missing&message=Invalid verification link. Please request a new one.",
     );
   }
 
@@ -34,7 +34,7 @@ export default async function ConfirmPage({
   // These redirect to protected routes so session must be established client-side
   if (typeValue === "magiclink" || typeValue === "reauthenticate") {
     console.log(
-      `🔄 ConfirmPage - ${typeValue} detected, rendering client-side verification component`
+      `🔄 ConfirmPage - ${typeValue} detected, rendering client-side verification component`,
     );
 
     return (
@@ -75,7 +75,7 @@ export default async function ConfirmPage({
     tokenHash,
     type,
     subdomain,
-    redirectHint
+    redirectHint,
   );
 
   if (result.redirectTo) {

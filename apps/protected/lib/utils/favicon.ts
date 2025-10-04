@@ -33,7 +33,7 @@ function generateFaviconSvgDataUri(letter: string): string {
  * Returns organization logo if available, otherwise returns generated SVG data URI
  */
 export async function getOrganizationFavicon(
-  subdomain: string
+  subdomain: string,
 ): Promise<string> {
   try {
     const supabase = await createClient();

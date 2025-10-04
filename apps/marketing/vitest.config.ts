@@ -1,4 +1,4 @@
-// apps/marketing/vitest.config.ts 
+// apps/marketing/vitest.config.ts
 import { defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";

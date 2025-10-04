@@ -1,4 +1,4 @@
-// supabase/functions/send-custom-email/_templates/base-email.tsx 
+// supabase/functions/send-custom-email/_templates/base-email.tsx
 import * as React from "npm:react@18.3.1";
 
 export interface BaseEmailProps {
@@ -175,4 +175,3 @@ export const EmailText: React.FC<EmailTextProps> = ({ children, style }) => (
     {children}
   </p>
 );
-

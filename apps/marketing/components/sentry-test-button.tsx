@@ -46,7 +46,7 @@ export function SentryTestButton() {
       }
     } catch (error) {
       setTestResult(
-        `Network error: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Network error: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     } finally {
       setIsLoading(false);

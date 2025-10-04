@@ -10,7 +10,7 @@ function getResendClient(): Resend {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       const error = new Error(
-        "RESEND_API_KEY environment variable is required"
+        "RESEND_API_KEY environment variable is required",
       );
       Sentry.captureException(error);
       throw error;
@@ -58,7 +58,7 @@ function sanitizeTagValue(value: string): string {
 }
 
 export async function sendEmail(
-  options: SendEmailOptions
+  options: SendEmailOptions,
 ): Promise<EmailResponse> {
   try {
     const resend = getResendClient();

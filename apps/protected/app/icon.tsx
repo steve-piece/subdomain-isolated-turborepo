@@ -93,7 +93,7 @@ export default async function Icon() {
       ),
       {
         ...size,
-      }
+      },
     );
   } catch (error) {
     console.error("[ICON ROOT] Error generating icon:", error);
@@ -113,7 +113,7 @@ export default async function Icon() {
       ),
       {
         ...size,
-      }
+      },
     );
   }
 }

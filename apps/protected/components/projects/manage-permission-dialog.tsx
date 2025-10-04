@@ -48,7 +48,7 @@ export function ManagePermissionDialog({
         projectId,
         userId,
         selectedPermission,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -94,7 +94,7 @@ export function ManagePermissionDialog({
                   checked={selectedPermission === "read"}
                   onChange={(e) =>
                     setSelectedPermission(
-                      e.target.value as ProjectPermissionLevel
+                      e.target.value as ProjectPermissionLevel,
                     )
                   }
                   disabled={isPending}
@@ -116,7 +116,7 @@ export function ManagePermissionDialog({
                   checked={selectedPermission === "write"}
                   onChange={(e) =>
                     setSelectedPermission(
-                      e.target.value as ProjectPermissionLevel
+                      e.target.value as ProjectPermissionLevel,
                     )
                   }
                   disabled={isPending}
@@ -138,7 +138,7 @@ export function ManagePermissionDialog({
                   checked={selectedPermission === "admin"}
                   onChange={(e) =>
                     setSelectedPermission(
-                      e.target.value as ProjectPermissionLevel
+                      e.target.value as ProjectPermissionLevel,
                     )
                   }
                   disabled={isPending}

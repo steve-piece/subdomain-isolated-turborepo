@@ -55,7 +55,7 @@ describe("SubdomainAuthChecker", () => {
 
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalledWith(
-        "/auth/login?error=unauthorized"
+        "/auth/login?error=unauthorized",
       );
     });
   });

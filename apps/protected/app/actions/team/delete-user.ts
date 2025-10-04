@@ -20,7 +20,7 @@ interface DeleteUserResult {
  */
 export async function deleteUser(
   targetUserId: string,
-  orgId: string
+  orgId: string,
 ): Promise<DeleteUserResult> {
   const supabase = await createClient();
 

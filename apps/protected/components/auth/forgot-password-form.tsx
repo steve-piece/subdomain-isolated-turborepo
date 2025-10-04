@@ -40,7 +40,7 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps) {
       const redirectTo = getRedirectUrl("/auth/update-password", subdomain);
       console.log(
         "🔍 ForgotPasswordForm - Reset email will redirect to:",
-        redirectTo
+        redirectTo,
       );
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -51,14 +51,14 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps) {
         console.error("🚨 ForgotPasswordForm - Reset password error:", error);
         if (error.message.includes("rate") || error.message.includes("limit")) {
           throw new Error(
-            "Too many reset requests. Please wait an hour and try again."
+            "Too many reset requests. Please wait an hour and try again.",
           );
         }
         throw error;
       }
 
       console.log(
-        "✅ ForgotPasswordForm - Reset password email sent successfully"
+        "✅ ForgotPasswordForm - Reset password email sent successfully",
       );
       setSuccess(true);
     } catch (error: unknown) {

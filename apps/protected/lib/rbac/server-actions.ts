@@ -18,7 +18,7 @@ interface CapabilityCheckResult {
  */
 export async function checkUserCapability(
   orgId: string,
-  capabilityKey: CapabilityKey
+  capabilityKey: CapabilityKey,
 ): Promise<CapabilityCheckResult> {
   try {
     const supabase = await createClient();
@@ -73,7 +73,7 @@ export async function checkUserCapability(
  */
 export async function checkUserOrgAccess(
   orgId: string,
-  requiredRoles?: string[]
+  requiredRoles?: string[],
 ): Promise<CapabilityCheckResult> {
   try {
     const supabase = await createClient();
@@ -127,7 +127,7 @@ export async function checkUserOrgAccess(
  * Get all capabilities for the current user in an organization
  */
 export async function getUserCapabilities(
-  orgId: string
+  orgId: string,
 ): Promise<CapabilityKey[]> {
   try {
     const supabase = await createClient();
@@ -187,7 +187,7 @@ export async function getUserCapabilities(
     // Extract capability keys
     return capabilities
       .map(
-        (cap: { capabilities: { key: string }[] }) => cap.capabilities[0]?.key
+        (cap: { capabilities: { key: string }[] }) => cap.capabilities[0]?.key,
       )
       .filter(Boolean) as CapabilityKey[];
   } catch (error) {

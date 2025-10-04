@@ -1,4 +1,4 @@
-// apps/protected/tests/require-tenant-auth.test.tsx 
+// apps/protected/tests/require-tenant-auth.test.tsx
 import React from "react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import RequireTenantAuth from "@/components/shared/require-tenant-auth";
@@ -31,7 +31,7 @@ describe("RequireTenantAuth", () => {
       RequireTenantAuth({
         subdomain: "acme",
         children: () => null,
-      })
+      }),
     ).rejects.toThrowError(/NEXT_REDIRECT/);
   });
 
@@ -45,7 +45,7 @@ describe("RequireTenantAuth", () => {
       RequireTenantAuth({
         subdomain: "acme",
         children: () => null,
-      })
+      }),
     ).rejects.toThrowError(/NEXT_REDIRECT/);
   });
 
@@ -59,7 +59,7 @@ describe("RequireTenantAuth", () => {
       RequireTenantAuth({
         subdomain: "acme",
         children: () => null,
-      })
+      }),
     ).rejects.toThrowError(/NEXT_REDIRECT/);
   });
 

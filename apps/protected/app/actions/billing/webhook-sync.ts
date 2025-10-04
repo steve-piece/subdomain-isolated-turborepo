@@ -20,14 +20,14 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  }
+  },
 );
 
 /**
  * Sync subscription data from Stripe to database
  */
 export async function syncSubscription(
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Type assertion for Stripe properties that come as snake_case from the API
@@ -67,7 +67,7 @@ export async function syncSubscription(
       period_start: new Date(sub.current_period_start * 1000).toISOString(),
       period_end: new Date(sub.current_period_end * 1000).toISOString(),
       current_period_start: new Date(
-        sub.current_period_start * 1000
+        sub.current_period_start * 1000,
       ).toISOString(),
       current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
       cancel_at_period_end: sub.cancel_at_period_end,
@@ -106,7 +106,7 @@ export async function syncSubscription(
  * Mark subscription as deleted/canceled
  */
 export async function syncSubscriptionDeleted(
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabaseAdmin
@@ -136,7 +136,7 @@ export async function syncSubscriptionDeleted(
  * Sync checkout session completion
  */
 export async function syncCheckoutCompleted(
-  session: Stripe.Checkout.Session
+  session: Stripe.Checkout.Session,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const orgId = session.metadata?.org_id;
@@ -174,7 +174,7 @@ export async function syncCheckoutCompleted(
  * Sync customer updates from Stripe
  */
 export async function syncCustomerUpdated(
-  customer: Stripe.Customer
+  customer: Stripe.Customer,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const orgId = customer.metadata.org_id;
@@ -213,7 +213,7 @@ export async function syncCustomerUpdated(
  * Handle customer deletion
  */
 export async function syncCustomerDeleted(
-  customer: Stripe.Customer
+  customer: Stripe.Customer,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const orgId = customer.metadata.org_id;
@@ -249,7 +249,7 @@ export async function syncCustomerDeleted(
  * Sync paid invoice to database
  */
 export async function syncInvoicePaid(
-  invoice: Stripe.Invoice
+  invoice: Stripe.Invoice,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const orgId = invoice.metadata?.org_id;
@@ -306,7 +306,7 @@ export async function syncInvoicePaid(
       },
       {
         onConflict: "stripe_invoice_id",
-      }
+      },
     );
 
     if (error) {
@@ -327,7 +327,7 @@ export async function syncInvoicePaid(
  * Handle failed invoice payment
  */
 export async function syncInvoicePaymentFailed(
-  invoice: Stripe.Invoice
+  invoice: Stripe.Invoice,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const orgId = invoice.metadata?.org_id;
@@ -371,7 +371,7 @@ export async function syncInvoicePaymentFailed(
  * Sync finalized invoice (ready to be paid)
  */
 export async function syncInvoiceFinalized(
-  invoice: Stripe.Invoice
+  invoice: Stripe.Invoice,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const orgId = invoice.metadata?.org_id;
@@ -425,7 +425,7 @@ export async function syncInvoiceFinalized(
       },
       {
         onConflict: "stripe_invoice_id",
-      }
+      },
     );
 
     if (error) {
@@ -446,7 +446,7 @@ export async function syncInvoiceFinalized(
  * Sync payment method attachment
  */
 export async function syncPaymentMethodAttached(
-  paymentMethod: Stripe.PaymentMethod
+  paymentMethod: Stripe.PaymentMethod,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const customerId = paymentMethod.customer as string;
@@ -497,7 +497,7 @@ export async function syncPaymentMethodAttached(
  * Sync payment method detachment
  */
 export async function syncPaymentMethodDetached(
-  paymentMethod: Stripe.PaymentMethod
+  paymentMethod: Stripe.PaymentMethod,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabaseAdmin
@@ -523,7 +523,7 @@ export async function syncPaymentMethodDetached(
  * Sync payment method updates (e.g., expiration date changes)
  */
 export async function syncPaymentMethodUpdated(
-  paymentMethod: Stripe.PaymentMethod
+  paymentMethod: Stripe.PaymentMethod,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabaseAdmin

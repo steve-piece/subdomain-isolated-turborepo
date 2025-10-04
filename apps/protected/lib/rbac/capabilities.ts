@@ -167,7 +167,7 @@ export const CAPABILITIES: Record<CapabilityKey, Capability> = {
  * Get capabilities by category
  */
 export function getCapabilitiesByCategory(
-  category: CapabilityCategory
+  category: CapabilityCategory,
 ): Capability[] {
   return Object.values(CAPABILITIES).filter((cap) => cap.category === category);
 }

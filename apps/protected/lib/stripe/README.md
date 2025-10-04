@@ -137,7 +137,7 @@ const handleUpgrade = async () => {
   const result = await createCheckoutSession(
     orgId,
     process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID!,
-    subdomain
+    subdomain,
   );
 
   if (result.success && result.url) {

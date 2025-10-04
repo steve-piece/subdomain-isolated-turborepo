@@ -53,7 +53,7 @@ export function DeleteUserDialog({
       if (result.success) {
         addToast(
           `${userName} has been removed from the organization`,
-          "success"
+          "success",
         );
         setShowConfirm(false);
         setOpen(false);

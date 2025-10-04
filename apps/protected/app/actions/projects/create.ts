@@ -17,7 +17,7 @@ export interface CreateProjectResponse {
 export async function createProject(
   name: string,
   description: string | null,
-  subdomain: string
+  subdomain: string,
 ): Promise<CreateProjectResponse> {
   try {
     const supabase = await createClient();

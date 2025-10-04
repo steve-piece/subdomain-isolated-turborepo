@@ -1,4 +1,4 @@
-// packages/ui/src/lib/organization.ts 
+// packages/ui/src/lib/organization.ts
 /**
  * Utility functions for handling organization and subdomain logic
  */
@@ -28,7 +28,7 @@ export interface OrganizationMember {
  */
 export function hasPermission(
   userRole: OrganizationMember["role"],
-  requiredRole: OrganizationMember["role"]
+  requiredRole: OrganizationMember["role"],
 ): boolean {
   const roleHierarchy: Record<OrganizationMember["role"], number> = {
     member: 1,

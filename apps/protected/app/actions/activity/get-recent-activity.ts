@@ -18,7 +18,7 @@ export interface ActivityItem {
 
 export async function getRecentActivity(
   orgId: string,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<ActivityItem[]> {
   const supabase = await createClient();
   const activities: ActivityItem[] = [];
@@ -43,7 +43,7 @@ export async function getRecentActivity(
 
     // Create owner lookup map
     const ownerMap = new Map(
-      owners?.map((o) => [o.user_id, o.full_name]) || []
+      owners?.map((o) => [o.user_id, o.full_name]) || [],
     );
 
     // Fetch recent team members
@@ -90,7 +90,7 @@ export async function getRecentActivity(
     // Sort all activities by timestamp
     activities.sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 
     // Return limited results

@@ -1,4 +1,4 @@
-// packages/ui/src/lib/subdomains.ts 
+// packages/ui/src/lib/subdomains.ts
 /**
  * Validates a subdomain string
  */
@@ -56,7 +56,7 @@ export function buildSubdomainUrl(
   subdomain: string,
   path = "/",
   isDevelopment = false,
-  appDomain?: string
+  appDomain?: string,
 ): string {
   if (isDevelopment) {
     return `http://${subdomain}.localhost:3003${path}`;

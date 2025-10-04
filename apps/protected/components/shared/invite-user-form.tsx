@@ -56,7 +56,7 @@ export function InviteUserForm({
       }
     } catch (error: unknown) {
       setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setIsLoading(false);

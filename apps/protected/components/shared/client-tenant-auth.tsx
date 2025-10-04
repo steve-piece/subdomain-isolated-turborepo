@@ -41,7 +41,7 @@ export function ClientTenantAuth({
       wrong_subdomain: "You don't have access to this organization",
       insufficient_role: (failure) =>
         `This content requires ${failure.allowed.join(
-          " or "
+          " or ",
         )} permissions. Your current role: ${failure.actual ?? "unknown"}`,
       error: "Authentication check failed",
     },
@@ -55,9 +55,9 @@ export function ClientTenantAuth({
             resolveGuardMessage(
               failure,
               undefined,
-              "Please sign in to access this content"
+              "Please sign in to access this content",
             ),
-            "warning"
+            "warning",
           );
           break;
         case "wrong_subdomain":
@@ -65,9 +65,9 @@ export function ClientTenantAuth({
             resolveGuardMessage(
               failure,
               undefined,
-              "You don't have access to this organization"
+              "You don't have access to this organization",
             ),
-            "error"
+            "error",
           );
           break;
         case "insufficient_role":
@@ -76,11 +76,11 @@ export function ClientTenantAuth({
               failure,
               undefined,
               `This content requires ${failure.allowed.join(
-                " or "
-              )} permissions. Your current role: ${failure.actual ?? "unknown"}`
+                " or ",
+              )} permissions. Your current role: ${failure.actual ?? "unknown"}`,
             ),
             "warning",
-            5000
+            5000,
           );
           break;
         case "error":
@@ -88,9 +88,9 @@ export function ClientTenantAuth({
             resolveGuardMessage(
               failure,
               undefined,
-              "Authentication check failed"
+              "Authentication check failed",
             ),
-            "error"
+            "error",
           );
           break;
       }

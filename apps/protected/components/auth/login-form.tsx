@@ -208,7 +208,7 @@ export function LoginForm({
         await supabase.auth.signOut();
         setError("Please confirm your email before logging in.");
         router.push(
-          "/auth/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in."
+          "/auth/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in.",
         );
         return;
       }
@@ -277,7 +277,9 @@ export function LoginForm({
           });
 
           setError(
-            error instanceof Error ? error.message : "Unable to send magic link"
+            error instanceof Error
+              ? error.message
+              : "Unable to send magic link",
           );
           addToast({
             title: "Unable to send magic link",
@@ -292,7 +294,7 @@ export function LoginForm({
           span.end();
           setIsMagicLoading(false);
         }
-      }
+      },
     );
   };
 

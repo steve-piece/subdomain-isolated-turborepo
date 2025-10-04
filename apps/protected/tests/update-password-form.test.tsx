@@ -47,13 +47,13 @@ describe("UpdatePasswordForm", () => {
 
   it("renders password reset form", () => {
     render(
-      <UpdatePasswordForm isResetFlow={true} userEmail="test@example.com" />
+      <UpdatePasswordForm isResetFlow={true} userEmail="test@example.com" />,
     );
 
     expect(screen.getByText("Reset Your Password")).toBeDefined();
     expect(screen.getByLabelText("New password")).toBeDefined();
     expect(
-      screen.getByRole("button", { name: /save new password/i })
+      screen.getByRole("button", { name: /save new password/i }),
     ).toBeDefined();
   });
 
@@ -66,7 +66,7 @@ describe("UpdatePasswordForm", () => {
 
   it("updates password successfully in reset flow", async () => {
     render(
-      <UpdatePasswordForm isResetFlow={true} userEmail="test@example.com" />
+      <UpdatePasswordForm isResetFlow={true} userEmail="test@example.com" />,
     );
 
     const passwordInput = screen.getByLabelText("New password");
@@ -78,10 +78,10 @@ describe("UpdatePasswordForm", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() =>
-      expect(updateUser).toHaveBeenCalledWith({ password: "newpassword123" })
+      expect(updateUser).toHaveBeenCalledWith({ password: "newpassword123" }),
     );
     expect(mockPush).toHaveBeenCalledWith(
-      "/auth/login?message=Password updated successfully! Please login with your new password."
+      "/auth/login?message=Password updated successfully! Please login with your new password.",
     );
   });
 
@@ -97,7 +97,7 @@ describe("UpdatePasswordForm", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() =>
-      expect(updateUser).toHaveBeenCalledWith({ password: "newpassword123" })
+      expect(updateUser).toHaveBeenCalledWith({ password: "newpassword123" }),
     );
     expect(mockPush).toHaveBeenCalledWith("/protected");
   });
@@ -127,9 +127,9 @@ describe("UpdatePasswordForm", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          "Reset session not established. Please try the reset link again."
-        )
-      ).toBeDefined()
+          "Reset session not established. Please try the reset link again.",
+        ),
+      ).toBeDefined(),
     );
   });
 
@@ -139,7 +139,7 @@ describe("UpdatePasswordForm", () => {
     render(<UpdatePasswordForm />);
 
     await waitFor(() =>
-      expect(screen.getByText(/No active session found/)).toBeDefined()
+      expect(screen.getByText(/No active session found/)).toBeDefined(),
     );
   });
 });

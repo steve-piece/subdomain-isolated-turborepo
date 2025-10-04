@@ -15,7 +15,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   type AppRole,
   useTenantAccess,
-  type GuardFailure,
   resolveGuardMessage,
   type GuardMessageOverrides,
 } from "@workspace/ui/hooks";

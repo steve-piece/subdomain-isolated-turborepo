@@ -16,7 +16,7 @@ export interface CompleteInvitationResponse {
 export async function completeInvitation(
   password: string,
   fullName: string,
-  redirectTo?: string
+  redirectTo?: string,
 ): Promise<CompleteInvitationResponse> {
   try {
     const supabase = await createClient();
@@ -63,7 +63,7 @@ export async function completeInvitation(
       },
       {
         onConflict: "user_id", // Primary key provides unique constraint
-      }
+      },
     );
 
     if (profileError) {

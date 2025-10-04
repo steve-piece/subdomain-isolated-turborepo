@@ -16,7 +16,7 @@ export interface LoginWithToastResponse {
  */
 export async function loginWithToast(
   email: string,
-  password: string
+  password: string,
 ): Promise<LoginWithToastResponse> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({

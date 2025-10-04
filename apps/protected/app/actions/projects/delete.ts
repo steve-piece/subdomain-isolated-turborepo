@@ -16,7 +16,7 @@ export interface ProjectActionResponse {
  */
 export async function deleteProject(
   projectId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<ProjectActionResponse> {
   try {
     const supabase = await createClient();
@@ -93,7 +93,7 @@ export async function deleteProject(
  */
 export async function archiveProject(
   projectId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<ProjectActionResponse> {
   try {
     const supabase = await createClient();
@@ -156,7 +156,7 @@ export async function archiveProject(
  */
 export async function restoreProject(
   projectId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<ProjectActionResponse> {
   try {
     const supabase = await createClient();
@@ -220,7 +220,7 @@ export async function restoreProject(
  */
 export async function leaveProject(
   projectId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<ProjectActionResponse> {
   try {
     const supabase = await createClient();

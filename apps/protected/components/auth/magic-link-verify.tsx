@@ -59,7 +59,7 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
         if (verifyError) {
           console.error(
             "🚨 MagicLinkVerify - OTP verification failed:",
-            verifyError
+            verifyError,
           );
 
           if (
@@ -98,7 +98,7 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
         console.error("🚨 MagicLinkVerify - Unexpected error:", error);
         setStatus("error");
         setErrorMessage(
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : "Unknown error",
         );
       }
     };

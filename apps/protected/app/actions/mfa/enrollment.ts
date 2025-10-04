@@ -77,7 +77,7 @@ export async function enrollMFA(): Promise<EnrollMFAResponse> {
  */
 export async function verifyMFAEnrollment(
   factorId: string,
-  code: string
+  code: string,
 ): Promise<VerifyMFAEnrollmentResponse> {
   try {
     const supabase = await createClient();

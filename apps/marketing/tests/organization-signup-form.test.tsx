@@ -1,4 +1,4 @@
-// apps/marketing/tests/organization-signup-form.test.tsx 
+// apps/marketing/tests/organization-signup-form.test.tsx
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
@@ -38,7 +38,7 @@ describe("OrganizationSignUpForm", () => {
       <OrganizationSignUpForm
         createOrgAction={createOrgAction}
         verifyTenantAction={verifyTenantMock}
-      />
+      />,
     );
   }
 
@@ -93,7 +93,7 @@ describe("OrganizationSignUpForm", () => {
     });
 
     await user.click(
-      screen.getByRole("button", { name: /create organization/i })
+      screen.getByRole("button", { name: /create organization/i }),
     );
 
     await waitFor(() => {
@@ -107,7 +107,7 @@ describe("OrganizationSignUpForm", () => {
       () => {
         expect(routerMock.push).toHaveBeenCalledWith("/signup/success");
       },
-      { timeout: 2000 }
+      { timeout: 2000 },
     );
   });
 
@@ -129,7 +129,7 @@ describe("OrganizationSignUpForm", () => {
     });
 
     await user.click(
-      screen.getByRole("button", { name: /create organization/i })
+      screen.getByRole("button", { name: /create organization/i }),
     );
 
     const errorMessages = screen.getAllByText(/passwords do not match/i);
