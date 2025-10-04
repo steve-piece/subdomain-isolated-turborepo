@@ -124,13 +124,9 @@ export async function updateUserRole(
       return { success: false, error: "Failed to update role" };
     }
 
-    // Also update organization's permissions_updated_at to trigger JWT refresh
-    await supabase
-      .from("organizations")
-      .update({
-        permissions_updated_at: new Date().toISOString(),
-      })
-      .eq("id", orgId);
+    // Note: We only update the specific user's force_logout_after, not the organization's
+    // permissions_updated_at. The latter is reserved for when role capabilities change
+    // (affecting all users with a role), not when a single user's role changes.
 
     // Revalidate relevant pages
     revalidatePath("/org-settings/team");
