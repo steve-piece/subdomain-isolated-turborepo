@@ -27,10 +27,16 @@ export async function updateUserRole(
   const supabase = await createClient();
 
   try {
-    // Get current user's claims
-    const { data: claims } = await supabase.auth.getClaims();
+    // Get current user (for ID) and claims (for role)
+    const [
+      {
+        data: { user },
+      },
+      { data: claims },
+    ] = await Promise.all([supabase.auth.getUser(), supabase.auth.getClaims()]);
+
     const currentUserRole = claims?.claims.user_role as UserRole;
-    const currentUserId = claims?.sub; // Standard JWT 'sub' claim contains user ID
+    const currentUserId = user?.id;
 
     if (!currentUserRole || !currentUserId) {
       return { success: false, error: "Not authenticated" };
