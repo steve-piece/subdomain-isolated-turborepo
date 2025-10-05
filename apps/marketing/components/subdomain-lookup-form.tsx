@@ -105,7 +105,7 @@ export function SubdomainLookupForm({
       tenant.subdomain,
       "/",
       isDevelopment,
-      process.env.NEXT_PUBLIC_APP_DOMAIN,
+      process.env.NEXT_PUBLIC_APP_DOMAIN
     );
 
     window.location.href = targetUrl;
@@ -155,11 +155,11 @@ export function SubdomainLookupForm({
         // Prioritize exact subdomain matches first, then name matches
         const exactSubdomainMatch = tenants.find(
           (tenant) =>
-            tenant.subdomain.toLowerCase() === searchValue.toLowerCase(),
+            tenant.subdomain.toLowerCase() === searchValue.toLowerCase()
         );
 
         const exactNameMatch = tenants.find(
-          (tenant) => tenant.name.toLowerCase() === searchValue.toLowerCase(),
+          (tenant) => tenant.name.toLowerCase() === searchValue.toLowerCase()
         );
 
         const exactMatch = exactSubdomainMatch || exactNameMatch;
@@ -220,7 +220,7 @@ export function SubdomainLookupForm({
 
                 {/* Dropdown */}
                 {showDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-50">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-50 text-gray-700">
                     {searchResults.length > 0 ? (
                       <>
                         {searchResults.map((tenant) => (
