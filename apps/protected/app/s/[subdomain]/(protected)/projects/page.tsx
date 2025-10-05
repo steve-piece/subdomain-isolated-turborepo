@@ -26,32 +26,42 @@ export default async function ProjectsPage({
 
   if (!orgId) redirect("/auth/login");
 
-  // ✅ Fetch projects on server
-  const { data: projects } = await supabase
+  // ✅ Fetch projects on server with proper member count
+  const { data: projects, error } = await supabase
     .from("projects")
     .select(
       `
       id,
       name,
       description,
-      created_at,
-      project_permissions (
-        user_id
-      )
-    `,
+      created_at
+    `
     )
     .eq("org_id", orgId)
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
-  const projectsWithCount =
-    projects?.map((project) => ({
-      id: project.id,
-      name: project.name,
-      description: project.description,
-      created_at: project.created_at,
-      member_count: project.project_permissions?.length || 0,
-    })) || [];
+  if (error) {
+    console.error("Error fetching projects:", error);
+  }
+
+  // Get member counts for each project separately
+  const projectsWithCount = await Promise.all(
+    (projects || []).map(async (project) => {
+      const { count } = await supabase
+        .from("project_permissions")
+        .select("*", { count: "exact", head: true })
+        .eq("project_id", project.id);
+
+      return {
+        id: project.id,
+        name: project.name,
+        description: project.description,
+        created_at: project.created_at,
+        member_count: count || 0,
+      };
+    })
+  );
 
   const canCreateProjects = capabilities.includes("projects.create");
 

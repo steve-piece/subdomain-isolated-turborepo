@@ -17,7 +17,7 @@ export async function grantProjectPermission(
   projectId: string,
   userId: string,
   permissionLevel: "read" | "write" | "admin",
-  subdomain: string,
+  subdomain: string
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -89,6 +89,7 @@ export async function grantProjectPermission(
       }
 
       revalidatePath(`/s/${subdomain}/projects/${projectId}`);
+      revalidatePath(`/s/${subdomain}/projects`);
       return { success: true, message: "Permission updated successfully" };
     }
 
@@ -108,6 +109,7 @@ export async function grantProjectPermission(
     }
 
     revalidatePath(`/s/${subdomain}/projects/${projectId}`);
+    revalidatePath(`/s/${subdomain}/projects`);
     return { success: true, message: "Permission granted successfully" };
   } catch (error) {
     Sentry.captureException(error);
@@ -126,7 +128,7 @@ export async function updateProjectPermission(
   projectId: string,
   userId: string,
   permissionLevel: "read" | "write" | "admin",
-  subdomain: string,
+  subdomain: string
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -174,6 +176,7 @@ export async function updateProjectPermission(
     }
 
     revalidatePath(`/s/${subdomain}/projects/${projectId}`);
+    revalidatePath(`/s/${subdomain}/projects`);
     return { success: true, message: "Permission updated successfully!" };
   } catch (error) {
     Sentry.captureException(error, {
@@ -193,7 +196,7 @@ export async function updateProjectPermission(
 export async function revokeProjectPermission(
   projectId: string,
   userId: string,
-  subdomain: string,
+  subdomain: string
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -244,7 +247,178 @@ export async function revokeProjectPermission(
     }
 
     revalidatePath(`/s/${subdomain}/projects/${projectId}`);
+    revalidatePath(`/s/${subdomain}/projects`);
     return { success: true, message: "Permission revoked successfully" };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface ProjectMember {
+  user_id: string;
+  full_name: string | null;
+  email: string;
+  permission_level: "read" | "write" | "admin";
+  granted_at: string;
+  granted_by: string;
+}
+
+export interface GetProjectMembersResponse {
+  success: boolean;
+  members?: ProjectMember[];
+  message?: string;
+}
+
+/**
+ * Get all members of a project
+ */
+export async function getProjectMembers(
+  projectId: string
+): Promise<GetProjectMembersResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    // Check if user has access to this project
+    const { data: userPerm } = await supabase
+      .from("project_permissions")
+      .select("permission_level")
+      .eq("project_id", projectId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!userPerm) {
+      return {
+        success: false,
+        message: "You don't have access to this project",
+      };
+    }
+
+    // Fetch all project members with their details
+    const { data: permissions, error } = await supabase
+      .from("project_permissions")
+      .select(
+        `
+        user_id,
+        permission_level,
+        granted_at,
+        granted_by,
+        user_profiles!inner (
+          full_name,
+          email
+        )
+      `
+      )
+      .eq("project_id", projectId);
+
+    if (error) {
+      Sentry.captureException(error);
+      return { success: false, message: "Failed to fetch project members" };
+    }
+
+    const members =
+      permissions?.map((perm) => {
+        const profile = Array.isArray(perm.user_profiles)
+          ? perm.user_profiles[0]
+          : perm.user_profiles;
+        return {
+          user_id: perm.user_id,
+          full_name:
+            (profile as { full_name?: string | null })?.full_name || null,
+          email: (profile as { email: string })?.email || "",
+          permission_level: perm.permission_level as "read" | "write" | "admin",
+          granted_at: perm.granted_at,
+          granted_by: perm.granted_by,
+        };
+      }) || [];
+
+    return { success: true, members };
+  } catch (error) {
+    Sentry.captureException(error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export interface AvailableOrgMember {
+  user_id: string;
+  full_name: string | null;
+  email: string;
+  role: string;
+}
+
+export interface GetAvailableOrgMembersResponse {
+  success: boolean;
+  members?: AvailableOrgMember[];
+  message?: string;
+}
+
+/**
+ * Get organization members who are not yet added to a project
+ */
+export async function getAvailableOrgMembers(
+  projectId: string
+): Promise<GetAvailableOrgMembersResponse> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    // Get project's org_id
+    const { data: project } = await supabase
+      .from("projects")
+      .select("org_id")
+      .eq("id", projectId)
+      .single();
+
+    if (!project) {
+      return { success: false, message: "Project not found" };
+    }
+
+    // Get all org members
+    const { data: orgMembers } = await supabase
+      .from("user_profiles")
+      .select("user_id, full_name, email, role")
+      .eq("org_id", project.org_id);
+
+    // Get current project members
+    const { data: projectMembers } = await supabase
+      .from("project_permissions")
+      .select("user_id")
+      .eq("project_id", projectId);
+
+    const projectMemberIds = new Set(
+      projectMembers?.map((m) => m.user_id) || []
+    );
+
+    // Filter out members who are already in the project
+    const availableMembers =
+      orgMembers?.filter((m) => !projectMemberIds.has(m.user_id)) || [];
+
+    return { success: true, members: availableMembers };
   } catch (error) {
     Sentry.captureException(error);
     return {

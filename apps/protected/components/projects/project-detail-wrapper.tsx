@@ -20,6 +20,7 @@ import {
 import { InviteToProjectDialog } from "./invite-to-project-dialog";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { ManagePermissionDialog } from "./manage-permission-dialog";
+import { ManageMembersDialog } from "./manage-members-dialog";
 import { revokeProjectPermission, leaveProject } from "@actions/projects";
 import { useToast } from "@workspace/ui/components/toast";
 import {
@@ -115,7 +116,7 @@ export function ProjectDetailWrapper({
               full_name,
               email
             )
-          `,
+          `
           )
           .eq("project_id", projectId);
 
@@ -139,17 +140,17 @@ export function ProjectDetailWrapper({
                 permission_level: perm.permission_level,
                 granted_at: perm.granted_at,
               };
-            },
+            }
           ) || [];
 
         setMembers(projectMembers);
 
         // Get current user's permission level
         const userPerm = projectMembers.find(
-          (m) => m.user_id === claims.user_id,
+          (m) => m.user_id === claims.user_id
         );
         setUserPermission(
-          (userPerm?.permission_level as "read" | "write" | "admin") || null,
+          (userPerm?.permission_level as "read" | "write" | "admin") || null
         );
 
         // Fetch all org members for invite dialog
@@ -177,7 +178,7 @@ export function ProjectDetailWrapper({
       const result = await revokeProjectPermission(
         projectId,
         userId,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {
@@ -235,43 +236,52 @@ export function ProjectDetailWrapper({
   const currentMemberIds = members.map((m) => m.user_id);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
+    <div className="flex flex-col space-y-6">
+      {/* Back Navigation */}
+      <div className="flex-shrink-0">
         <Link href="/projects">
-          <Button variant="ghost" size="sm" className="mb-4">
+          <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Projects
           </Button>
         </Link>
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Folder className="h-8 w-8" />
-              {project.name}
-            </h1>
-            {project.description && (
-              <p className="text-muted-foreground mt-2">
-                {project.description}
-              </p>
-            )}
-            <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+      </div>
+
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-3 mb-3">
+            <Folder className="h-8 w-8 flex-shrink-0 text-primary" />
+            <h1 className="text-3xl font-bold break-words">{project.name}</h1>
+          </div>
+          {project.description && (
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              {project.description}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 flex-shrink-0" />
+              <span className="whitespace-nowrap">
                 {new Date(project.created_at).toLocaleDateString()}
               </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 flex-shrink-0" />
+              <span className="whitespace-nowrap">
                 {members.length} {members.length === 1 ? "member" : "members"}
               </span>
             </div>
           </div>
-          {!isOwner && userPermission && (
+        </div>
+        {!isOwner && userPermission && (
+          <div className="flex-shrink-0 lg:self-start">
             <Button
               variant="outline"
               size="sm"
               onClick={handleLeave}
               disabled={isLeaving}
+              className="w-full lg:w-auto"
             >
               {isLeaving ? (
                 <>
@@ -285,47 +295,68 @@ export function ProjectDetailWrapper({
                 </>
               )}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Project Members */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Project Members
-          </CardTitle>
-          {canManageMembers && (
-            <InviteToProjectDialog
-              projectId={projectId}
-              subdomain={subdomain}
-              orgMembers={orgMembers}
-              currentMembers={currentMemberIds}
-            />
-          )}
+      <Card className="flex flex-col">
+        <CardHeader className="flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 flex-shrink-0" />
+              Project Members
+            </CardTitle>
+            {canManageMembers && (
+              <div className="flex flex-wrap items-center gap-2">
+                <ManageMembersDialog
+                  projectId={projectId}
+                  subdomain={subdomain}
+                  isOwner={isOwner}
+                  canManageMembers={canManageMembers}
+                />
+                <InviteToProjectDialog
+                  projectId={projectId}
+                  subdomain={subdomain}
+                  orgMembers={orgMembers}
+                  currentMembers={currentMemberIds}
+                />
+              </div>
+            )}
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+        <CardContent className="flex-1">
+          <div className="space-y-2">
             {members.map((member) => (
               <div
                 key={member.user_id}
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div className="flex-1">
-                  <p className="font-medium">
-                    {member.full_name || member.email}
-                    {member.user_id === claims.user_id && " (you)"}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Shield className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground capitalize">
-                      {member.permission_level}
-                    </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-medium truncate">
+                      {member.full_name || member.email}
+                    </p>
+                    {member.user_id === claims.user_id && (
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full flex-shrink-0">
+                        you
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm text-muted-foreground truncate">
+                      {member.email}
+                    </p>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <Shield className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground capitalize">
+                        {member.permission_level}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 {canManageMembers && member.user_id !== claims.user_id && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0 sm:self-center">
                     <ManagePermissionDialog
                       projectId={projectId}
                       subdomain={subdomain}
@@ -357,26 +388,30 @@ export function ProjectDetailWrapper({
 
       {/* Danger Zone */}
       {isOwner && (
-        <Card className="border-destructive">
+        <Card className="border-destructive flex-shrink-0">
           <CardHeader>
             <CardTitle className="text-destructive flex items-center gap-2">
-              <Archive className="h-5 w-5" />
+              <Archive className="h-5 w-5 flex-shrink-0" />
               Danger Zone
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Archive Project</p>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-destructive mb-1">
+                  Archive Project
+                </p>
                 <p className="text-sm text-muted-foreground">
                   Archive this project (can be restored later)
                 </p>
               </div>
-              <DeleteProjectDialog
-                projectId={projectId}
-                projectName={project.name}
-                subdomain={subdomain}
-              />
+              <div className="flex-shrink-0">
+                <DeleteProjectDialog
+                  projectId={projectId}
+                  projectName={project.name}
+                  subdomain={subdomain}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
