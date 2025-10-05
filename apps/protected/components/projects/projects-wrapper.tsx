@@ -35,7 +35,7 @@ export function ProjectsWrapper({
   // ✅ Pure UI component - no data fetching
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-6 max-w-7xl mx-auto w-full">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div className="flex-1 min-w-0">

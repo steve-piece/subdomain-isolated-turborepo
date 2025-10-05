@@ -220,7 +220,10 @@ export function SubdomainLookupForm({
 
                 {/* Dropdown */}
                 {showDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-50 text-gray-700">
+                  <div
+                    className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-50 text-gray-700
+                  "
+                  >
                     {searchResults.length > 0 ? (
                       <>
                         {searchResults.map((tenant) => (

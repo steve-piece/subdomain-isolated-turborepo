@@ -104,44 +104,31 @@ export function ProjectDetailWrapper({
 
         setProject(projectData);
 
-        // Fetch project members with their details
+        // Fetch project permissions first
         const { data: permissions } = await supabase
           .from("project_permissions")
-          .select(
-            `
-            user_id,
-            permission_level,
-            granted_at,
-            user_profiles!inner (
-              full_name,
-              email
-            )
-          `
-          )
+          .select("user_id, permission_level, granted_at")
           .eq("project_id", projectId);
 
+        // Then fetch user profiles for those users
+        const userIds = permissions?.map((p) => p.user_id) || [];
+        const { data: profiles } = await supabase
+          .from("user_profiles")
+          .select("user_id, full_name, email")
+          .in("user_id", userIds);
+
+        // Combine permissions with profiles
         const projectMembers =
-          permissions?.map(
-            (perm: {
-              user_id: string;
-              permission_level: string;
-              granted_at: string;
-              user_profiles:
-                | { full_name?: string; email: string }
-                | { full_name?: string; email: string }[];
-            }) => {
-              const profile = Array.isArray(perm.user_profiles)
-                ? perm.user_profiles[0]
-                : perm.user_profiles;
-              return {
-                user_id: perm.user_id,
-                full_name: profile?.full_name || null,
-                email: profile?.email || "",
-                permission_level: perm.permission_level,
-                granted_at: perm.granted_at,
-              };
-            }
-          ) || [];
+          permissions?.map((perm) => {
+            const profile = profiles?.find((p) => p.user_id === perm.user_id);
+            return {
+              user_id: perm.user_id,
+              full_name: profile?.full_name || null,
+              email: profile?.email || "Unknown",
+              permission_level: perm.permission_level,
+              granted_at: perm.granted_at,
+            };
+          }) || [];
 
         setMembers(projectMembers);
 
@@ -236,7 +223,7 @@ export function ProjectDetailWrapper({
   const currentMemberIds = members.map((m) => m.user_id);
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col h-full p-6 space-y-6 max-w-7xl mx-auto w-full">
       {/* Back Navigation */}
       <div className="flex-shrink-0">
         <Link href="/projects">

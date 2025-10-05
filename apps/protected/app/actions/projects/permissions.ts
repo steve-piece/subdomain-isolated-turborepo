@@ -307,21 +307,10 @@ export async function getProjectMembers(
       };
     }
 
-    // Fetch all project members with their details
+    // Fetch project permissions
     const { data: permissions, error } = await supabase
       .from("project_permissions")
-      .select(
-        `
-        user_id,
-        permission_level,
-        granted_at,
-        granted_by,
-        user_profiles!inner (
-          full_name,
-          email
-        )
-      `
-      )
+      .select("user_id, permission_level, granted_at, granted_by")
       .eq("project_id", projectId);
 
     if (error) {
@@ -329,16 +318,21 @@ export async function getProjectMembers(
       return { success: false, message: "Failed to fetch project members" };
     }
 
+    // Fetch user profiles for those users
+    const userIds = permissions?.map((p) => p.user_id) || [];
+    const { data: profiles } = await supabase
+      .from("user_profiles")
+      .select("user_id, full_name, email")
+      .in("user_id", userIds);
+
+    // Combine permissions with profiles
     const members =
       permissions?.map((perm) => {
-        const profile = Array.isArray(perm.user_profiles)
-          ? perm.user_profiles[0]
-          : perm.user_profiles;
+        const profile = profiles?.find((p) => p.user_id === perm.user_id);
         return {
           user_id: perm.user_id,
-          full_name:
-            (profile as { full_name?: string | null })?.full_name || null,
-          email: (profile as { email: string })?.email || "",
+          full_name: profile?.full_name || null,
+          email: profile?.email || "Unknown",
           permission_level: perm.permission_level as "read" | "write" | "admin",
           granted_at: perm.granted_at,
           granted_by: perm.granted_by,
