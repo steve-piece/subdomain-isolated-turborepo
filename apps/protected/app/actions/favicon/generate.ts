@@ -6,8 +6,7 @@ import { isValidSubdomain } from "@workspace/ui/lib/subdomains";
 
 // Default logo URL - used when organization doesn't have a custom logo
 const DEFAULT_LOGO_URL =
-  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL ||
-  "https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png";
+  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || "TODO: INSERT_DEFAULT_LOGO_URL";
 
 export interface FaviconResponse {
   success: boolean;
@@ -21,7 +20,7 @@ export interface FaviconResponse {
  * Returns logo URL if available, otherwise generates an SVG fallback
  */
 export async function getOrganizationFavicon(
-  subdomain: string,
+  subdomain: string
 ): Promise<FaviconResponse> {
   try {
     // Validate subdomain
@@ -34,25 +33,35 @@ export async function getOrganizationFavicon(
 
     const supabase = await createClient();
 
-    // Get organization logo from database (no auth required for logo lookup)
-    const { data: organization, error } = await supabase
-      .from("organizations")
-      .select("logo_url")
-      .eq("subdomain", subdomain)
-      .single();
+    // Use dedicated RPC function for fetching organization logo
+    // This function is optimized and designed for unauthenticated access
+    const { data, error: rpcError } = await supabase.rpc(
+      "get_org_logo_by_subdomain",
+      {
+        p_subdomain: subdomain,
+      }
+    );
 
-    if (error) {
-      // If organization not found, return default logo
+    if (rpcError) {
+      console.error("RPC error fetching logo:", rpcError);
       return {
         success: true,
         logoUrl: DEFAULT_LOGO_URL,
       };
     }
 
-    // If organization has a logo, return the URL, otherwise use default
+    // RPC returns an array, get first result
+    const organization = data?.[0];
+
+    // RPC function returns empty string if no logo, so check for both null and empty
+    const logoUrl =
+      organization?.logo_url && organization.logo_url.trim()
+        ? organization.logo_url
+        : DEFAULT_LOGO_URL;
+
     return {
       success: true,
-      logoUrl: organization?.logo_url || DEFAULT_LOGO_URL,
+      logoUrl,
     };
   } catch (error) {
     console.error("Get organization favicon error:", error);

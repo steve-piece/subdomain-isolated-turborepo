@@ -33,23 +33,27 @@ function generateFaviconSvgDataUri(letter: string): string {
  * Returns organization logo if available, otherwise returns generated SVG data URI
  */
 export async function getOrganizationFavicon(
-  subdomain: string,
+  subdomain: string
 ): Promise<string> {
   try {
     const supabase = await createClient();
-    const { data: organization } = await supabase
-      .from("organizations")
-      .select("logo_url")
-      .eq("subdomain", subdomain)
-      .single();
+
+    // Use dedicated RPC function for fetching organization logo
+    const { data } = await supabase.rpc("get_org_logo_by_subdomain", {
+      p_subdomain: subdomain,
+    });
+
+    const organization = data?.[0];
 
     // If organization has a logo, use it as favicon
-    if (organization?.logo_url) {
+    if (organization?.logo_url && organization.logo_url.trim()) {
       return organization.logo_url;
     }
 
-    // Generate SVG favicon with first letter of subdomain
-    const firstLetter = subdomain.charAt(0).toUpperCase();
+    // Generate SVG favicon with first letter of subdomain or company name
+    const firstLetter = (organization?.company_name || subdomain)
+      .charAt(0)
+      .toUpperCase();
     return generateFaviconSvgDataUri(firstLetter);
   } catch (error) {
     console.error("Error getting organization favicon:", error);
@@ -64,9 +68,19 @@ export async function getOrganizationFavicon(
 export async function getOrganizationMetadata(subdomain: string) {
   try {
     const supabase = await createClient();
-    const { data: organization } = await supabase
+
+    // Use dedicated RPC function for fetching organization data
+    const { data } = await supabase.rpc("get_org_logo_by_subdomain", {
+      p_subdomain: subdomain,
+    });
+
+    const organization = data?.[0];
+
+    // For full metadata, still need to query the full organization record
+    // RPC only returns logo_url and company_name
+    const { data: fullOrg } = await supabase
       .from("organizations")
-      .select("company_name, description, logo_url")
+      .select("description")
       .eq("subdomain", subdomain)
       .single();
 
@@ -76,9 +90,9 @@ export async function getOrganizationMetadata(subdomain: string) {
     return {
       title: organization?.company_name || subdomain,
       description:
-        organization?.description ||
+        fullOrg?.description ||
         `${organization?.company_name || subdomain} - Powered by ${appName}`,
-      logo_url: organization?.logo_url,
+      logo_url: organization?.logo_url || null,
       subdomain,
       appDomain,
     };

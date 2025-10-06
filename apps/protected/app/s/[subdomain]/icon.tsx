@@ -29,22 +29,31 @@ export default async function Icon({
 
     const supabase = await createClient();
 
-    // Query database directly using subdomain (no auth required)
-    const { data: organization, error: dbError } = await supabase
-      .from("organizations")
-      .select("logo_url, company_name")
-      .eq("subdomain", subdomain)
-      .single();
+    // Use dedicated RPC function for fetching organization logo
+    // This function is optimized and designed for unauthenticated access
+    const { data, error: rpcError } = await supabase.rpc(
+      "get_org_logo_by_subdomain",
+      {
+        p_subdomain: subdomain,
+      },
+    );
 
-    console.log(`[ICON] Database query result:`, {
+    // RPC returns an array, get first result
+    const organization = data?.[0];
+
+    console.log(`[ICON] RPC query result:`, {
       subdomain,
       company_name: organization?.company_name,
       logo_url: organization?.logo_url,
-      error: dbError?.message,
+      error: rpcError?.message,
     });
 
     // Use custom logo if available, otherwise use default logo
-    const finalLogoUrl = organization?.logo_url || DEFAULT_LOGO_URL;
+    // RPC function returns empty string if no logo, so check for both null and empty
+    const finalLogoUrl =
+      organization?.logo_url && organization.logo_url.trim()
+        ? organization.logo_url
+        : DEFAULT_LOGO_URL;
 
     console.log(`[ICON] Final logo URL to fetch: ${finalLogoUrl}`);
 
