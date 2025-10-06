@@ -16,7 +16,7 @@ export interface CompleteOnboardingResponse {
  * Updates organization details and marks onboarding as complete
  */
 export async function completeOnboarding(
-  formData: FormData,
+  formData: FormData
 ): Promise<CompleteOnboardingResponse> {
   try {
     const supabase = await createClient();
@@ -60,8 +60,12 @@ export async function completeOnboarding(
     // Extract form data
     const orgName = formData.get("org-name")?.toString().trim();
     const description = formData.get("description")?.toString().trim();
+    const industry = formData.get("industry")?.toString().trim();
+    const companySize = formData.get("company-size")?.toString().trim();
+    const website = formData.get("website")?.toString().trim();
+    const address = formData.get("address")?.toString().trim();
 
-    // Validate
+    // Validate required fields
     if (!orgName || orgName.length === 0) {
       return {
         success: false,
@@ -69,6 +73,21 @@ export async function completeOnboarding(
       };
     }
 
+    if (!industry || industry.length === 0) {
+      return {
+        success: false,
+        message: "Industry is required",
+      };
+    }
+
+    if (!companySize) {
+      return {
+        success: false,
+        message: "Company size is required",
+      };
+    }
+
+    // Validate field lengths
     if (orgName.length > 255) {
       return {
         success: false,
@@ -83,12 +102,28 @@ export async function completeOnboarding(
       };
     }
 
+    // Validate website URL format
+    if (website && website.length > 0) {
+      try {
+        new URL(website);
+      } catch {
+        return {
+          success: false,
+          message: "Invalid website URL format",
+        };
+      }
+    }
+
     // Update organization
     const { error: updateError } = await supabase
       .from("organizations")
       .update({
         company_name: orgName,
         description: description || null,
+        industry: industry || null,
+        company_size: companySize || null,
+        website: website || null,
+        address: address || null,
         onboarding_completed: true,
         updated_at: new Date().toISOString(),
       })

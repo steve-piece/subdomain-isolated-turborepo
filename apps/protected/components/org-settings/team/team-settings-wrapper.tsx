@@ -17,6 +17,8 @@ import { UserPlus, Users, Shield, Lock } from "lucide-react";
 import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
 import { UpdateRoleDialog } from "./update-role-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
+import { TeamSettingsConfig } from "./team-settings-config";
+import { PendingInvitationsList } from "./pending-invitations-list";
 
 type UserRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
 
@@ -106,6 +108,12 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
 
   return (
     <div className="space-y-6">
+      {/* Team Settings Configuration */}
+      <TeamSettingsConfig />
+
+      {/* Pending Invitations */}
+      <PendingInvitationsList orgId={claims.org_id} subdomain={subdomain} />
+
       {/* Custom Roles Feature (Locked) */}
       <Card className="border-dashed">
         <CardHeader>

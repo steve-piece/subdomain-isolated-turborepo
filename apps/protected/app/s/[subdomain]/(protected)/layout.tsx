@@ -84,7 +84,7 @@ export default async function ProtectedLayout({
         // Force logout
         await supabase.auth.signOut();
         redirect(
-          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`,
+          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`
         );
       }
     } catch (error) {
@@ -131,15 +131,17 @@ export default async function ProtectedLayout({
   // Get organization logo from JWT
   const organizationLogoUrl = claims.claims.organization_logo_url;
 
-  // Get user's full name from database (not in minimal JWT)
+  // Get user's full name and avatar from database (not in minimal JWT)
   let userFullName: string | null = null;
+  let userAvatarUrl: string | null = null;
   try {
     const { data: profile } = await supabase
       .from("user_profiles")
-      .select("full_name")
+      .select("full_name, profile_picture_url")
       .eq("user_id", user.id)
       .single();
     userFullName = profile?.full_name || null;
+    userAvatarUrl = profile?.profile_picture_url || null;
   } catch (error) {
     Sentry.captureException(error, {
       tags: {
@@ -211,6 +213,7 @@ export default async function ProtectedLayout({
           userCapabilities={userCapabilities}
           logoUrl={organizationLogoUrl}
           userName={userFullName}
+          userAvatarUrl={userAvatarUrl}
         />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>

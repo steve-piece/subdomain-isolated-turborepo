@@ -8,9 +8,25 @@ import { Label } from "@workspace/ui/components/label";
 import { Input } from "@workspace/ui/components/input";
 import { useToast } from "@workspace/ui/components/toast";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
+import {
   completeOnboarding,
   uploadOrganizationLogo,
 } from "@actions/onboarding";
+
+const COMPANY_SIZE_OPTIONS = [
+  { value: "1-10", label: "1-10 employees" },
+  { value: "11-50", label: "11-50 employees" },
+  { value: "51-200", label: "51-200 employees" },
+  { value: "201-500", label: "201-500 employees" },
+  { value: "501-1000", label: "501-1000 employees" },
+  { value: "1000+", label: "1000+ employees" },
+];
 
 interface OnboardingModalProps {
   organizationName: string;
@@ -26,6 +42,10 @@ export function OnboardingModal({
   const [isPending, startTransition] = useTransition();
   const [orgName, setOrgName] = useState(organizationName);
   const [description, setDescription] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [website, setWebsite] = useState("");
+  const [address, setAddress] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [step, setStep] = useState<"welcome" | "details" | "logo">("welcome");
@@ -116,6 +136,25 @@ export function OnboardingModal({
   };
 
   const handleSubmit = async () => {
+    // Validate required fields
+    if (!industry.trim()) {
+      addToast({
+        title: "Industry required",
+        description: "Please enter your organization's industry",
+        variant: "error",
+      });
+      return;
+    }
+
+    if (!companySize) {
+      addToast({
+        title: "Company size required",
+        description: "Please select your company size",
+        variant: "error",
+      });
+      return;
+    }
+
     startTransition(async () => {
       // First, upload logo if provided
       if (logoFile) {
@@ -137,6 +176,10 @@ export function OnboardingModal({
       const formData = new FormData();
       formData.append("org-name", orgName);
       formData.append("description", description);
+      formData.append("industry", industry);
+      formData.append("company-size", companySize);
+      formData.append("website", website);
+      formData.append("address", address);
 
       const result = await completeOnboarding(formData);
 
@@ -230,7 +273,7 @@ export function OnboardingModal({
             Help us get to know your organization better
           </p>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
             <div className="space-y-2">
               <Label htmlFor="org-name">Organization Name *</Label>
               <Input
@@ -249,13 +292,65 @@ export function OnboardingModal({
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Tell us about your organization..."
                 maxLength={1000}
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {description.length}/1000 characters
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="industry">Industry *</Label>
+                <Input
+                  id="industry"
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  placeholder="e.g., Technology, Healthcare"
+                  required
+                  maxLength={100}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company-size">Company Size *</Label>
+                <Select value={companySize} onValueChange={setCompanySize}>
+                  <SelectTrigger id="company-size">
+                    <SelectValue placeholder="Select size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMPANY_SIZE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Website (Optional)</Label>
+              <Input
+                id="website"
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">Address (Optional)</Label>
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="123 Main St, City, Country"
+                maxLength={500}
+              />
             </div>
           </div>
 
@@ -269,7 +364,7 @@ export function OnboardingModal({
             </Button>
             <Button
               onClick={() => setStep("logo")}
-              disabled={!orgName.trim()}
+              disabled={!orgName.trim() || !industry.trim() || !companySize}
               className="bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700"
             >
               Next

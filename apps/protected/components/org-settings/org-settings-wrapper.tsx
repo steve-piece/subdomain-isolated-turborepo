@@ -20,6 +20,10 @@ interface Organization {
   subdomain: string;
   description: string | null;
   logo_url: string | null;
+  industry: string | null;
+  website: string | null;
+  address: string | null;
+  company_size: string | null;
 }
 
 interface OrgSettingsWrapperProps {
@@ -102,6 +106,10 @@ export function OrgSettingsWrapper({
         organizationName={organization.company_name || ""}
         subdomain={organization.subdomain || subdomain}
         description={organization.description || ""}
+        industry={organization.industry || ""}
+        website={organization.website || ""}
+        address={organization.address || ""}
+        companySize={organization.company_size || ""}
         appDomain={appDomain}
         onSubmit={updateOrganizationIdentity}
       />

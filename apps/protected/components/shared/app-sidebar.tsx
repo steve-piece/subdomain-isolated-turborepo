@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import NextImage from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Input } from "@workspace/ui/components/input";
@@ -21,11 +21,11 @@ import {
   LayoutDashboard,
   ShieldCheck,
   Search,
-  Settings,
   Crown,
   PanelLeftClose,
   PanelLeftOpen,
   Folder,
+  LogOut,
 } from "lucide-react";
 import type { AppRole } from "../../lib/types";
 import { hasRoleAccess } from "../../lib/utils/role-hierarchy";
@@ -35,8 +35,7 @@ const DEBUG_SIDEBAR_ACCESS = false;
 
 // Default logo URL - used when organization doesn't have a custom logo
 const DEFAULT_LOGO_URL =
-  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL ||
-  "https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png";
+  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || "ISERT_DEFAULT_LOGO_URL";
 
 /**
  * Validates that navigation hrefs are internal paths only (no external URLs or injections)
@@ -60,6 +59,7 @@ interface AppSidebarProps {
   userCapabilities?: string[];
   logoUrl?: string | null;
   userName?: string | null;
+  userAvatarUrl?: string | null;
 }
 
 interface NavigationItem {
@@ -180,6 +180,7 @@ export function AppSidebar({
   userCapabilities = [],
   logoUrl,
   userName,
+  userAvatarUrl,
 }: AppSidebarProps) {
   // Debug: Log authentication context
   React.useEffect(() => {
@@ -199,7 +200,7 @@ export function AppSidebar({
     Main: true,
     Organization: true,
   });
-  const [settingsExpanded, setSettingsExpanded] = React.useState(true);
+  const [userMenuExpanded, setUserMenuExpanded] = React.useState(false);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(false); // Always start expanded to match SSR
   const pathname = usePathname();
@@ -465,7 +466,7 @@ export function AppSidebar({
           {!isCollapsed && (
             <div className="flex items-center gap-3">
               <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white overflow-hidden">
-                <Image
+                <NextImage
                   src={logoUrl || DEFAULT_LOGO_URL}
                   alt={`${organizationName} logo`}
                   width={40}
@@ -660,48 +661,76 @@ export function AppSidebar({
         {/* Footer - Settings & User */}
         <div className="border-t p-3">
           <div className="space-y-1">
-            {/* Settings Section */}
+            {/* User Menu Section */}
             {isCollapsed ? (
-              // Collapsed: Show settings items as icons
-              <div className="space-y-1">
-                {userSettingsItems.filter(hasAccess).map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      title={item.title}
-                      className={cn(
-                        "flex items-center justify-center rounded-2xl px-3 py-2 text-sm hover:bg-muted transition-colors",
-                        isActive && "bg-primary/10 text-primary font-medium"
-                      )}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </Link>
-                  );
-                })}
-              </div>
+              // Collapsed: Show user avatar only
+              <button
+                onClick={() => setUserMenuExpanded(!userMenuExpanded)}
+                title={userName || "User Menu"}
+                className="flex w-full items-center justify-center rounded-2xl px-3 py-2 hover:bg-muted transition-colors"
+              >
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
+                  {userAvatarUrl ? (
+                    <NextImage
+                      src={userAvatarUrl}
+                      alt={userName || "User avatar"}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>
+                      {userName?.charAt(0)?.toUpperCase() ||
+                        organizationName.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </button>
             ) : (
-              // Expanded: Show settings dropdown
+              // Expanded: Show user menu with full name
               <div>
                 <button
                   className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted"
-                  onClick={() => setSettingsExpanded(!settingsExpanded)}
+                  onClick={() => setUserMenuExpanded(!userMenuExpanded)}
                 >
                   <div className="flex items-center gap-3">
-                    <Settings className="h-5 w-5" />
-                    <span>Settings</span>
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
+                      {userAvatarUrl ? (
+                        <NextImage
+                          src={userAvatarUrl}
+                          alt={userName || "User avatar"}
+                          width={32}
+                          height={32}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>
+                          {userName?.charAt(0)?.toUpperCase() ||
+                            organizationName.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium">
+                        {userName || "User"}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-xs capitalize mt-0.5"
+                      >
+                        {userRole}
+                      </Badge>
+                    </div>
                   </div>
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform",
-                      settingsExpanded ? "rotate-180" : ""
+                      userMenuExpanded ? "rotate-180" : ""
                     )}
                   />
                 </button>
 
-                {settingsExpanded && (
+                {userMenuExpanded && (
                   <div className="mt-1 ml-6 space-y-1 border-l pl-3">
                     {userSettingsItems.filter(hasAccess).map((item) => {
                       const Icon = item.icon;
@@ -720,39 +749,20 @@ export function AppSidebar({
                         </Link>
                       );
                     })}
+
+                    {/* Sign Out button at bottom of menu */}
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-sm hover:bg-destructive/10 hover:text-destructive transition-colors text-left"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {isLoggingOut ? "Signing out..." : "Sign Out"}
+                    </button>
                   </div>
                 )}
               </div>
             )}
-
-            {/* User Info & Logout */}
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              title={isCollapsed ? "Sign Out" : undefined}
-              className={cn(
-                "flex w-full items-center rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted transition-colors",
-                isCollapsed && "justify-center"
-              )}
-            >
-              {isCollapsed ? (
-                <div className="h-6 w-6 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-xs font-semibold">
-                  {organizationName.charAt(0).toUpperCase()}
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3">
-                    <div className="h-6 w-6 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-xs font-semibold">
-                      {organizationName.charAt(0).toUpperCase()}
-                    </div>
-                    <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
-                  </div>
-                  <Badge variant="outline" className="ml-auto capitalize">
-                    {userRole}
-                  </Badge>
-                </>
-              )}
-            </button>
           </div>
         </div>
       </div>

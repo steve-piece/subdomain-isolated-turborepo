@@ -17,7 +17,7 @@ export interface UpdateOrganizationIdentityResponse {
  * Subdomain changes are not allowed through this action.
  */
 export async function updateOrganizationIdentity(
-  formData: FormData,
+  formData: FormData
 ): Promise<UpdateOrganizationIdentityResponse> {
   try {
     const supabase = await createClient();
@@ -68,6 +68,10 @@ export async function updateOrganizationIdentity(
     // Extract and validate form data
     const orgName = formData.get("org-name")?.toString().trim();
     const description = formData.get("description")?.toString().trim();
+    const industry = formData.get("industry")?.toString().trim();
+    const website = formData.get("website")?.toString().trim();
+    const address = formData.get("address")?.toString().trim();
+    const companySize = formData.get("company-size")?.toString().trim();
 
     // Validate organization name
     if (!orgName || orgName.length === 0) {
@@ -92,12 +96,28 @@ export async function updateOrganizationIdentity(
       };
     }
 
+    // Validate website URL format
+    if (website && website.length > 0) {
+      try {
+        new URL(website);
+      } catch {
+        return {
+          success: false,
+          message: "Invalid website URL format",
+        };
+      }
+    }
+
     // Update organization in database
     const { error: updateError } = await supabase
       .from("organizations")
       .update({
         company_name: orgName,
         description: description || null,
+        industry: industry || null,
+        website: website || null,
+        address: address || null,
+        company_size: companySize || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", orgId);

@@ -14,6 +14,8 @@ import Link from "next/link";
 import { ActivityFeed } from "./activity-feed";
 import { getRecentActivity } from "@/app/actions/activity/get-recent-activity";
 import type { ActivityItem } from "@/app/actions/activity/get-recent-activity";
+import { getDashboardStats } from "@/app/actions/dashboard/get-dashboard-stats";
+import type { DashboardStats } from "@/app/actions/dashboard/get-dashboard-stats";
 import { useState, useEffect } from "react";
 import {
   Building2,
@@ -41,6 +43,12 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [, setIsLoadingActivities] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    teamMemberCount: 0,
+    activeProjects: 0,
+    storageUsed: 0,
+    apiCalls: 0,
+  });
 
   // Fetch activities on mount
   useEffect(() => {
@@ -55,6 +63,19 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
       }
     }
     fetchActivities();
+  }, [claims.org_id]);
+
+  // Fetch dashboard stats
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const data = await getDashboardStats(claims.org_id);
+        setStats(data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats:", error);
+      }
+    }
+    fetchStats();
   }, [claims.org_id]);
 
   const organizationName = claims.company_name || subdomain;
@@ -97,7 +118,7 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
               <Users className="h-6 w-6 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1</div>
+              <div className="text-2xl font-bold">{stats.teamMemberCount}</div>
               <p className="text-xs text-muted-foreground">Active members</p>
             </CardContent>
           </Card>

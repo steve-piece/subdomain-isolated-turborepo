@@ -149,7 +149,7 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
   }
 
   async function handleAvatarUpload(
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -292,7 +292,7 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
                       className="p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors disabled:opacity-50"
                       aria-label="Remove profile picture"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-5 w-5 text-white" />
                     </button>
                   )}
                 </div>

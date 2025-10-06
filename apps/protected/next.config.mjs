@@ -24,6 +24,12 @@ const nextConfig = {
       bodySizeLimit: "3mb", // Allow up to 3MB for avatar uploads (2MB max file + overhead)
     },
   },
+  // Fix OpenTelemetry/Sentry instrumentation package conflicts
+  serverExternalPackages: [
+    "require-in-the-middle",
+    "import-in-the-middle",
+    "@opentelemetry/instrumentation",
+  ],
 };
 
 const sentryWebpackPluginOptions = {

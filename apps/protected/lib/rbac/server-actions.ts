@@ -18,7 +18,7 @@ interface CapabilityCheckResult {
  */
 export async function checkUserCapability(
   orgId: string,
-  capabilityKey: CapabilityKey,
+  capabilityKey: CapabilityKey
 ): Promise<CapabilityCheckResult> {
   try {
     const supabase = await createClient();
@@ -73,7 +73,7 @@ export async function checkUserCapability(
  */
 export async function checkUserOrgAccess(
   orgId: string,
-  requiredRoles?: string[],
+  requiredRoles?: string[]
 ): Promise<CapabilityCheckResult> {
   try {
     const supabase = await createClient();
@@ -125,9 +125,10 @@ export async function checkUserOrgAccess(
 
 /**
  * Get all capabilities for the current user in an organization
+ * Uses new database function that combines role hierarchy and custom overrides
  */
 export async function getUserCapabilities(
-  orgId: string,
+  orgId: string
 ): Promise<CapabilityKey[]> {
   try {
     const supabase = await createClient();
@@ -141,55 +142,25 @@ export async function getUserCapabilities(
       return [];
     }
 
-    // Get user's role
-    const { data: profile, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("org_id", orgId)
-      .single();
+    // Call database function to get capabilities
+    // This handles both default role capabilities (via min_role_required + hierarchy)
+    // and optional custom org overrides (via org_role_capabilities table)
+    const { data, error } = await supabase.rpc("get_user_capabilities", {
+      p_user_id: user.id,
+      p_org_id: orgId,
+    });
 
-    if (profileError || !profile) {
-      Sentry.captureException(profileError ?? new Error("Missing profile"), {
+    if (error) {
+      Sentry.captureException(error, {
         tags: {
           org_id: orgId,
           user_id: user.id,
-        },
-        extra: {
-          query: "user_profiles.select(role)",
-          hasProfile: !!profile,
-          hasError: !!profileError,
         },
       });
       return [];
     }
 
-    // Get capabilities for this role
-    const { data: capabilities, error: capError } = await supabase
-      .from("role_capabilities")
-      .select("capabilities(key)")
-      .eq("role", profile.role)
-      .eq("is_default", true);
-
-    if (capError || !capabilities) {
-      if (capError) {
-        Sentry.captureException(capError, {
-          tags: {
-            org_id: orgId,
-            user_id: user.id,
-            role: profile.role,
-          },
-        });
-      }
-      return [];
-    }
-
-    // Extract capability keys
-    return capabilities
-      .map(
-        (cap: { capabilities: { key: string }[] }) => cap.capabilities[0]?.key,
-      )
-      .filter(Boolean) as CapabilityKey[];
+    return (data || []) as CapabilityKey[];
   } catch (error) {
     Sentry.captureException(error);
     return [];

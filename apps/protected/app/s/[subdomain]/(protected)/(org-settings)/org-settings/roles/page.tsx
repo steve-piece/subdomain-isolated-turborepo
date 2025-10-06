@@ -1,18 +1,15 @@
 // apps/protected/app/s/[subdomain]/(protected)/(org-settings)/org-settings/roles/page.tsx
 /**
- * ✅ PHASE 1.5g: Simplified roles page
+ * ✅ TIER-GATED: Roles page with Business+ access control
+ * - Wrapped with RequireTierAccess for tier checking
  * - Simple role check (owner only)
  * - Caching enabled (revalidate = 60)
  */
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import {
-  canCustomizeRoles,
-  getAllCapabilities,
-  getOrgCustomCapabilities,
-} from "@actions/rbac";
+import { getAllCapabilities, getOrgCustomCapabilities } from "@actions/rbac";
 import { RoleCapabilitiesManager } from "@/components/org-settings/roles/role-capabilities-manager";
-import { UpgradePrompt } from "@/components/shared/upgrade-prompt";
+import { RequireTierAccess } from "@/components/shared/require-tier-access";
 import { UserRole } from "@/lib/rbac/permissions";
 
 // ✅ Roles change infrequently - cache for 60 seconds
@@ -39,26 +36,6 @@ export default async function RolesCustomizationPage({
     redirect("/dashboard?error=no_organization");
   }
 
-  // Check if org can customize roles
-  const canCustomizeResponse = await canCustomizeRoles();
-
-  if (!canCustomizeResponse.success || !canCustomizeResponse.canCustomize) {
-    // Fetch organization to get current tier
-    const { data: organization } = await supabase
-      .from("organizations")
-      .select("plan")
-      .eq("id", orgId)
-      .single();
-
-    return (
-      <UpgradePrompt
-        feature="Custom Roles & Permissions"
-        requiredTier="Business"
-        currentTier={organization?.plan || "Free"}
-      />
-    );
-  }
-
   // Get all capabilities and custom capabilities
   const [allCapabilitiesResponse, customCapabilitiesResponse] =
     await Promise.all([getAllCapabilities(), getOrgCustomCapabilities()]);
@@ -71,6 +48,7 @@ export default async function RolesCustomizationPage({
     name: string;
     description: string;
     category: string;
+    min_role_required?: UserRole; // Database field for default role access
   }>;
 
   const customCapabilities = (
@@ -91,10 +69,15 @@ export default async function RolesCustomizationPage({
   }>;
 
   return (
-    <RoleCapabilitiesManager
-      orgId={orgId}
-      allCapabilities={allCapabilities}
-      customCapabilities={customCapabilities}
-    />
+    <RequireTierAccess
+      featureName="Custom Role Management"
+      featureDescription="Define custom capabilities for each role in your organization. Control exactly what each team member can access and modify with granular permissions."
+    >
+      <RoleCapabilitiesManager
+        orgId={orgId}
+        allCapabilities={allCapabilities}
+        customCapabilities={customCapabilities}
+      />
+    </RequireTierAccess>
   );
 }
