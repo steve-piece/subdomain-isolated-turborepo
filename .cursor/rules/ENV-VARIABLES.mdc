@@ -19,6 +19,7 @@ THE FOLLOWING VARIABLES AND THEIR NAMING CONVENTIONS SHOULD BE USED AS FOLLOWS:
 `APP_NAME`="Ghost Write Ai" -> Name of the app/platform.
 `NEXT_PUBLIC_APP_DOMAIN`="ghostwrite.app"-> apps/protected app domain name. These are the protected pages associated with our turborepo. All organizations are given a subdomain upon signup (FULLY ISOLATED ORGANIZATIONS BY SUBDOMAIN), and this variable is saved in the user metadata along with their organization name.
 `EMAIL_DOMAIN`="auth.voltguardai.com" -> Email domain name. This is the domain setup with Resend in the resend.com domain settings.
+`NEXT_PUBLIC_DEFAULT_LOGO_URL`="https://qnbqrlpvokzgtfevnuzv.supabase.co/storage/v1/object/public/organization-logos/defaults/logo.png" -> Default logo URL. This is the URL that will be used to access the default logo. Use the env variable across the project,
 
 ## Resend Email Variables
 

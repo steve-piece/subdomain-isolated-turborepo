@@ -38,6 +38,7 @@ export function LoginForm({
   // Local UI state for controlled inputs and UX feedback
   const [email, setEmail] = useState(""); // bound to the email input
   const [password, setPassword] = useState(""); // bound to the password input
+  const [showPassword, setShowPassword] = useState(false); // toggles password visibility
   const [error, setError] = useState<string | null>(null); // shows auth errors
   const [isLoading, setIsLoading] = useState(false); // disables submit, shows spinner
   const [isMagicLoading, setIsMagicLoading] = useState(false);
@@ -208,7 +209,7 @@ export function LoginForm({
         await supabase.auth.signOut();
         setError("Please confirm your email before logging in.");
         router.push(
-          "/auth/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in.",
+          "/auth/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in."
         );
         return;
       }
@@ -277,9 +278,7 @@ export function LoginForm({
           });
 
           setError(
-            error instanceof Error
-              ? error.message
-              : "Unable to send magic link",
+            error instanceof Error ? error.message : "Unable to send magic link"
           );
           addToast({
             title: "Unable to send magic link",
@@ -294,7 +293,7 @@ export function LoginForm({
           span.end();
           setIsMagicLoading(false);
         }
-      },
+      }
     );
   };
 
@@ -341,13 +340,52 @@ export function LoginForm({
                     Forgot your password?
                   </Link>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                        <line x1="3" y1="3" x2="21" y2="21" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Error banner, including link to resend verification if needed */}

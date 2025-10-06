@@ -26,17 +26,13 @@ export default async function ConfirmPage({
 
   if (!tokenHash || !type) {
     redirect(
-      "/auth/resend-verification?error=missing&message=Invalid verification link. Please request a new one.",
+      "/auth/resend-verification?error=missing&message=Invalid verification link. Please request a new one."
     );
   }
 
   // Handle types that need client-side verification (to establish session cookies)
   // These redirect to protected routes so session must be established client-side
   if (typeValue === "magiclink" || typeValue === "reauthenticate") {
-    console.log(
-      `🔄 ConfirmPage - ${typeValue} detected, rendering client-side verification component`,
-    );
-
     return (
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-md">
@@ -63,8 +59,7 @@ export default async function ConfirmPage({
   if (typeof query.redirect_to === "string") {
     try {
       redirectHint = decodeURIComponent(query.redirect_to);
-    } catch (error) {
-      console.error("Failed to decode redirect_to parameter:", error);
+    } catch {
       redirectHint = undefined;
     }
   } else {
@@ -75,7 +70,7 @@ export default async function ConfirmPage({
     tokenHash,
     type,
     subdomain,
-    redirectHint,
+    redirectHint
   );
 
   if (result.redirectTo) {

@@ -59,11 +59,6 @@ export function AcceptInvitationForm({
         const tokenHash = params.get("token_hash");
         const type = params.get("type");
 
-        console.log("🔍 AcceptInvitationForm - Checking URL params:", {
-          hasTokenHash: !!tokenHash,
-          type,
-        });
-
         Sentry.addBreadcrumb({
           category: "auth.invitation",
           message: "Parsed URL parameters",
@@ -105,8 +100,6 @@ export function AcceptInvitationForm({
           return;
         }
 
-        console.log("🔄 AcceptInvitationForm - Manually verifying OTP...");
-
         Sentry.addBreadcrumb({
           category: "auth.invitation",
           message: "Verifying OTP token",
@@ -131,11 +124,6 @@ export function AcceptInvitationForm({
         });
 
         if (verifyError) {
-          console.error(
-            "🚨 AcceptInvitationForm - OTP verification failed:",
-            verifyError,
-          );
-
           Sentry.addBreadcrumb({
             category: "auth.invitation",
             message: "OTP verification failed",
@@ -211,7 +199,6 @@ export function AcceptInvitationForm({
 
         setIsVerifying(false);
       } catch (error) {
-        console.error("🚨 AcceptInvitationForm - Unexpected error:", error);
         const totalDuration = performance.now() - startTime;
 
         Sentry.addBreadcrumb({
@@ -236,9 +223,7 @@ export function AcceptInvitationForm({
         });
 
         setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to verify invitation",
+          error instanceof Error ? error.message : "Failed to verify invitation"
         );
         setIsVerifying(false);
       }
@@ -323,7 +308,7 @@ export function AcceptInvitationForm({
       const result = await completeInvitation(
         password,
         fullName.trim(),
-        redirectTo,
+        redirectTo
       );
       const actionDuration = performance.now() - actionStartTime;
 
@@ -362,7 +347,7 @@ export function AcceptInvitationForm({
           scope.setTag("step", "complete_invitation");
           scope.setLevel("error");
           Sentry.captureMessage(
-            result.message ?? "Unable to complete invitation",
+            result.message ?? "Unable to complete invitation"
           );
         });
 

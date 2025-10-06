@@ -1,16 +1,8 @@
 // apps/protected/lib/utils/get-redirect-url.ts
 export function getRedirectUrl(path: string, subdomain?: string): string {
-  console.log("🔍 getRedirectUrl - Called with:", {
-    path,
-    subdomain,
-    nodeEnv: process.env.NODE_ENV,
-  });
-
   if (process.env.NODE_ENV === "development") {
     const subdomainPart = subdomain ? `${subdomain}.` : "";
-    const url = `http://${subdomainPart}localhost:3003${path.startsWith("/") ? path : `/${path}`}`;
-    console.log("🔄 getRedirectUrl - Development URL:", url);
-    return url;
+    return `http://${subdomainPart}localhost:3003${path.startsWith("/") ? path : `/${path}`}`;
   }
 
   const domain = process.env.NEXT_PUBLIC_APP_DOMAIN;
@@ -19,7 +11,5 @@ export function getRedirectUrl(path: string, subdomain?: string): string {
   }
 
   const subdomainPart = subdomain ? `${subdomain}.` : "";
-  const url = `https://${subdomainPart}${domain}${path.startsWith("/") ? path : `/${path}`}`;
-  console.log("🔄 getRedirectUrl - Production URL:", url);
-  return url;
+  return `https://${subdomainPart}${domain}${path.startsWith("/") ? path : `/${path}`}`;
 }

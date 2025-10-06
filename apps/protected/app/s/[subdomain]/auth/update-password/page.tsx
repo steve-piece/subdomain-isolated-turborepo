@@ -28,18 +28,7 @@ export default async function UpdatePasswordPage({
 
   const token_hash = searchParamsData.token_hash as string;
   const type = searchParamsData.type as string;
-  const access_token = searchParamsData.access_token as string;
-  const refresh_token = searchParamsData.refresh_token as string;
   const error = searchParamsData.error as string;
-
-  console.log("🔍 UpdatePasswordPage - Server-side params:", {
-    subdomain,
-    tokenHash: token_hash ? `${token_hash.slice(0, 20)}...` : null,
-    type,
-    accessToken: access_token ? `${access_token.slice(0, 10)}...` : null,
-    refreshToken: refresh_token ? `${refresh_token.slice(0, 10)}...` : null,
-    error: error || null,
-  });
 
   // Handle direct error from URL parameters
   if (error) {
@@ -87,10 +76,6 @@ export default async function UpdatePasswordPage({
   // For password recovery, render form and let client handle PASSWORD_RECOVERY event
   // Do NOT verify OTP server-side as it consumes the single-use token
   if (token_hash && type === "recovery") {
-    console.log(
-      "🔄 UpdatePasswordPage - Recovery tokens detected, rendering form for client-side handling",
-    );
-
     return (
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-md">
@@ -106,11 +91,6 @@ export default async function UpdatePasswordPage({
 
   // For other OTP types (email confirmation, etc.), verify server-side
   if (token_hash && type) {
-    console.log(
-      "🔄 UpdatePasswordPage - Server-side OTP verification starting for type:",
-      type,
-    );
-
     try {
       const supabase = await createClient();
 
@@ -121,11 +101,6 @@ export default async function UpdatePasswordPage({
       });
 
       if (verifyError) {
-        console.error(
-          "🚨 UpdatePasswordPage - Server-side OTP verification failed:",
-          verifyError,
-        );
-
         return (
           <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
             <div className="w-full max-w-md">
@@ -160,10 +135,6 @@ export default async function UpdatePasswordPage({
       }
 
       if (!data.user) {
-        console.error(
-          "🚨 UpdatePasswordPage - OTP verified but no user returned",
-        );
-
         return (
           <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
             <div className="w-full max-w-md">
@@ -197,15 +168,6 @@ export default async function UpdatePasswordPage({
         );
       }
 
-      console.log(
-        "✅ UpdatePasswordPage - Server-side OTP verification successful:",
-        {
-          userId: data.user.id,
-          userEmail: data.user.email,
-          subdomain,
-        },
-      );
-
       // Server-side verification successful, render form with tenant context
       return (
         <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
@@ -220,11 +182,6 @@ export default async function UpdatePasswordPage({
         </div>
       );
     } catch (error) {
-      console.error(
-        "🚨 UpdatePasswordPage - Server-side verification error:",
-        error,
-      );
-
       return (
         <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
           <div className="w-full max-w-md">
@@ -262,10 +219,6 @@ export default async function UpdatePasswordPage({
   }
 
   // No reset tokens - render form for authenticated users
-  console.log(
-    "🔍 UpdatePasswordPage - No reset tokens, rendering form for authenticated users",
-  );
-
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">

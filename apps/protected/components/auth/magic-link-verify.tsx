@@ -38,18 +38,11 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
         const tokenHash = params.get("token_hash");
         const otpType = params.get("type") as EmailOtpType | null;
 
-        console.log("🔍 MagicLinkVerify - Checking URL params:", {
-          hasTokenHash: !!tokenHash,
-          type: otpType,
-        });
-
         if (!tokenHash || !otpType) {
           setStatus("error");
           setErrorMessage("Invalid or incomplete verification link");
           return;
         }
-
-        console.log("🔄 MagicLinkVerify - Manually verifying OTP...");
 
         const { data, error: verifyError } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
@@ -57,11 +50,6 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
         });
 
         if (verifyError) {
-          console.error(
-            "🚨 MagicLinkVerify - OTP verification failed:",
-            verifyError,
-          );
-
           if (
             verifyError.message.toLowerCase().includes("expired") ||
             verifyError.message.toLowerCase().includes("invalid")
@@ -75,9 +63,6 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
         }
 
         if (data.session) {
-          console.log("✅ MagicLinkVerify - Session established:", {
-            userEmail: data.session.user.email,
-          });
           setStatus("success");
 
           // Redirect based on type
@@ -95,10 +80,9 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
         setStatus("error");
         setErrorMessage("Failed to establish session");
       } catch (error) {
-        console.error("🚨 MagicLinkVerify - Unexpected error:", error);
         setStatus("error");
         setErrorMessage(
-          error instanceof Error ? error.message : "Unknown error",
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     };

@@ -27,33 +27,22 @@ export function MagicLinkEmail({
 
   return (
     <BaseEmail previewText={previewText}>
-      <EmailHeading>
-        🔐 Sign In {organizationName ? `to ${organizationName}` : ""}
-      </EmailHeading>
+      <EmailHeading>Sign In to Your Account</EmailHeading>
 
       {userName && <EmailText>Hi {userName}!</EmailText>}
 
       <EmailText>
-        Click the button below to securely sign in to your account. This link
-        will expire in 1 hour and can only be used once.
+        Click the button below to sign in
+        {organizationName ? ` to ${organizationName}` : ""}. No password needed!
       </EmailText>
 
       <div style={{ textAlign: "center", margin: "32px 0" }}>
-        <EmailButton href={magicLinkUrl}>Sign In Now</EmailButton>
+        <EmailButton href={magicLinkUrl}>Sign In to Dashboard</EmailButton>
       </div>
 
-      <EmailText
-        style={{
-          fontSize: "14px",
-          color: "#6b7280",
-          backgroundColor: "#f9fafb",
-          padding: "12px",
-          borderRadius: "6px",
-          borderLeft: "3px solid #fbbf24",
-        }}
-      >
-        <strong>⚠️ Security Note:</strong> If you didn&apos;t request this magic
-        link, please ignore this email. Never share this link with anyone.
+      <EmailText style={{ fontSize: "14px", color: "#6b7280" }}>
+        This link will expire in 1 hour for security reasons. If you didn&apos;t
+        request this, please ignore this email.
       </EmailText>
 
       <EmailText
