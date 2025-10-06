@@ -19,7 +19,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { useToast } from "@workspace/ui/components/toast";
 import { Pencil, Check, X, Camera, Trash2, Upload } from "lucide-react";
-import { Card, CardContent } from "@workspace/ui/components/card";
+import { Card, CardContent, CardHeader } from "@workspace/ui/components/card";
 import Image from "next/image";
 
 interface ProfileWrapperProps {
@@ -79,7 +79,63 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
   }, [claims.user_id, claims.full_name, supabase]);
 
   if (isLoadingProfile) {
-    return <div className="p-6">Loading profile...</div>;
+    return (
+      <div className="space-y-6 max-w-4xl">
+        {/* Profile Header Skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="h-7 bg-muted rounded animate-pulse w-48 mb-2" />
+            <div className="h-4 bg-muted rounded animate-pulse w-72" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Avatar Section Skeleton */}
+              <div className="flex items-center gap-6">
+                <div className="h-24 w-24 bg-muted rounded-full animate-pulse" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted rounded animate-pulse w-32" />
+                  <div className="h-10 w-40 bg-muted rounded-lg animate-pulse" />
+                </div>
+              </div>
+
+              {/* Form Fields Skeleton */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse w-24" />
+                    <div className="h-10 bg-muted rounded-lg animate-pulse w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security Card Skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="h-6 bg-muted rounded animate-pulse w-40 mb-2" />
+            <div className="h-4 bg-muted rounded animate-pulse w-64" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
+                  <div className="space-y-2">
+                    <div className="h-5 bg-muted rounded animate-pulse w-32" />
+                    <div className="h-3 bg-muted rounded animate-pulse w-48" />
+                  </div>
+                  <div className="h-10 w-28 bg-muted rounded-lg animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   async function handleSaveName() {

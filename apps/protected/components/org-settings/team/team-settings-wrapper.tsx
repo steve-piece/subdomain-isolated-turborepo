@@ -75,7 +75,59 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
   }
 
   if (isLoading) {
-    return <div className="p-6">Loading team members...</div>;
+    return (
+      <div className="space-y-6">
+        {/* Team Settings Card Skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="h-6 bg-muted rounded animate-pulse w-40 mb-2" />
+            <div className="h-4 bg-muted rounded animate-pulse w-64" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="h-5 bg-muted rounded animate-pulse w-48" />
+                  <div className="h-6 w-12 bg-muted rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Team Members Table Skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="h-6 bg-muted rounded animate-pulse w-32 mb-2" />
+                <div className="h-4 bg-muted rounded animate-pulse w-56" />
+              </div>
+              <div className="h-10 w-32 bg-muted rounded-lg animate-pulse" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-muted rounded-full animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-32" />
+                      <div className="h-3 bg-muted rounded animate-pulse w-48" />
+                    </div>
+                  </div>
+                  <div className="h-8 w-24 bg-muted rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Helper to determine if current user can modify target user

@@ -45,7 +45,7 @@ export function MFASetup() {
         ) {
           setMfaEnabled(true);
           const verifiedFactor = result.factors.find(
-            (f) => f.status === "verified",
+            (f) => f.status === "verified"
           );
           if (verifiedFactor) {
             setEnrolledFactorId(verifiedFactor.id);
@@ -139,7 +139,7 @@ export function MFASetup() {
     if (!enrolledFactorId) return;
 
     const confirmed = window.confirm(
-      "Are you sure you want to disable two-factor authentication?",
+      "Are you sure you want to disable two-factor authentication?"
     );
     if (!confirmed) return;
 
@@ -170,11 +170,21 @@ export function MFASetup() {
       <Card>
         <CardHeader>
           <CardTitle>Two-Factor Authentication</CardTitle>
-          <CardDescription>Loading...</CardDescription>
+          <CardDescription>
+            Preparing your authentication settings...
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-muted rounded-full animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-muted rounded animate-pulse w-48" />
+                <div className="h-3 bg-muted rounded animate-pulse w-64" />
+              </div>
+            </div>
+            <div className="h-32 bg-muted rounded-lg animate-pulse" />
+            <div className="h-10 bg-muted rounded-lg animate-pulse w-full" />
           </div>
         </CardContent>
       </Card>

@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import Link from "next/link";
+import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ActivityFeed } from "./activity-feed";
 import { getRecentActivity } from "@/app/actions/activity/get-recent-activity";
 import type { ActivityItem } from "@/app/actions/activity/get-recent-activity";
@@ -176,12 +177,15 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/projects/new" className="w-full block">
-                <Button className="w-full justify-start" size="lg">
-                  <FolderPlus className="h-4 w-4 mr-2" />
-                  Create New Project
-                </Button>
-              </Link>
+              <CreateProjectDialog
+                subdomain={claims.subdomain}
+                trigger={
+                  <Button className="w-full justify-start" size="lg">
+                    <FolderPlus className="h-4 w-4 mr-2" />
+                    Create New Project
+                  </Button>
+                }
+              />
 
               {/* Show invite button based on role */}
               {["owner", "admin", "superadmin"].includes(claims.user_role) && (

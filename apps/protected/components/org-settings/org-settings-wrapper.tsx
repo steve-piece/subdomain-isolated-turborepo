@@ -6,6 +6,7 @@ import { OrganizationIdentityForm } from "./general/organization-identity-form";
 import { OrganizationLogoUpload } from "./general/organization-logo-upload";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -83,7 +84,36 @@ export function OrgSettingsWrapper({
   }
 
   if (isLoading || !organization) {
-    return <div className="p-6">Loading organization settings...</div>;
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="h-6 bg-muted rounded animate-pulse w-56 mb-2" />
+            <div className="h-4 bg-muted rounded animate-pulse w-80" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Logo Upload Skeleton */}
+              <div className="space-y-2">
+                <div className="h-4 bg-muted rounded animate-pulse w-32" />
+                <div className="flex items-center gap-4">
+                  <div className="h-24 w-24 bg-muted rounded-lg animate-pulse" />
+                  <div className="h-10 w-32 bg-muted rounded-lg animate-pulse" />
+                </div>
+              </div>
+
+              {/* Form Fields Skeleton */}
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-4 bg-muted rounded animate-pulse w-24" />
+                  <div className="h-10 bg-muted rounded-lg animate-pulse w-full" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
