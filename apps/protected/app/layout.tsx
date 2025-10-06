@@ -17,10 +17,7 @@ export function generateMetadata(): Metadata {
       template: `%s | ${appName}`,
     },
     icons: {
-      icon: [
-        { url: "/icon", sizes: "any", type: "image/png" },
-        { url: "/favicon.ico", sizes: "any" },
-      ],
+      icon: "/favicon.ico",
       apple: "/apple-touch-icon.png",
     },
     other: {

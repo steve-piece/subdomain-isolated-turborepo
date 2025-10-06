@@ -37,14 +37,22 @@ export async function middleware(request: NextRequest) {
     }
 
     // If URL already contains /s/subdomain, prevent double subdomain by redirecting to clean URL
+    // BUT: Allow Next.js special routes (opengraph-image, etc.) to pass through
     if (url.pathname.startsWith(`/s/${subdomain}`)) {
-      const cleanPath = url.pathname.replace(`/s/${subdomain}`, "") || "/";
-      const redirectUrl = url.clone();
-      redirectUrl.pathname = cleanPath;
-      Sentry.logger.info("protected_middleware_cleanup_redirect", {
-        to: redirectUrl.pathname,
-      });
-      return NextResponse.redirect(redirectUrl);
+      const remainingPath = url.pathname.replace(`/s/${subdomain}`, "");
+      const isSpecialRoute = remainingPath.match(
+        /^\/(apple-icon|opengraph-image|twitter-image)$/
+      );
+
+      if (!isSpecialRoute) {
+        const cleanPath = remainingPath || "/";
+        const redirectUrl = url.clone();
+        redirectUrl.pathname = cleanPath;
+        Sentry.logger.info("protected_middleware_cleanup_redirect", {
+          to: redirectUrl.pathname,
+        });
+        return NextResponse.redirect(redirectUrl);
+      }
     }
   }
 

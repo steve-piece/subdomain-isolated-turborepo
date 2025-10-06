@@ -1,7 +1,7 @@
 // apps/protected/components/projects/manage-members-dialog.tsx
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -63,6 +63,7 @@ export function ManageMembersDialog({
   >([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [addMemberView, setAddMemberView] = useState(false);
+  const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [selectedPermission, setSelectedPermission] = useState<
     "read" | "write" | "admin"
@@ -77,14 +78,9 @@ export function ManageMembersDialog({
 
   const { addToast } = useToast();
   const claims = useTenantClaims();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (open) {
-      loadData();
-    }
-  }, [open]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [membersRes, availableRes] = await Promise.all([
@@ -109,7 +105,32 @@ export function ManageMembersDialog({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId, addToast]);
+
+  useEffect(() => {
+    if (open) {
+      loadData();
+    }
+  }, [open, loadData]);
+
+  // Click outside handler for dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowMemberDropdown(false);
+      }
+    };
+
+    if (showMemberDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [showMemberDropdown]);
 
   const handleAddMember = () => {
     if (!selectedMember) return;
@@ -132,6 +153,9 @@ export function ManageMembersDialog({
         await loadData();
         setSelectedMember(null);
         setAddMemberView(false);
+        setShowMemberDropdown(false);
+        setSearchQuery("");
+        setSelectedPermission("read"); // Reset to default
       } else {
         addToast({
           title: "Error",
@@ -200,13 +224,13 @@ export function ManageMembersDialog({
   };
 
   const filteredMembers = members.filter(
-    (member) =>
+    (member: ProjectMember) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filteredAvailableMembers = availableMembers.filter(
-    (member) =>
+    (member: AvailableOrgMember) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -242,130 +266,180 @@ export function ManageMembersDialog({
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Search and Add Toggle */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  placeholder="Search members..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              {canManageMembers && (
-                <Button
-                  variant={addMemberView ? "secondary" : "default"}
-                  onClick={() => {
-                    setAddMemberView(!addMemberView);
-                    setSearchQuery("");
-                  }}
-                  size="sm"
-                  className="flex-shrink-0"
-                >
-                  {addMemberView ? (
-                    <>
-                      <X className="h-4 w-4 mr-2" />
-                      Cancel
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Add Member
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
+            {/* Add Member Section - only show when in add mode and has permission */}
+            {addMemberView && canManageMembers ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setAddMemberView(false);
+                      setSearchQuery("");
+                      setShowMemberDropdown(false);
+                      setSelectedMember(null);
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                  <div className="text-sm text-muted-foreground">
+                    Add a member to this project
+                  </div>
+                </div>
 
-            <ScrollArea className="h-[400px] pr-4">
-              {addMemberView ? (
-                /* Add Member View */
-                <div className="space-y-3">
-                  {filteredAvailableMembers.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      {availableMembers.length === 0
-                        ? "All organization members have been added to this project"
-                        : "No members found"}
-                    </div>
-                  ) : (
-                    <>
-                      {filteredAvailableMembers.map((member) => (
-                        <div
-                          key={member.user_id}
-                          className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 border rounded-lg transition-all ${
-                            selectedMember === member.user_id
-                              ? "border-primary bg-primary/5 shadow-sm"
-                              : "hover:border-muted-foreground/30"
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">
-                              {member.full_name || member.email}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {member.email}
-                            </p>
-                            <Badge
-                              variant="outline"
-                              className="mt-2 text-xs inline-flex"
-                            >
-                              Org Role: {member.role}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {selectedMember === member.user_id && (
-                              <Select
-                                value={selectedPermission}
-                                onValueChange={(value) =>
-                                  setSelectedPermission(
-                                    value as "read" | "write" | "admin"
-                                  )
-                                }
-                              >
-                                <SelectTrigger className="w-[120px]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="read">Read</SelectItem>
-                                  <SelectItem value="write">Write</SelectItem>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                            {selectedMember === member.user_id ? (
-                              <Button
-                                onClick={handleAddMember}
-                                disabled={isPending}
-                                size="sm"
-                                className="min-w-[60px]"
-                              >
-                                {operationPending === member.user_id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  "Add"
-                                )}
-                              </Button>
-                            ) : (
-                              <Button
-                                onClick={() =>
-                                  setSelectedMember(member.user_id)
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="min-w-[60px]"
-                              >
-                                Select
-                              </Button>
-                            )}
-                          </div>
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                    <Input
+                      placeholder="Search organization members to add..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setShowMemberDropdown(true)}
+                      className="pl-9"
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Dropdown with available members */}
+                  {showMemberDropdown && (
+                    <div
+                      ref={dropdownRef}
+                      className="absolute z-50 w-full mt-2 border rounded-lg bg-background shadow-lg"
+                    >
+                      <ScrollArea className="max-h-[300px]">
+                        <div className="p-2 space-y-1">
+                          {filteredAvailableMembers.length === 0 ? (
+                            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                              {availableMembers.length === 0
+                                ? "All organization members have been added"
+                                : "No members found matching your search"}
+                            </div>
+                          ) : (
+                            filteredAvailableMembers.map(
+                              (member: AvailableOrgMember) => (
+                                <div
+                                  key={member.user_id}
+                                  className={`flex items-center justify-between p-3 rounded-md cursor-pointer transition-colors ${
+                                    selectedMember === member.user_id
+                                      ? "bg-primary/10 border border-primary"
+                                      : "hover:bg-muted"
+                                  }`}
+                                  onClick={() => {
+                                    if (selectedMember === member.user_id) {
+                                      setSelectedMember(null);
+                                    } else {
+                                      setSelectedMember(member.user_id);
+                                    }
+                                  }}
+                                >
+                                  <div className="flex-1 min-w-0 mr-3">
+                                    <p className="font-medium text-sm truncate">
+                                      {member.full_name || member.email}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      {member.email}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className="mt-1.5 text-xs"
+                                    >
+                                      {member.role}
+                                    </Badge>
+                                  </div>
+                                  {selectedMember === member.user_id && (
+                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                      <Select
+                                        value={selectedPermission}
+                                        onValueChange={(value) =>
+                                          setSelectedPermission(
+                                            value as "read" | "write" | "admin"
+                                          )
+                                        }
+                                      >
+                                        <SelectTrigger className="w-[100px] h-8">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="read">
+                                            Read
+                                          </SelectItem>
+                                          <SelectItem value="write">
+                                            Write
+                                          </SelectItem>
+                                          <SelectItem value="admin">
+                                            Admin
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <Button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleAddMember();
+                                        }}
+                                        disabled={isPending}
+                                        size="sm"
+                                        className="h-8"
+                                      >
+                                        {operationPending === member.user_id ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          "Add"
+                                        )}
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            )
+                          )}
                         </div>
-                      ))}
-                    </>
+                      </ScrollArea>
+                    </div>
                   )}
                 </div>
-              ) : (
-                /* Current Members View */
+
+                {selectedMember && (
+                  <div className="text-xs text-muted-foreground">
+                    💡 Select a permission level and click &quot;Add&quot; to
+                    add the member
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* View/Manage existing members */
+              <>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      placeholder="Search current members..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  {canManageMembers && (
+                    <Button
+                      onClick={() => {
+                        setAddMemberView(true);
+                        setSearchQuery("");
+                        setShowMemberDropdown(true);
+                      }}
+                      size="sm"
+                      className="flex-shrink-0"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add Member
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Current Members List */}
+            {!addMemberView && (
+              <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-3">
                   {filteredMembers.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
@@ -373,8 +447,9 @@ export function ManageMembersDialog({
                     </div>
                   ) : (
                     <>
-                      {filteredMembers.map((member) => {
+                      {filteredMembers.map((member: ProjectMember) => {
                         const isCurrentUser = member.user_id === claims.user_id;
+                        const isMemberOwner = isOwner && isCurrentUser;
                         const isEditing = editingMemberId === member.user_id;
 
                         return (
@@ -390,6 +465,11 @@ export function ManageMembersDialog({
                                 {isCurrentUser && (
                                   <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full flex-shrink-0">
                                     you
+                                  </span>
+                                )}
+                                {isMemberOwner && (
+                                  <span className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                                    owner
                                   </span>
                                 )}
                               </div>
@@ -423,7 +503,9 @@ export function ManageMembersDialog({
                                   <Badge
                                     variant="outline"
                                     className={
-                                      permissionColors[member.permission_level]
+                                      permissionColors[
+                                        member.permission_level as keyof typeof permissionColors
+                                      ]
                                     }
                                   >
                                     <Shield className="h-3 w-3 mr-1" />
@@ -432,79 +514,81 @@ export function ManageMembersDialog({
                                 )}
                               </div>
                             </div>
-                            {canManageMembers && !isCurrentUser && (
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                {isEditing ? (
-                                  <>
-                                    <Button
-                                      onClick={() =>
-                                        handleUpdatePermission(member.user_id)
-                                      }
-                                      disabled={
-                                        isPending ||
-                                        editPermission ===
-                                          member.permission_level
-                                      }
-                                      size="sm"
-                                    >
-                                      {operationPending === member.user_id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        "Save"
-                                      )}
-                                    </Button>
-                                    <Button
-                                      onClick={() => setEditingMemberId(null)}
-                                      variant="outline"
-                                      size="sm"
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Button
-                                      onClick={() => {
-                                        setEditingMemberId(member.user_id);
-                                        setEditPermission(
-                                          member.permission_level
-                                        );
-                                      }}
-                                      variant="ghost"
-                                      size="icon"
-                                      title="Edit permissions"
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      onClick={() =>
-                                        handleRemoveMember(member.user_id)
-                                      }
-                                      disabled={isPending}
-                                      variant="ghost"
-                                      size="icon"
-                                      title="Remove member"
-                                    >
-                                      {operationPending === member.user_id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                      )}
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            )}
+                            {canManageMembers &&
+                              !isCurrentUser &&
+                              !isMemberOwner && (
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  {isEditing ? (
+                                    <>
+                                      <Button
+                                        onClick={() =>
+                                          handleUpdatePermission(member.user_id)
+                                        }
+                                        disabled={
+                                          isPending ||
+                                          editPermission ===
+                                            member.permission_level
+                                        }
+                                        size="sm"
+                                      >
+                                        {operationPending === member.user_id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          "Save"
+                                        )}
+                                      </Button>
+                                      <Button
+                                        onClick={() => setEditingMemberId(null)}
+                                        variant="outline"
+                                        size="sm"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        onClick={() => {
+                                          setEditingMemberId(member.user_id);
+                                          setEditPermission(
+                                            member.permission_level
+                                          );
+                                        }}
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Edit permissions"
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        onClick={() =>
+                                          handleRemoveMember(member.user_id)
+                                        }
+                                        disabled={isPending}
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Remove member"
+                                      >
+                                        {operationPending === member.user_id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Trash2 className="h-4 w-4 text-destructive" />
+                                        )}
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
                           </div>
                         );
                       })}
                     </>
                   )}
                 </div>
-              )}
-            </ScrollArea>
+              </ScrollArea>
+            )}
 
-            {/* Member Count Summary */}
+            {/* Member Count Summary - always visible */}
             <div className="pt-4 border-t">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
@@ -515,13 +599,17 @@ export function ManageMembersDialog({
                     total {members.length === 1 ? "member" : "members"}
                   </span>
                 </div>
-                <span className="text-muted-foreground/50">•</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-foreground">
-                    {availableMembers.length}
-                  </span>
-                  <span>available to add</span>
-                </div>
+                {!addMemberView && (
+                  <>
+                    <span className="text-muted-foreground/50">•</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-foreground">
+                        {availableMembers.length}
+                      </span>
+                      <span>available to add</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

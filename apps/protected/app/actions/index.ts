@@ -10,7 +10,6 @@
  * - import { uploadOrganizationLogo } from "@actions/onboarding";
  * - import { updateUserProfile } from "@actions/profile";
  * - import { grantCustomCapability } from "@actions/rbac";
- * - import { getOrganizationFavicon } from "@actions/favicon";
  *
  * Or import specific sub-modules:
  * - import { sendMagicLink } from "@actions/auth/magic-link";
@@ -25,4 +24,3 @@ export * from "./onboarding";
 export * from "./organization";
 export * from "./profile";
 export * from "./rbac";
-export * from "./favicon";

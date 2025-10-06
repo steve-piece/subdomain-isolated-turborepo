@@ -37,12 +37,9 @@ app/actions/
 │   ├── index.ts
 │   ├── logo.ts                   # uploadOrganizationLogo, removeOrganizationLogo
 │   └── setup.ts                  # completeOnboarding
-├── organization/
-│   ├── index.ts
-│   └── settings.ts               # updateOrganizationIdentity
-└── favicon/
+└── organization/
     ├── index.ts
-    └── generate.ts               # getOrganizationFavicon
+    └── settings.ts               # updateOrganizationIdentity
 ```
 
 ## Import Conventions
@@ -69,7 +66,6 @@ import {
   completeOnboarding,
 } from "@actions/onboarding";
 import { updateOrganizationIdentity } from "@actions/organization";
-import { getOrganizationFavicon } from "@actions/favicon";
 ```
 
 ### Option 2: Import from Specific File
@@ -107,8 +103,6 @@ import {
 import { completeOnboarding } from "@actions/onboarding/setup";
 
 import { updateOrganizationIdentity } from "@actions/organization/settings";
-
-import { getOrganizationFavicon } from "@actions/favicon/generate";
 ```
 
 ## Action Categories
@@ -211,12 +205,6 @@ import { getOrganizationFavicon } from "@actions/favicon/generate";
 **settings.ts**
 
 - `updateOrganizationIdentity()` - Update organization name and description
-
-### 🖼️ Favicon (`favicon/`)
-
-**generate.ts**
-
-- `getOrganizationFavicon()` - Generate dynamic favicon from logo
 
 ## Benefits of Granular Structure
 
