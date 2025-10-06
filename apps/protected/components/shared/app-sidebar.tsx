@@ -197,8 +197,8 @@ export function AppSidebar({
   const [expandedGroups, setExpandedGroups] = React.useState<
     Record<string, boolean>
   >({
-    Main: true,
-    Organization: true,
+    Main: false,
+    Organization: false,
   });
   const [userMenuExpanded, setUserMenuExpanded] = React.useState(false);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
@@ -664,12 +664,12 @@ export function AppSidebar({
             {/* User Menu Section */}
             {isCollapsed ? (
               // Collapsed: Show user avatar only
-              <button
-                onClick={() => setUserMenuExpanded(!userMenuExpanded)}
-                title={userName || "User Menu"}
+              <Link
+                href="/profile"
+                title={userName || "View Profile"}
                 className="flex w-full items-center justify-center rounded-2xl px-3 py-2 hover:bg-muted transition-colors"
               >
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
+                <div className="h-8 w-8 min-w-8 aspect-square rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
                   {userAvatarUrl ? (
                     <NextImage
                       src={userAvatarUrl}
@@ -685,7 +685,7 @@ export function AppSidebar({
                     </span>
                   )}
                 </div>
-              </button>
+              </Link>
             ) : (
               // Expanded: Show user menu with full name
               <div>
@@ -694,7 +694,11 @@ export function AppSidebar({
                   onClick={() => setUserMenuExpanded(!userMenuExpanded)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
+                    <Link
+                      href="/profile"
+                      className="h-8 w-8 min-w-8 aspect-square rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden flex-shrink-0 hover:opacity-90 transition-opacity"
+                      title="View Profile"
+                    >
                       {userAvatarUrl ? (
                         <NextImage
                           src={userAvatarUrl}
@@ -709,7 +713,7 @@ export function AppSidebar({
                             organizationName.charAt(0).toUpperCase()}
                         </span>
                       )}
-                    </div>
+                    </Link>
                     <div className="flex flex-col items-start">
                       <span className="text-sm font-medium">
                         {userName || "User"}
