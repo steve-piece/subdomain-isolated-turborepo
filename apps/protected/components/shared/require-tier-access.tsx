@@ -142,7 +142,7 @@ export function RequireTierAccess({
           <div className="space-y-3">
             <h3 className="font-semibold flex items-center gap-2">
               <Crown className="h-5 w-5 text-amber-600" />
-              What's Included in Business+
+              What&apos;s Included in Business+
             </h3>
             <div className="grid gap-2">
               {[

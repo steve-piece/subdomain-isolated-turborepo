@@ -36,7 +36,7 @@ export function TeamSettingsConfig() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   const [settings, setSettings] = useState<TeamSettings>({
     allow_member_invites: false,
     require_admin_approval: false,
@@ -56,7 +56,7 @@ export function TeamSettingsConfig() {
         } else {
           setError(response.message || "Failed to load team settings");
         }
-      } catch (err) {
+      } catch {
         setError("An unexpected error occurred");
       } finally {
         setIsLoading(false);
@@ -73,7 +73,7 @@ export function TeamSettingsConfig() {
 
     try {
       const response = await updateTeamSettings(claims.org_id, settings);
-      
+
       if (response.success) {
         setSuccess("Team settings updated successfully!");
         setTimeout(() => setSuccess(null), 3000);
@@ -81,7 +81,7 @@ export function TeamSettingsConfig() {
       } else {
         setError(response.message || "Failed to update team settings");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setIsSaving(false);
@@ -134,7 +134,8 @@ export function TeamSettingsConfig() {
                 Allow Members to Invite
               </Label>
               <p className="text-sm text-muted-foreground">
-                Let team members invite others (otherwise only admins can invite)
+                Let team members invite others (otherwise only admins can
+                invite)
               </p>
             </div>
             <Switch

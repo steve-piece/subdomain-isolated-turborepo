@@ -44,8 +44,8 @@ export function BillingSettingsWrapper() {
 
       try {
         const response = await getOrgTier(claims.org_id);
-        if (response.success && response.tierInfo) {
-          setTierInfo(response.tierInfo);
+        if (response.success && response.tier) {
+          setTierInfo(response.tier);
         } else {
           console.error("Failed to get tier info:", response.message);
         }

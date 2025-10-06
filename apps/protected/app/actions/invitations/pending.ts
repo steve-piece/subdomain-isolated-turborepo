@@ -29,6 +29,21 @@ export interface InvitationActionResponse {
   message: string;
 }
 
+interface PendingInvitationDbRow {
+  id: string;
+  email: string;
+  proposed_role: string;
+  invited_by: string;
+  status: "pending" | "approved" | "rejected" | "expired";
+  expires_at: string;
+  created_at: string;
+  inviter:
+    | {
+        full_name: string | null;
+      }[]
+    | null;
+}
+
 /**
  * Get all pending invitations for an organization
  */
@@ -75,16 +90,18 @@ export async function getPendingInvitations(
       return { success: false, message: error.message };
     }
 
-    const invitations: PendingInvitation[] = (data || []).map((inv: any) => ({
-      id: inv.id,
-      email: inv.email,
-      proposed_role: inv.proposed_role,
-      invited_by: inv.invited_by,
-      status: inv.status,
-      expires_at: inv.expires_at,
-      created_at: inv.created_at,
-      inviter_name: inv.inviter?.full_name || "Unknown",
-    }));
+    const invitations: PendingInvitation[] = (data || []).map(
+      (inv: PendingInvitationDbRow) => ({
+        id: inv.id,
+        email: inv.email,
+        proposed_role: inv.proposed_role,
+        invited_by: inv.invited_by,
+        status: inv.status,
+        expires_at: inv.expires_at,
+        created_at: inv.created_at,
+        inviter_name: inv.inviter?.[0]?.full_name || "Unknown",
+      })
+    );
 
     return {
       success: true,
