@@ -13,12 +13,15 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
-import { UserPlus, Users, Shield, Lock } from "lucide-react";
+import { UserPlus, Users, Shield, Lock, Crown, ArrowRight } from "lucide-react";
 import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
 import { UpdateRoleDialog } from "./update-role-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { TeamSettingsConfig } from "./team-settings-config";
 import { PendingInvitationsList } from "./pending-invitations-list";
+import { checkBusinessPlusAccess } from "@/app/actions/subscription/tier-access";
+import type { OrgTierInfo } from "@/app/actions/subscription/tier-access";
+import Link from "next/link";
 
 type UserRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
 
@@ -41,6 +44,9 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
 
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasBusinessAccess, setHasBusinessAccess] = useState(false);
+  const [tierInfo, setTierInfo] = useState<OrgTierInfo | null>(null);
+  const [checkingTier, setCheckingTier] = useState(true);
 
   // Role check - redirect if insufficient permissions
   useEffect(() => {
@@ -48,6 +54,25 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
       router.push("/dashboard?error=unauthorized");
     }
   }, [claims.user_role, router]);
+
+  // Check tier access for custom roles feature
+  useEffect(() => {
+    async function checkTier() {
+      if (!claims.org_id) {
+        setCheckingTier(false);
+        return;
+      }
+
+      const result = await checkBusinessPlusAccess(claims.org_id);
+      if (result.success) {
+        setHasBusinessAccess(result.hasAccess);
+        setTierInfo(result.tier || null);
+      }
+      setCheckingTier(false);
+    }
+
+    checkTier();
+  }, [claims.org_id]);
 
   // Fetch team members
   useEffect(() => {
@@ -166,35 +191,84 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
       {/* Pending Invitations */}
       <PendingInvitationsList orgId={claims.org_id} subdomain={subdomain} />
 
-      {/* Custom Roles Feature (Locked) */}
-      <Card className="border-dashed">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Lock className="h-5 w-5" />
-            Custom Roles & Permissions
-          </CardTitle>
-          <CardDescription>
-            Create custom roles with granular permissions for your team
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg bg-muted p-4 flex items-start gap-3">
-            <Lock className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium mb-1">
-                Available on Business & Enterprise plans
-              </p>
-              <p className="text-sm text-muted-foreground mb-3">
-                Unlock advanced permission management with custom roles tailored
-                to your organization&apos;s needs.
-              </p>
-              <Button variant="outline" size="sm">
-                View Plans
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Custom Roles & Permissions Section - Tier-Based */}
+      {!checkingTier && (
+        <>
+          {hasBusinessAccess ? (
+            // Business+ tier: Show link to roles page
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Crown className="h-5 w-5 text-primary" />
+                  Custom Roles & Permissions
+                </CardTitle>
+                <CardDescription>
+                  Manage custom roles with granular permissions for your team
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Shield className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium mb-1">
+                        Advanced Role Management Available
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Your organization has access to custom role
+                        capabilities. Define granular permissions for each role
+                        to control exactly what team members can access.
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/org-settings/roles">
+                    <Button className="w-full sm:w-auto">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Manage Role Capabilities
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            // Free tier: Show upgrade prompt
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Lock className="h-5 w-5" />
+                  Custom Roles & Permissions
+                </CardTitle>
+                <CardDescription>
+                  Create custom roles with granular permissions for your team
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg bg-muted p-4 flex items-start gap-3">
+                  <Lock className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium mb-1">
+                      Available on Business & Enterprise plans
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Unlock advanced permission management with custom roles
+                      tailored to your organization&apos;s needs.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Link href="/org-settings/billing">
+                        <Button variant="outline" size="sm">
+                          <Crown className="h-4 w-4 mr-2" />
+                          View Plans
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
 
       {/* Team Members List */}
       <Card>

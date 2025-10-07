@@ -2,8 +2,10 @@
 // Dialog component for inviting users with role configuration
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { inviteUserToOrganization } from "@actions/invitations";
+import { getTeamSettings } from "@/app/actions/organization/team-settings";
+import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -26,12 +28,39 @@ export function InviteUserDialog({
   subdomain,
   trigger,
 }: InviteUserDialogProps) {
+  const claims = useTenantClaims();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member" | "view-only">("member");
+  const [defaultRole, setDefaultRole] = useState<
+    "admin" | "member" | "view-only"
+  >("member");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch default role from team settings
+  useEffect(() => {
+    async function fetchDefaultRole() {
+      if (!claims.org_id) return;
+
+      const result = await getTeamSettings(claims.org_id);
+      if (result.success && result.settings) {
+        const autoAssignRole = result.settings.auto_assign_default_role;
+        setDefaultRole(autoAssignRole);
+        setRole(autoAssignRole); // Set initial role to default
+      }
+    }
+
+    fetchDefaultRole();
+  }, [claims.org_id]);
+
+  // Reset role to default when dialog opens
+  useEffect(() => {
+    if (open) {
+      setRole(defaultRole);
+    }
+  }, [open, defaultRole]);
 
   const handleInviteUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +74,7 @@ export function InviteUserDialog({
       if (result.success) {
         setSuccess(result.message);
         setEmail("");
-        setRole("member");
+        setRole(defaultRole); // Reset to default role
 
         // Close dialog after a delay to show success message
         setTimeout(() => {
@@ -57,7 +86,7 @@ export function InviteUserDialog({
       }
     } catch (error: unknown) {
       setError(
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred"
       );
     } finally {
       setIsLoading(false);
