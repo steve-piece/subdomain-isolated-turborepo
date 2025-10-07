@@ -115,20 +115,13 @@ export function BillingSettingsWrapper() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Current Plan
-                </p>
-                <p className="text-2xl font-bold capitalize">
-                  {tierInfo.tierName}
-                </p>
-              </div>
-              {tierInfo.isActive && (
-                <Badge variant="secondary" className="self-start mt-1">
-                  {tierInfo.subscriptionStatus}
-                </Badge>
-              )}
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Current Plan
+              </p>
+              <p className="text-2xl font-bold capitalize">
+                {tierInfo.tierName}
+              </p>
             </div>
 
             {tierInfo.currentPeriodEnd && (

@@ -17,10 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { InviteToProjectDialog } from "./invite-to-project-dialog";
+import { ProjectMemberDialog } from "./project-member-dialog";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { ManagePermissionDialog } from "./manage-permission-dialog";
-import { ManageMembersDialog } from "./manage-members-dialog";
 import { revokeProjectPermission, leaveProject } from "@actions/projects";
 import { useToast } from "@workspace/ui/components/toast";
 import {
@@ -42,13 +41,6 @@ interface ProjectMember {
   email: string;
   permission_level: string;
   granted_at: string;
-}
-
-interface OrgMember {
-  user_id: string;
-  full_name: string | null;
-  email: string;
-  role: string;
 }
 
 interface Project {
@@ -77,7 +69,6 @@ export function ProjectDetailWrapper({
 
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<ProjectMember[]>([]);
-  const [orgMembers, setOrgMembers] = useState<OrgMember[]>([]);
   const [userPermission, setUserPermission] = useState<
     "read" | "write" | "admin" | null
   >(null);
@@ -139,14 +130,6 @@ export function ProjectDetailWrapper({
         setUserPermission(
           (userPerm?.permission_level as "read" | "write" | "admin") || null
         );
-
-        // Fetch all org members for invite dialog
-        const { data: allOrgMembers } = await supabase
-          .from("user_profiles")
-          .select("user_id, full_name, email, role")
-          .eq("org_id", claims.org_id);
-
-        setOrgMembers(allOrgMembers || []);
       } catch (error) {
         console.error("Failed to fetch project data:", error);
         router.push("/projects");
@@ -287,7 +270,6 @@ export function ProjectDetailWrapper({
 
   const canManageMembers = userPermission === "admin";
   const isOwner = claims.user_id === project.owner_id;
-  const currentMemberIds = members.map((m) => m.user_id);
 
   return (
     <div className="flex flex-col h-full p-6 space-y-6 max-w-7xl mx-auto w-full">
@@ -362,20 +344,13 @@ export function ProjectDetailWrapper({
               Project Members
             </CardTitle>
             {canManageMembers && (
-              <div className="flex flex-wrap items-center gap-2">
-                <ManageMembersDialog
-                  projectId={projectId}
-                  subdomain={subdomain}
-                  isOwner={isOwner}
-                  canManageMembers={canManageMembers}
-                />
-                <InviteToProjectDialog
-                  projectId={projectId}
-                  subdomain={subdomain}
-                  orgMembers={orgMembers}
-                  currentMembers={currentMemberIds}
-                />
-              </div>
+              <ProjectMemberDialog
+                projectId={projectId}
+                subdomain={subdomain}
+                isOwner={isOwner}
+                canManageMembers={canManageMembers}
+                mode="invite"
+              />
             )}
           </div>
         </CardHeader>

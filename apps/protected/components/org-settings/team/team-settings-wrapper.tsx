@@ -13,9 +13,16 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
-import { UserPlus, Users, Shield, Lock, Crown, ArrowRight } from "lucide-react";
-import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
-import { UpdateRoleDialog } from "./update-role-dialog";
+import {
+  UserPlus,
+  UserCog,
+  Users,
+  Shield,
+  Lock,
+  Crown,
+  ArrowRight,
+} from "lucide-react";
+import { TeamMemberDialog } from "./team-member-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { TeamSettingsConfig } from "./team-settings-config";
 import { PendingInvitationsList } from "./pending-invitations-list";
@@ -282,8 +289,9 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
               Manage your team members and their roles
             </CardDescription>
           </div>
-          <InviteUserDialog
+          <TeamMemberDialog
             subdomain={subdomain}
+            mode="invite"
             trigger={
               <Button>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -336,11 +344,17 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
                     {/* Role Management Actions */}
                     {canModify && (
                       <div className="flex items-center gap-1">
-                        <UpdateRoleDialog
+                        <TeamMemberDialog
+                          subdomain={subdomain}
                           userId={member.user_id}
                           userName={member.full_name || member.email}
+                          userEmail={member.email}
                           currentRole={member.role}
-                          orgId={claims.org_id}
+                          trigger={
+                            <Button variant="ghost" size="sm">
+                              <UserCog className="h-4 w-4" />
+                            </Button>
+                          }
                         />
                         <DeleteUserDialog
                           userId={member.user_id}

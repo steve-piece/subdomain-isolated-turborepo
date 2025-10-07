@@ -210,6 +210,7 @@ export function SubdomainLookupForm({
                   type="text"
                   placeholder="Search for your organization..."
                   required
+                  autoComplete="off"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={() =>

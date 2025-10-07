@@ -24,9 +24,14 @@ export async function getDashboardStats(
     .select("*", { count: "exact", head: true })
     .eq("org_id", orgId);
 
-  // Get active projects count (placeholder for now)
-  // TODO: Replace with actual projects table query when implemented
-  const activeProjects = 0;
+  // Get active projects count
+  const { count: projectsCount } = await supabase
+    .from("projects")
+    .select("*", { count: "exact", head: true })
+    .eq("org_id", orgId)
+    .eq("status", "active");
+
+  const activeProjects = projectsCount || 0;
 
   // Get storage used (placeholder for now)
   // TODO: Replace with actual storage calculation

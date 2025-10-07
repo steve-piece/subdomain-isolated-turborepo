@@ -263,7 +263,8 @@ export interface ProjectMember {
   user_id: string;
   full_name: string | null;
   email: string;
-  permission_level: "read" | "write" | "admin";
+  permission: "read" | "write" | "admin";
+  is_owner: boolean;
   granted_at: string;
   granted_by: string;
 }
@@ -325,6 +326,13 @@ export async function getProjectMembers(
       .select("user_id, full_name, email")
       .in("user_id", userIds);
 
+    // Get project to check owner
+    const { data: project } = await supabase
+      .from("projects")
+      .select("created_by")
+      .eq("id", projectId)
+      .single();
+
     // Combine permissions with profiles
     const members =
       permissions?.map((perm) => {
@@ -333,7 +341,8 @@ export async function getProjectMembers(
           user_id: perm.user_id,
           full_name: profile?.full_name || null,
           email: profile?.email || "Unknown",
-          permission_level: perm.permission_level as "read" | "write" | "admin",
+          permission: perm.permission_level as "read" | "write" | "admin",
+          is_owner: project?.created_by === perm.user_id,
           granted_at: perm.granted_at,
           granted_by: perm.granted_by,
         };

@@ -17,6 +17,8 @@ import { getRecentActivity } from "@/app/actions/activity/get-recent-activity";
 import type { ActivityItem } from "@/app/actions/activity/get-recent-activity";
 import { getDashboardStats } from "@/app/actions/dashboard/get-dashboard-stats";
 import type { DashboardStats } from "@/app/actions/dashboard/get-dashboard-stats";
+import { getOnboardingProgress } from "@/app/actions/dashboard/get-onboarding-progress";
+import type { OnboardingProgress } from "@/app/actions/dashboard/get-onboarding-progress";
 import { useState, useEffect } from "react";
 import {
   Building2,
@@ -50,6 +52,8 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
     storageUsed: 0,
     apiCalls: 0,
   });
+  const [onboarding, setOnboarding] = useState<OnboardingProgress | null>(null);
+  const [isLoadingOnboarding, setIsLoadingOnboarding] = useState(true);
 
   // Fetch activities on mount
   useEffect(() => {
@@ -77,6 +81,21 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
       }
     }
     fetchStats();
+  }, [claims.org_id]);
+
+  // Fetch onboarding progress
+  useEffect(() => {
+    async function fetchOnboarding() {
+      try {
+        const data = await getOnboardingProgress(claims.org_id);
+        setOnboarding(data);
+      } catch (error) {
+        console.error("Failed to fetch onboarding progress:", error);
+      } finally {
+        setIsLoadingOnboarding(false);
+      }
+    }
+    fetchOnboarding();
   }, [claims.org_id]);
 
   const organizationName = claims.company_name || subdomain;
@@ -231,86 +250,139 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
           </Card>
         </div>
 
-        {/* Getting Started */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Rocket className="h-5 w-5" />
-              Getting Started
-            </CardTitle>
-            <CardDescription>
-              Complete these steps to get the most out of your organization
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    Create your organization
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    You&apos;ve successfully created your organization
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 border rounded-lg opacity-60">
-                <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Invite your team</p>
-                  <p className="text-xs text-muted-foreground">
-                    Add team members to collaborate
-                  </p>
-                </div>
-                {["owner", "admin", "superadmin"].includes(claims.user_role) ? (
-                  <Link href="/org-settings/team">
-                    <Button size="sm">Start</Button>
-                  </Link>
-                ) : (
-                  <Button size="sm" disabled>
-                    Start
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3 p-3 border rounded-lg opacity-60">
-                <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    Create your first project
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Start building something amazing
-                  </p>
-                </div>
-                <Link href="/projects/new">
-                  <Button size="sm">Start</Button>
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 border rounded-lg opacity-60">
-                <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Configure settings</p>
-                  <p className="text-xs text-muted-foreground">
-                    Customize your organization preferences
-                  </p>
-                </div>
-                {["owner", "admin", "superadmin"].includes(claims.user_role) ? (
-                  <Link href="/org-settings">
-                    <Button size="sm">Start</Button>
-                  </Link>
-                ) : (
-                  <Button size="sm" disabled>
-                    Start
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Dynamic Getting Started / Productivity Tips */}
+        {!isLoadingOnboarding && onboarding && (
+          <>
+            {onboarding.allComplete ? (
+              // Show Productivity Tips when all tasks are complete
+              <Card className="border-green-200 bg-green-50/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-900">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    You&apos;re All Set!
+                  </CardTitle>
+                  <CardDescription>
+                    Great job! Here are some tips to boost your productivity
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 border border-green-200 rounded-lg bg-white">
+                      <Zap className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          Use keyboard shortcuts
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Press{" "}
+                          <kbd className="px-1.5 py-0.5 text-xs bg-muted rounded">
+                            Cmd+K
+                          </kbd>{" "}
+                          to quickly navigate
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 border border-green-200 rounded-lg bg-white">
+                      <Users className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          Collaborate effectively
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Assign roles to team members for better organization
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 border border-green-200 rounded-lg bg-white">
+                      <TrendingUp className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          Track your progress
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Check your activity feed regularly to stay updated
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              // Show Getting Started tasks
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Rocket className="h-5 w-5" />
+                        Getting Started
+                      </CardTitle>
+                      <CardDescription>
+                        Complete these steps to get the most out of your
+                        organization
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {onboarding.completionPercentage}%
+                      </span>
+                      <div className="h-2 w-20 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-300"
+                          style={{
+                            width: `${onboarding.completionPercentage}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {onboarding.tasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className={`flex items-center gap-3 p-3 border rounded-lg transition-opacity ${
+                          task.completed ? "" : "opacity-70"
+                        }`}
+                      >
+                        {task.completed ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{task.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {task.description}
+                          </p>
+                        </div>
+                        {!task.completed &&
+                          task.actionLink &&
+                          task.actionLabel && (
+                            <>
+                              {task.id === "invite-team" &&
+                              !["owner", "admin", "superadmin"].includes(
+                                claims.user_role
+                              ) ? (
+                                <Button size="sm" disabled>
+                                  {task.actionLabel}
+                                </Button>
+                              ) : (
+                                <Link href={task.actionLink}>
+                                  <Button size="sm">{task.actionLabel}</Button>
+                                </Link>
+                              )}
+                            </>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
