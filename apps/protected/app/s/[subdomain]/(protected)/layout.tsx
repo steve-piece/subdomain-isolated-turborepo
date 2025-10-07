@@ -6,6 +6,7 @@
  * ✅ PHASE 1.2: Centralized auth with TenantClaimsProvider
  */
 import { AppSidebar } from "@/components/shared/app-sidebar";
+import { CommandKSearch } from "@/components/shared/command-k-search";
 import { OnboardingCheck } from "@/components/shared/onboarding-check";
 import { TenantClaimsProvider } from "@/lib/contexts/tenant-claims-context";
 import { createClient } from "@/lib/supabase/server";
@@ -84,7 +85,7 @@ export default async function ProtectedLayout({
         // Force logout
         await supabase.auth.signOut();
         redirect(
-          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`,
+          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`
         );
       }
     } catch (error) {
@@ -205,6 +206,11 @@ export default async function ProtectedLayout({
         subdomain={subdomain}
         needsOnboarding={needsOnboarding}
         isOwner={isOwner}
+      />
+      <CommandKSearch
+        userRole={userRole}
+        userCapabilities={userCapabilities}
+        subdomain={subdomain}
       />
       <div className="flex h-screen overflow-hidden bg-background">
         <AppSidebar

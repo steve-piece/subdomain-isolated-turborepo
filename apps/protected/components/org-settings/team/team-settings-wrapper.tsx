@@ -27,7 +27,6 @@ import { DeleteUserDialog } from "./delete-user-dialog";
 import { TeamSettingsConfig } from "./team-settings-config";
 import { PendingInvitationsList } from "./pending-invitations-list";
 import { checkBusinessPlusAccess } from "@/app/actions/subscription/tier-access";
-import type { OrgTierInfo } from "@/app/actions/subscription/tier-access";
 import Link from "next/link";
 
 type UserRole = "owner" | "superadmin" | "admin" | "member" | "view-only";
@@ -52,7 +51,6 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasBusinessAccess, setHasBusinessAccess] = useState(false);
-  const [tierInfo, setTierInfo] = useState<OrgTierInfo | null>(null);
   const [checkingTier, setCheckingTier] = useState(true);
 
   // Role check - redirect if insufficient permissions
@@ -73,7 +71,6 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
       const result = await checkBusinessPlusAccess(claims.org_id);
       if (result.success) {
         setHasBusinessAccess(result.hasAccess);
-        setTierInfo(result.tier || null);
       }
       setCheckingTier(false);
     }
@@ -348,7 +345,6 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
                           subdomain={subdomain}
                           userId={member.user_id}
                           userName={member.full_name || member.email}
-                          userEmail={member.email}
                           currentRole={member.role}
                           trigger={
                             <Button variant="ghost" size="sm">

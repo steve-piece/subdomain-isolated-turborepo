@@ -159,6 +159,7 @@ export async function updateTeamSettings(
     }
 
     // Remove max_team_size from settings if present (managed by subscription tier)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { max_team_size: _max_team_size, ...settingsToUpdate } = settings;
 
     // Upsert settings (create if doesn't exist, update if exists)

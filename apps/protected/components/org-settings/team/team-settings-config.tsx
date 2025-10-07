@@ -25,7 +25,6 @@ import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import {
   getTeamSettings,
   updateTeamSettings,
-  type TeamSettings,
   type TeamSettingsWithTier,
 } from "@/app/actions/organization/team-settings";
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
@@ -219,7 +218,7 @@ export function TeamSettingsConfig() {
                         ((settings.current_team_count || 0) /
                           settings.tier_max_team_size) *
                           100,
-                        100,
+                        100
                       )}%`
                     : "0%",
                 }}
