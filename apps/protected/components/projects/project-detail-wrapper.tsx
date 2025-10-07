@@ -125,10 +125,10 @@ export function ProjectDetailWrapper({
 
         // Get current user's permission level
         const userPerm = projectMembers.find(
-          (m) => m.user_id === claims.user_id,
+          (m) => m.user_id === claims.user_id
         );
         setUserPermission(
-          (userPerm?.permission_level as "read" | "write" | "admin") || null,
+          (userPerm?.permission_level as "read" | "write" | "admin") || null
         );
       } catch (error) {
         console.error("Failed to fetch project data:", error);
@@ -148,7 +148,7 @@ export function ProjectDetailWrapper({
       const result = await revokeProjectPermission(
         projectId,
         userId,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {

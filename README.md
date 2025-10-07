@@ -73,6 +73,25 @@ pnpm dev
 - 🔒 **Protected App**: http://localhost:3003
 - 🏢 **Tenant Subdomains**: http://[company].localhost:3003
 
+## 🔒 SSL Certificate Setup (Vercel)
+
+For production deployments via GitHub → Vercel, add your Supabase SSL certificate as an environment variable:
+
+1. Download certificate from Supabase: **Project Settings** → **Database** → **SSL Configuration**
+2. In Vercel: **Settings** → **Environment Variables** → **Add New**
+3. Name: `SUPABASE_SSL_CERT`
+4. Value: Paste entire certificate contents (including `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`)
+5. Select: Production, Preview, Development
+6. Redeploy
+
+**For local development**, add to `.env.local`:
+
+```bash
+SUPABASE_SSL_CERT="-----BEGIN CERTIFICATE-----
+[paste certificate here]
+-----END CERTIFICATE-----"
+```
+
 ## 📚 Documentation
 
 ### Setup & Configuration
