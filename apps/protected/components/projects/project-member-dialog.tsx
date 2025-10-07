@@ -151,7 +151,7 @@ export function ProjectMemberDialog({
         projectId,
         selectedUserId,
         invitePermission,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {
@@ -163,7 +163,6 @@ export function ProjectMemberDialog({
         setSelectedUserId("");
         setInvitePermission("read");
         await loadData();
-        setTimeout(() => setOpen(false), 1500);
       } else {
         addToast({
           title: "Error",
@@ -185,7 +184,7 @@ export function ProjectMemberDialog({
   // Handle permission update
   const handleUpdatePermission = async (
     userId: string,
-    permission: Permission,
+    permission: Permission
   ) => {
     setOperationPending(userId);
     startTransition(async () => {
@@ -193,7 +192,7 @@ export function ProjectMemberDialog({
         projectId,
         userId,
         permission,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {
@@ -222,7 +221,7 @@ export function ProjectMemberDialog({
       const result = await revokeProjectPermission(
         projectId,
         userId,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {
@@ -246,7 +245,7 @@ export function ProjectMemberDialog({
   const filteredMembers = members.filter(
     (member) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      member.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const canModifyMember = (member: ProjectMember) => {
@@ -311,81 +310,99 @@ export function ProjectMemberDialog({
 
             {/* Invite Tab */}
             <TabsContent value="invite" className="flex-1 mt-4">
-              <form onSubmit={handleInvite} className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="user">Team Member</Label>
-                  <Select
-                    value={selectedUserId}
-                    onValueChange={setSelectedUserId}
-                    disabled={inviteLoading}
-                  >
-                    <SelectTrigger id="user">
-                      <SelectValue placeholder="Select a member..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableMembers.map((member) => (
-                        <SelectItem key={member.user_id} value={member.user_id}>
-                          {member.full_name || member.email} ({member.role})
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : availableMembers.length === 0 ? (
+                <div className="py-8 text-center space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    No organization members available to add.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    All team members have already been added to this project.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleInvite} className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="user">Team Member</Label>
+                    <Select
+                      value={selectedUserId}
+                      onValueChange={setSelectedUserId}
+                      disabled={inviteLoading}
+                    >
+                      <SelectTrigger id="user">
+                        <SelectValue placeholder="Select a member..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableMembers.map((member) => (
+                          <SelectItem
+                            key={member.user_id}
+                            value={member.user_id}
+                          >
+                            {member.full_name || member.email} ({member.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="permission">Permission Level</Label>
+                    <Select
+                      value={invitePermission}
+                      onValueChange={(value) =>
+                        setInvitePermission(value as Permission)
+                      }
+                      disabled={inviteLoading}
+                    >
+                      <SelectTrigger id="permission">
+                        <SelectValue placeholder="Select permission" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="read">
+                          Read Only - Can view project
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                        <SelectItem value="write">
+                          Can Edit - Can modify content
+                        </SelectItem>
+                        <SelectItem value="admin">
+                          Admin - Full project control
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="permission">Permission Level</Label>
-                  <Select
-                    value={invitePermission}
-                    onValueChange={(value) =>
-                      setInvitePermission(value as Permission)
-                    }
-                    disabled={inviteLoading}
-                  >
-                    <SelectTrigger id="permission">
-                      <SelectValue placeholder="Select permission" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="read">
-                        Read Only - Can view project
-                      </SelectItem>
-                      <SelectItem value="write">
-                        Can Edit - Can modify content
-                      </SelectItem>
-                      <SelectItem value="admin">
-                        Admin - Full project control
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={inviteLoading || !selectedUserId}
-                  >
-                    {inviteLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Add Member
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOpen(false)}
-                    disabled={inviteLoading}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      type="submit"
+                      className="flex-1"
+                      disabled={inviteLoading || !selectedUserId}
+                    >
+                      {inviteLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Add Member
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setOpen(false)}
+                      disabled={inviteLoading}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
             </TabsContent>
 
             {/* Manage Tab */}
@@ -469,7 +486,7 @@ export function ProjectMemberDialog({
                                     onClick={() =>
                                       handleUpdatePermission(
                                         member.user_id,
-                                        editPermission,
+                                        editPermission
                                       )
                                     }
                                     disabled={
