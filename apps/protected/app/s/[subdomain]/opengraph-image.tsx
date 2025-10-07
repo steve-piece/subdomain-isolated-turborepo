@@ -45,6 +45,6 @@ export default async function OgImage() {
     ),
     {
       ...size,
-    }
+    },
   );
 }

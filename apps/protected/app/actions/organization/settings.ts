@@ -17,7 +17,7 @@ export interface UpdateOrganizationIdentityResponse {
  * Subdomain changes are not allowed through this action.
  */
 export async function updateOrganizationIdentity(
-  formData: FormData
+  formData: FormData,
 ): Promise<UpdateOrganizationIdentityResponse> {
   try {
     const supabase = await createClient();

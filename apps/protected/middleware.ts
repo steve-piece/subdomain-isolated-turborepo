@@ -41,7 +41,7 @@ export async function middleware(request: NextRequest) {
     if (url.pathname.startsWith(`/s/${subdomain}`)) {
       const remainingPath = url.pathname.replace(`/s/${subdomain}`, "");
       const isSpecialRoute = remainingPath.match(
-        /^\/(apple-icon|opengraph-image|twitter-image)$/
+        /^\/(apple-icon|opengraph-image|twitter-image)$/,
       );
 
       if (!isSpecialRoute) {

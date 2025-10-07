@@ -16,7 +16,7 @@ export interface CompleteOnboardingResponse {
  * Updates organization details and marks onboarding as complete
  */
 export async function completeOnboarding(
-  formData: FormData
+  formData: FormData,
 ): Promise<CompleteOnboardingResponse> {
   try {
     const supabase = await createClient();

@@ -82,7 +82,7 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
       } catch (error) {
         setStatus("error");
         setErrorMessage(
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : "Unknown error",
         );
       }
     };

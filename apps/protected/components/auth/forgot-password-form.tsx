@@ -44,7 +44,7 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps) {
       if (error) {
         if (error.message.includes("rate") || error.message.includes("limit")) {
           throw new Error(
-            "Too many reset requests. Please wait an hour and try again."
+            "Too many reset requests. Please wait an hour and try again.",
           );
         }
         throw error;

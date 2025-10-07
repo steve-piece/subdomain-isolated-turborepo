@@ -151,7 +151,7 @@ export function ProjectMemberDialog({
         projectId,
         selectedUserId,
         invitePermission,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -185,7 +185,7 @@ export function ProjectMemberDialog({
   // Handle permission update
   const handleUpdatePermission = async (
     userId: string,
-    permission: Permission
+    permission: Permission,
   ) => {
     setOperationPending(userId);
     startTransition(async () => {
@@ -193,7 +193,7 @@ export function ProjectMemberDialog({
         projectId,
         userId,
         permission,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -222,7 +222,7 @@ export function ProjectMemberDialog({
       const result = await revokeProjectPermission(
         projectId,
         userId,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -246,7 +246,7 @@ export function ProjectMemberDialog({
   const filteredMembers = members.filter(
     (member) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase())
+      member.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const canModifyMember = (member: ProjectMember) => {
@@ -469,7 +469,7 @@ export function ProjectMemberDialog({
                                     onClick={() =>
                                       handleUpdatePermission(
                                         member.user_id,
-                                        editPermission
+                                        editPermission,
                                       )
                                     }
                                     disabled={

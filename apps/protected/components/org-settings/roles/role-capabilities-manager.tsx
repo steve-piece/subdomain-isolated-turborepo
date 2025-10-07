@@ -139,15 +139,15 @@ export function RoleCapabilitiesManager({
             acc[category] = true;
             return acc;
           },
-          {} as Record<string, boolean>
-        )
-      )
-    )
+          {} as Record<string, boolean>,
+        ),
+      ),
+    ),
   );
 
   // Track pending changes before saving
   const [pendingChanges, setPendingChanges] = useState<Map<string, boolean>>(
-    new Map()
+    new Map(),
   );
   const [isSaving, setIsSaving] = useState(false);
 
@@ -179,7 +179,7 @@ export function RoleCapabilitiesManager({
   useEffect(() => {
     if (pendingChanges.size > 0) {
       const confirmed = window.confirm(
-        `You have unsaved changes for the ${selectedRole} role. Discard them?`
+        `You have unsaved changes for the ${selectedRole} role. Discard them?`,
       );
       if (confirmed) {
         setPendingChanges(new Map());
@@ -199,13 +199,13 @@ export function RoleCapabilitiesManager({
       acc[category]!.push(cap);
       return acc;
     },
-    {} as Record<string, Capability[]>
+    {} as Record<string, Capability[]>,
   );
 
   // Get custom override for a specific capability and role
   const getCustomOverride = (capabilityKey: string, role: UserRole) => {
     return customCapabilities.find(
-      (cc) => cc.capabilities?.key === capabilityKey && cc.role === role
+      (cc) => cc.capabilities?.key === capabilityKey && cc.role === role,
     );
   };
 
@@ -265,7 +265,7 @@ export function RoleCapabilitiesManager({
     try {
       // Convert pending changes to CapabilityChange format
       const changes: CapabilityChange[] = Array.from(
-        pendingChanges.entries()
+        pendingChanges.entries(),
       ).map(([capabilityKey, granted]) => ({
         capabilityKey,
         granted,
@@ -355,7 +355,7 @@ export function RoleCapabilitiesManager({
 
   // Count customizations for selected role
   const customizationCount = customCapabilities.filter(
-    (cc) => cc.role === selectedRole
+    (cc) => cc.role === selectedRole,
   ).length;
 
   // Toggle section collapse state
@@ -434,7 +434,7 @@ export function RoleCapabilitiesManager({
               const isSelected = selectedRole === role;
               const isOwner = role === "owner";
               const roleCustomCount = customCapabilities.filter(
-                (cc) => cc.role === role
+                (cc) => cc.role === role,
               ).length;
 
               return (
@@ -582,15 +582,15 @@ export function RoleCapabilitiesManager({
                   {caps.map((capability) => {
                     const defaultState = getDefaultState(
                       capability.key,
-                      selectedRole
+                      selectedRole,
                     );
                     const customOverride = getCustomOverride(
                       capability.key,
-                      selectedRole
+                      selectedRole,
                     );
                     const currentState = getCurrentState(
                       capability.key,
-                      selectedRole
+                      selectedRole,
                     );
                     const isCustomized = customOverride !== undefined;
                     const isLoading = loading === capability.key;

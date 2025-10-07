@@ -223,7 +223,9 @@ export function AcceptInvitationForm({
         });
 
         setError(
-          error instanceof Error ? error.message : "Failed to verify invitation"
+          error instanceof Error
+            ? error.message
+            : "Failed to verify invitation",
         );
         setIsVerifying(false);
       }
@@ -308,7 +310,7 @@ export function AcceptInvitationForm({
       const result = await completeInvitation(
         password,
         fullName.trim(),
-        redirectTo
+        redirectTo,
       );
       const actionDuration = performance.now() - actionStartTime;
 
@@ -347,7 +349,7 @@ export function AcceptInvitationForm({
           scope.setTag("step", "complete_invitation");
           scope.setLevel("error");
           Sentry.captureMessage(
-            result.message ?? "Unable to complete invitation"
+            result.message ?? "Unable to complete invitation",
           );
         });
 

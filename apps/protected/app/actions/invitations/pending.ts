@@ -48,7 +48,7 @@ interface PendingInvitationDbRow {
  * Get all pending invitations for an organization
  */
 export async function getPendingInvitations(
-  orgId: string
+  orgId: string,
 ): Promise<PendingInvitationsResponse> {
   try {
     const supabase = await createClient();
@@ -77,7 +77,7 @@ export async function getPendingInvitations(
         expires_at,
         created_at,
         inviter:invited_by(full_name)
-      `
+      `,
       )
       .eq("org_id", orgId)
       .eq("status", "pending")
@@ -100,7 +100,7 @@ export async function getPendingInvitations(
         expires_at: inv.expires_at,
         created_at: inv.created_at,
         inviter_name: inv.inviter?.[0]?.full_name || "Unknown",
-      })
+      }),
     );
 
     return {
@@ -124,7 +124,7 @@ export async function getPendingInvitations(
  */
 export async function approveInvitation(
   invitationId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<InvitationActionResponse> {
   try {
     const supabase = await createClient();
@@ -244,7 +244,7 @@ export async function approveInvitation(
  */
 export async function rejectInvitation(
   invitationId: string,
-  reason?: string
+  reason?: string,
 ): Promise<InvitationActionResponse> {
   try {
     const supabase = await createClient();

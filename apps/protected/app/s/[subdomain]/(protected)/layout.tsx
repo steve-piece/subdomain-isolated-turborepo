@@ -84,7 +84,7 @@ export default async function ProtectedLayout({
         // Force logout
         await supabase.auth.signOut();
         redirect(
-          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`
+          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`,
         );
       }
     } catch (error) {

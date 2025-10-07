@@ -71,7 +71,7 @@ export async function inviteUserToOrganization(
 
     // Check if members can invite (or if user is admin+)
     const isAdminOrHigher = ["owner", "admin", "superadmin"].includes(userRole);
-    
+
     if (!isAdminOrHigher && !teamSettings.allow_member_invites) {
       Sentry.logger.warn("invite_user_member_invites_disabled", {
         email,

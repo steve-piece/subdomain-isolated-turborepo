@@ -35,7 +35,7 @@ export default async function ProjectsPage({
       name,
       description,
       created_at
-    `
+    `,
     )
     .eq("org_id", orgId)
     .eq("status", "active")
@@ -60,7 +60,7 @@ export default async function ProjectsPage({
         created_at: project.created_at,
         member_count: count || 0,
       };
-    })
+    }),
   );
 
   const canCreateProjects = capabilities.includes("projects.create");

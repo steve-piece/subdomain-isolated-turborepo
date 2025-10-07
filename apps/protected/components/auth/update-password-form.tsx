@@ -85,7 +85,7 @@ export function UpdatePasswordForm({
         setError(null);
       } catch (error) {
         setError(
-          `Session Error: ${error instanceof Error ? error.message : "Unknown error"}`
+          `Session Error: ${error instanceof Error ? error.message : "Unknown error"}`,
         );
       }
     };
@@ -126,8 +126,8 @@ export function UpdatePasswordForm({
 
       router.push(
         `/auth/login?message=${encodeURIComponent(
-          "Password updated successfully! Please login with your new password."
-        )}`
+          "Password updated successfully! Please login with your new password.",
+        )}`,
       );
     } catch (error: unknown) {
       const errorMessage =

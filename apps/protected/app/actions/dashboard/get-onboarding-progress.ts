@@ -22,7 +22,7 @@ export interface OnboardingProgress {
  * Get onboarding progress for an organization
  */
 export async function getOnboardingProgress(
-  orgId: string
+  orgId: string,
 ): Promise<OnboardingProgress> {
   const supabase = await createClient();
 
@@ -76,7 +76,7 @@ export async function getOnboardingProgress(
   const completedCount = tasks.filter((t) => t.completed).length;
   const allComplete = completedCount === tasks.length;
   const completionPercentage = Math.round(
-    (completedCount / tasks.length) * 100
+    (completedCount / tasks.length) * 100,
   );
 
   return {

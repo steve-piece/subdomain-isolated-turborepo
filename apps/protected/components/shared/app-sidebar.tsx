@@ -269,7 +269,7 @@ export function AppSidebar({
               {
                 userRole,
                 requiredRoles: item.requiredRoles,
-              }
+              },
             );
           }
           return false;
@@ -279,12 +279,12 @@ export function AppSidebar({
       // Check capability requirements
       if (item.requiredCapabilities && item.requiredCapabilities.length > 0) {
         const hasAllCapabilities = item.requiredCapabilities.every((cap) =>
-          userCapabilities.includes(cap)
+          userCapabilities.includes(cap),
         );
         if (!hasAllCapabilities) {
           if (DEBUG_SIDEBAR_ACCESS) {
             const missingCaps = item.requiredCapabilities.filter(
-              (cap) => !userCapabilities.includes(cap)
+              (cap) => !userCapabilities.includes(cap),
             );
             console.log(
               `⛔ Access denied to "${item.title}": missing capabilities`,
@@ -292,7 +292,7 @@ export function AppSidebar({
                 required: item.requiredCapabilities,
                 missing: missingCaps,
                 userHas: userCapabilities,
-              }
+              },
             );
           }
           return false;
@@ -304,7 +304,7 @@ export function AppSidebar({
       }
       return true;
     },
-    [userRole, userCapabilities]
+    [userRole, userCapabilities],
   );
 
   /**
@@ -329,7 +329,7 @@ export function AppSidebar({
           items: group.items.filter(
             (item) =>
               item.title.toLowerCase().includes(query) ||
-              item.description.toLowerCase().includes(query)
+              item.description.toLowerCase().includes(query),
           ),
         }))
         .filter((group) => group.items.length > 0);
@@ -371,7 +371,7 @@ export function AppSidebar({
       .filter(
         (item) =>
           item.title.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query)
+          item.description.toLowerCase().includes(query),
       )
       .forEach((item) => {
         results.push({
@@ -401,7 +401,7 @@ export function AppSidebar({
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedSearchIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : prev
+        prev < searchResults.length - 1 ? prev + 1 : prev,
       );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -444,7 +444,7 @@ export function AppSidebar({
     <aside
       className={cn(
         "flex flex-col border-r bg-background h-screen sticky top-0 transition-all duration-300",
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-16" : "w-64",
       )}
     >
       <div className="flex h-full flex-col">
@@ -514,7 +514,7 @@ export function AppSidebar({
                   if (!isValidNavigationPath(result.href)) {
                     console.error(
                       "Invalid navigation path detected:",
-                      result.href
+                      result.href,
                     );
                     return null;
                   }
@@ -529,7 +529,7 @@ export function AppSidebar({
                       }}
                       className={cn(
                         "flex items-start gap-3 px-3 py-2 hover:bg-muted transition-colors border-b last:border-b-0",
-                        isSelected && "bg-muted"
+                        isSelected && "bg-muted",
                       )}
                     >
                       <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -573,7 +573,7 @@ export function AppSidebar({
                 {!isCollapsed && (
                   <button
                     className={cn(
-                      "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted"
+                      "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted",
                     )}
                     onClick={() => toggleGroup(group.title)}
                   >
@@ -581,7 +581,7 @@ export function AppSidebar({
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform",
-                        expandedGroups[group.title] ? "rotate-180" : ""
+                        expandedGroups[group.title] ? "rotate-180" : "",
                       )}
                     />
                   </button>
@@ -591,20 +591,20 @@ export function AppSidebar({
                   <div
                     className={cn(
                       "space-y-1",
-                      !isCollapsed && "mt-1 ml-6 border-l pl-3"
+                      !isCollapsed && "mt-1 ml-6 border-l pl-3",
                     )}
                   >
                     {group.items.map((item) => {
                       const Icon = item.icon;
                       const isExactMatch = pathname === item.href;
                       const isNestedRoute = pathname?.startsWith(
-                        item.href + "/"
+                        item.href + "/",
                       );
                       const hasSiblingMatch = group.items.some(
                         (sibling) =>
                           sibling.href !== item.href &&
                           (pathname === sibling.href ||
-                            pathname?.startsWith(sibling.href + "/"))
+                            pathname?.startsWith(sibling.href + "/")),
                       );
                       const isActive =
                         isExactMatch || (isNestedRoute && !hasSiblingMatch);
@@ -613,7 +613,7 @@ export function AppSidebar({
                       if (!isValidNavigationPath(item.href)) {
                         console.error(
                           "Invalid navigation path detected:",
-                          item.href
+                          item.href,
                         );
                         return null;
                       }
@@ -627,7 +627,7 @@ export function AppSidebar({
                             "flex items-center rounded-2xl px-3 py-2 text-sm hover:bg-muted transition-colors",
                             isActive &&
                               "bg-primary/10 text-primary font-medium",
-                            isCollapsed && "justify-center"
+                            isCollapsed && "justify-center",
                           )}
                         >
                           {isCollapsed ? (
@@ -729,7 +729,7 @@ export function AppSidebar({
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform",
-                      userMenuExpanded ? "rotate-180" : ""
+                      userMenuExpanded ? "rotate-180" : "",
                     )}
                   />
                 </button>
@@ -745,7 +745,8 @@ export function AppSidebar({
                           href={item.href}
                           className={cn(
                             "flex items-center gap-2 rounded-2xl px-3 py-2 text-sm hover:bg-muted",
-                            isActive && "bg-primary/10 text-primary font-medium"
+                            isActive &&
+                              "bg-primary/10 text-primary font-medium",
                           )}
                         >
                           <Icon className="h-4 w-4" />

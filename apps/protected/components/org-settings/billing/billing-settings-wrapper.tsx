@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
 import { CreditCard } from "lucide-react";
 import {
   getOrgTier,

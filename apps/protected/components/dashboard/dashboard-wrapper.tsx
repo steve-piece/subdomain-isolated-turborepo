@@ -363,7 +363,7 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
                             <>
                               {task.id === "invite-team" &&
                               !["owner", "admin", "superadmin"].includes(
-                                claims.user_role
+                                claims.user_role,
                               ) ? (
                                 <Button size="sm" disabled>
                                   {task.actionLabel}

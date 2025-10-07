@@ -47,7 +47,6 @@ interface TeamMemberDialogProps {
   // For manage mode
   userId?: string;
   userName?: string;
-  userEmail?: string;
   currentRole?: UserRole;
 }
 
@@ -57,7 +56,6 @@ export function TeamMemberDialog({
   trigger,
   userId,
   userName,
-  userEmail,
   currentRole,
 }: TeamMemberDialogProps) {
   const claims = useTenantClaims();

@@ -199,10 +199,15 @@ export function TeamSettingsConfig() {
           <div className="rounded-lg border bg-muted/50 p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">
-                Current Plan: {settings.tier_name ? settings.tier_name.charAt(0).toUpperCase() + settings.tier_name.slice(1) : "Free"}
+                Current Plan:{" "}
+                {settings.tier_name
+                  ? settings.tier_name.charAt(0).toUpperCase() +
+                    settings.tier_name.slice(1)
+                  : "Free"}
               </span>
               <span className="text-sm font-medium">
-                {settings.current_team_count || 0} / {settings.tier_max_team_size || "∞"} members
+                {settings.current_team_count || 0} /{" "}
+                {settings.tier_max_team_size || "∞"} members
               </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -214,7 +219,7 @@ export function TeamSettingsConfig() {
                         ((settings.current_team_count || 0) /
                           settings.tier_max_team_size) *
                           100,
-                        100
+                        100,
                       )}%`
                     : "0%",
                 }}

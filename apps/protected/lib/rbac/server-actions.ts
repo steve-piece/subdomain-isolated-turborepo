@@ -18,7 +18,7 @@ interface CapabilityCheckResult {
  */
 export async function checkUserCapability(
   orgId: string,
-  capabilityKey: CapabilityKey
+  capabilityKey: CapabilityKey,
 ): Promise<CapabilityCheckResult> {
   try {
     const supabase = await createClient();
@@ -73,7 +73,7 @@ export async function checkUserCapability(
  */
 export async function checkUserOrgAccess(
   orgId: string,
-  requiredRoles?: string[]
+  requiredRoles?: string[],
 ): Promise<CapabilityCheckResult> {
   try {
     const supabase = await createClient();
@@ -128,7 +128,7 @@ export async function checkUserOrgAccess(
  * Uses new database function that combines role hierarchy and custom overrides
  */
 export async function getUserCapabilities(
-  orgId: string
+  orgId: string,
 ): Promise<CapabilityKey[]> {
   try {
     const supabase = await createClient();

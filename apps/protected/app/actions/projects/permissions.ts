@@ -17,7 +17,7 @@ export async function grantProjectPermission(
   projectId: string,
   userId: string,
   permissionLevel: "read" | "write" | "admin",
-  subdomain: string
+  subdomain: string,
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -128,7 +128,7 @@ export async function updateProjectPermission(
   projectId: string,
   userId: string,
   permissionLevel: "read" | "write" | "admin",
-  subdomain: string
+  subdomain: string,
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -196,7 +196,7 @@ export async function updateProjectPermission(
 export async function revokeProjectPermission(
   projectId: string,
   userId: string,
-  subdomain: string
+  subdomain: string,
 ): Promise<GrantPermissionResponse> {
   try {
     const supabase = await createClient();
@@ -279,7 +279,7 @@ export interface GetProjectMembersResponse {
  * Get all members of a project
  */
 export async function getProjectMembers(
-  projectId: string
+  projectId: string,
 ): Promise<GetProjectMembersResponse> {
   try {
     const supabase = await createClient();
@@ -376,7 +376,7 @@ export interface GetAvailableOrgMembersResponse {
  * Get organization members who are not yet added to a project
  */
 export async function getAvailableOrgMembers(
-  projectId: string
+  projectId: string,
 ): Promise<GetAvailableOrgMembersResponse> {
   try {
     const supabase = await createClient();
@@ -414,7 +414,7 @@ export async function getAvailableOrgMembers(
       .eq("project_id", projectId);
 
     const projectMemberIds = new Set(
-      projectMembers?.map((m) => m.user_id) || []
+      projectMembers?.map((m) => m.user_id) || [],
     );
 
     // Filter out members who are already in the project

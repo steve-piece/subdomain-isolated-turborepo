@@ -25,7 +25,7 @@ export interface BatchUpdateResponse {
  */
 export async function batchUpdateRoleCapabilities(
   role: string,
-  changes: CapabilityChange[]
+  changes: CapabilityChange[],
 ): Promise<BatchUpdateResponse> {
   try {
     const supabase = await createClient();
@@ -124,7 +124,7 @@ export async function batchUpdateRoleCapabilities(
       {
         p_org_id: orgId,
         p_role: role,
-      }
+      },
     );
 
     if (logoutError) {

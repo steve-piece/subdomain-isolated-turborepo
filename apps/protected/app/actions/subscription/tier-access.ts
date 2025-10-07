@@ -29,7 +29,7 @@ export interface TierAccessResponse {
  * @returns Access status and tier information
  */
 export async function checkBusinessPlusAccess(
-  orgId: string
+  orgId: string,
 ): Promise<TierAccessResponse> {
   try {
     const supabase = await createClient();
@@ -133,7 +133,7 @@ export async function checkBusinessPlusAccess(
  * @returns Tier information
  */
 export async function getOrgTier(
-  orgId: string
+  orgId: string,
 ): Promise<{ success: boolean; tier?: OrgTierInfo; message?: string }> {
   try {
     const supabase = await createClient();

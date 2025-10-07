@@ -46,7 +46,7 @@ export function RoleProtectedAction({
     insufficient_role: (failure) =>
       fallbackMessage ||
       `This action requires ${allowedRoles.join(
-        " or "
+        " or ",
       )} permissions. Your current role: ${failure.actual ?? "unknown"}`,
     error: fallbackMessage || "Authentication check failed",
   };
@@ -73,12 +73,12 @@ export function RoleProtectedAction({
           centralizedMessages,
           fallbackMessage ||
             `This action requires ${allowedRoles.join(
-              " or "
+              " or ",
             )} permissions. Your current role: ${
               access.failure.reason === "insufficient_role"
                 ? (access.failure.actual ?? "unknown")
                 : "unknown"
-            }`
+            }`,
         );
         addToast(message, "warning", 5000);
       }

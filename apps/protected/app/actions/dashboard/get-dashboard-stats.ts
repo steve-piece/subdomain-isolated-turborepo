@@ -14,7 +14,7 @@ export interface DashboardStats {
  * Get dashboard statistics for an organization
  */
 export async function getDashboardStats(
-  orgId: string
+  orgId: string,
 ): Promise<DashboardStats> {
   const supabase = await createClient();
 

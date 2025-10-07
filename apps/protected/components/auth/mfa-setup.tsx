@@ -45,7 +45,7 @@ export function MFASetup() {
         ) {
           setMfaEnabled(true);
           const verifiedFactor = result.factors.find(
-            (f) => f.status === "verified"
+            (f) => f.status === "verified",
           );
           if (verifiedFactor) {
             setEnrolledFactorId(verifiedFactor.id);
@@ -139,7 +139,7 @@ export function MFASetup() {
     if (!enrolledFactorId) return;
 
     const confirmed = window.confirm(
-      "Are you sure you want to disable two-factor authentication?"
+      "Are you sure you want to disable two-factor authentication?",
     );
     if (!confirmed) return;
 

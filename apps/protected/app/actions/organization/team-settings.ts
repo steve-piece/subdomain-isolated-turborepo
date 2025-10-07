@@ -30,7 +30,7 @@ export interface TeamSettingsResponse {
  * Fetches organization team settings with subscription tier info
  */
 export async function getTeamSettings(
-  orgId: string,
+  orgId: string
 ): Promise<TeamSettingsResponse> {
   try {
     const supabase = await createClient();
@@ -78,13 +78,15 @@ export async function getTeamSettings(
     // Fetch subscription tier info to show tier-based limits
     const { data: subscription } = await supabase
       .from("subscriptions")
-      .select(`
+      .select(
+        `
         tier_id,
         subscription_tiers (
           name,
           max_team_members
         )
-      `)
+      `
+      )
       .eq("org_id", orgId)
       .eq("status", "active")
       .order("created_at", { ascending: false })
@@ -117,7 +119,9 @@ export async function getTeamSettings(
     return {
       success: false,
       message:
-        error instanceof Error ? error.message : "Failed to fetch team settings",
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch team settings",
     };
   }
 }
@@ -128,7 +132,7 @@ export async function getTeamSettings(
  */
 export async function updateTeamSettings(
   orgId: string,
-  settings: Partial<TeamSettings>,
+  settings: Partial<TeamSettings>
 ): Promise<TeamSettingsResponse> {
   try {
     const supabase = await createClient();
@@ -155,7 +159,7 @@ export async function updateTeamSettings(
     }
 
     // Remove max_team_size from settings if present (managed by subscription tier)
-    const { max_team_size, ...settingsToUpdate } = settings;
+    const { max_team_size: _max_team_size, ...settingsToUpdate } = settings;
 
     // Upsert settings (create if doesn't exist, update if exists)
     const { error: upsertError } = await supabase
@@ -168,7 +172,7 @@ export async function updateTeamSettings(
         },
         {
           onConflict: "org_id",
-        },
+        }
       );
 
     if (upsertError) {
@@ -204,7 +208,7 @@ export async function updateTeamSettings(
  * Called during org creation or first team settings access
  */
 export async function ensureTeamSettings(
-  orgId: string,
+  orgId: string
 ): Promise<TeamSettingsResponse> {
   try {
     const supabase = await createClient();
