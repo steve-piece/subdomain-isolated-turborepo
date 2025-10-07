@@ -504,12 +504,12 @@ export function ManageMembersDialog({
                                     variant="outline"
                                     className={
                                       permissionColors[
-                                        member.permission_level as keyof typeof permissionColors
+                                        member.permission as keyof typeof permissionColors
                                       ]
                                     }
                                   >
                                     <Shield className="h-3 w-3 mr-1" />
-                                    {member.permission_level}
+                                    {member.permission}
                                   </Badge>
                                 )}
                               </div>
@@ -526,8 +526,7 @@ export function ManageMembersDialog({
                                         }
                                         disabled={
                                           isPending ||
-                                          editPermission ===
-                                            member.permission_level
+                                          editPermission === member.permission
                                         }
                                         size="sm"
                                       >
@@ -550,9 +549,7 @@ export function ManageMembersDialog({
                                       <Button
                                         onClick={() => {
                                           setEditingMemberId(member.user_id);
-                                          setEditPermission(
-                                            member.permission_level
-                                          );
+                                          setEditPermission(member.permission);
                                         }}
                                         variant="ghost"
                                         size="icon"

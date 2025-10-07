@@ -14,14 +14,20 @@ export interface TeamSettings {
   guest_link_expiry_days: number;
 }
 
+export interface TeamSettingsWithTier extends TeamSettings {
+  tier_name?: string;
+  tier_max_team_size?: number | null;
+  current_team_count?: number;
+}
+
 export interface TeamSettingsResponse {
   success: boolean;
   message?: string;
-  settings?: TeamSettings;
+  settings?: TeamSettingsWithTier;
 }
 
 /**
- * Fetches organization team settings
+ * Fetches organization team settings with subscription tier info
  */
 export async function getTeamSettings(
   orgId: string,
@@ -69,9 +75,40 @@ export async function getTeamSettings(
       };
     }
 
+    // Fetch subscription tier info to show tier-based limits
+    const { data: subscription } = await supabase
+      .from("subscriptions")
+      .select(`
+        tier_id,
+        subscription_tiers (
+          name,
+          max_team_members
+        )
+      `)
+      .eq("org_id", orgId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    // Get current team count
+    const { count: currentTeamCount } = await supabase
+      .from("user_profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", orgId);
+
+    const tierData = subscription?.subscription_tiers as
+      | { name: string; max_team_members: number | null }
+      | undefined;
+
     return {
       success: true,
-      settings,
+      settings: {
+        ...settings,
+        tier_name: tierData?.name,
+        tier_max_team_size: tierData?.max_team_members,
+        current_team_count: currentTeamCount || 0,
+      },
     };
   } catch (error) {
     Sentry.captureException(error, {
@@ -87,6 +124,7 @@ export async function getTeamSettings(
 
 /**
  * Updates organization team settings (owner/admin only)
+ * Note: max_team_size is managed by subscription tier and cannot be manually updated
  */
 export async function updateTeamSettings(
   orgId: string,
@@ -116,13 +154,16 @@ export async function updateTeamSettings(
       return { success: false, message: "Unauthorized: Invalid organization" };
     }
 
+    // Remove max_team_size from settings if present (managed by subscription tier)
+    const { max_team_size, ...settingsToUpdate } = settings;
+
     // Upsert settings (create if doesn't exist, update if exists)
     const { error: upsertError } = await supabase
       .from("organization_team_settings")
       .upsert(
         {
           org_id: orgId,
-          ...settings,
+          ...settingsToUpdate,
           updated_at: new Date().toISOString(),
         },
         {

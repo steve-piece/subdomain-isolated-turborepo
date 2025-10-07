@@ -26,6 +26,7 @@ import {
   getTeamSettings,
   updateTeamSettings,
   type TeamSettings,
+  type TeamSettingsWithTier,
 } from "@/app/actions/organization/team-settings";
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
 
@@ -37,7 +38,7 @@ export function TeamSettingsConfig() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const [settings, setSettings] = useState<TeamSettings>({
+  const [settings, setSettings] = useState<TeamSettingsWithTier>({
     allow_member_invites: false,
     require_admin_approval: false,
     auto_assign_default_role: "member",
@@ -192,41 +193,47 @@ export function TeamSettingsConfig() {
 
         <div className="border-t pt-4" />
 
-        {/* Team Size Limit */}
+        {/* Team Size Limit - Managed by Subscription Tier */}
         <div className="space-y-2">
-          <Label htmlFor="max-team-size">Maximum Team Size</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="max-team-size"
-              type="number"
-              min="1"
-              placeholder="Unlimited"
-              value={settings.max_team_size || ""}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  max_team_size: e.target.value
-                    ? parseInt(e.target.value, 10)
-                    : null,
-                })
-              }
-            />
-            {settings.max_team_size && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  setSettings({ ...settings, max_team_size: null })
-                }
-              >
-                Clear
-              </Button>
-            )}
+          <Label>Team Size Limit</Label>
+          <div className="rounded-lg border bg-muted/50 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">
+                Current Plan: {settings.tier_name ? settings.tier_name.charAt(0).toUpperCase() + settings.tier_name.slice(1) : "Free"}
+              </span>
+              <span className="text-sm font-medium">
+                {settings.current_team_count || 0} / {settings.tier_max_team_size || "∞"} members
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-primary h-2 rounded-full transition-all"
+                style={{
+                  width: settings.tier_max_team_size
+                    ? `${Math.min(
+                        ((settings.current_team_count || 0) /
+                          settings.tier_max_team_size) *
+                          100,
+                        100
+                      )}%`
+                    : "0%",
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {settings.tier_max_team_size
+                ? `Your ${settings.tier_name} plan allows up to ${settings.tier_max_team_size} team members.`
+                : "Your plan includes unlimited team members."}
+              {settings.tier_max_team_size &&
+                settings.current_team_count &&
+                settings.current_team_count >= settings.tier_max_team_size && (
+                  <span className="text-destructive font-medium">
+                    {" "}
+                    Upgrade your plan to add more members.
+                  </span>
+                )}
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Leave empty for unlimited team members (subject to your subscription
-            tier)
-          </p>
         </div>
 
         <div className="border-t pt-4" />
