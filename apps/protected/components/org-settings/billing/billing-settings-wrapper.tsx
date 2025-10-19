@@ -11,7 +11,14 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
-import { CreditCard } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
+import { CreditCard, Receipt, AlertCircle } from "lucide-react";
 import {
   getOrgTier,
   OrgTierInfo,
@@ -24,6 +31,7 @@ export function BillingSettingsWrapper() {
 
   const [tierInfo, setTierInfo] = useState<OrgTierInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   // Role check - redirect if insufficient permissions
   useEffect(() => {
@@ -137,6 +145,70 @@ export function BillingSettingsWrapper() {
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Payment Method */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            <CardTitle>Payment Method</CardTitle>
+          </div>
+          <CardDescription>Manage your payment information</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Empty className="border-0 py-8">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <CreditCard />
+              </EmptyMedia>
+              <EmptyTitle>No Payment Method</EmptyTitle>
+              <EmptyDescription>
+                {isDevelopment ? (
+                  <>
+                    <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                    Development mode - Payment methods are disabled for testing.
+                    Connect a payment method in production to upgrade your plan.
+                  </>
+                ) : (
+                  "Add a payment method to upgrade your plan and unlock premium features."
+                )}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </CardContent>
+      </Card>
+
+      {/* Billing History */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Receipt className="h-5 w-5" />
+            <CardTitle>Billing History</CardTitle>
+          </div>
+          <CardDescription>View and download past invoices</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Empty className="border-0 py-8">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Receipt />
+              </EmptyMedia>
+              <EmptyTitle>No Invoices Yet</EmptyTitle>
+              <EmptyDescription>
+                {isDevelopment ? (
+                  <>
+                    <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                    Development mode - Your billing history will appear here in
+                    production once you subscribe to a paid plan.
+                  </>
+                ) : (
+                  "Your billing history will appear here once you upgrade to a paid plan."
+                )}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </CardContent>
       </Card>
     </div>

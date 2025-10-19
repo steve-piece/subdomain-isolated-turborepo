@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Building2, Users, CreditCard, Shield } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 
 const orgSettingsTabs = [
   {
@@ -42,12 +43,12 @@ export default function OrgSettingsLayout({
   const subdomain = params?.subdomain as string;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Organization Settings" />
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="px-6 py-4">
           <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Organization Settings</h1>
               <p className="text-sm text-muted-foreground">
                 Manage your organization&apos;s configuration and team
               </p>
@@ -72,7 +73,7 @@ export default function OrgSettingsLayout({
                         "hover:bg-accent hover:text-accent-foreground",
                         isActive
                           ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground",
+                          : "text-muted-foreground"
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -85,7 +86,7 @@ export default function OrgSettingsLayout({
           </div>
         </div>
       </div>
-      <div className="flex-1 p-6">
+      <div className="px-6">
         <div className="max-w-4xl mx-auto">{children}</div>
       </div>
     </div>

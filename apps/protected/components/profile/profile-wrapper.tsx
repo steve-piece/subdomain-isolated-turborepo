@@ -21,6 +21,7 @@ import { useToast } from "@workspace/ui/components/toast";
 import { Pencil, Check, X, Camera, Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@workspace/ui/components/card";
 import Image from "next/image";
+import { PageHeader } from "@/components/shared/page-header";
 
 interface ProfileWrapperProps {
   subdomain: string;
@@ -205,7 +206,7 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
   }
 
   async function handleAvatarUpload(
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -295,210 +296,215 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
     .slice(0, 2);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Profile Header Card */}
-      <Card className="border-none shadow-sm">
-        <CardContent className="pt-8 pb-8">
-          <div className="flex flex-col items-center text-center space-y-6">
-            {/* Profile Picture */}
-            <div className="relative group">
-              <div className="h-32 w-32 rounded-full overflow-hidden bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt={name || "Profile picture"}
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-5xl font-bold text-primary-foreground">
-                    {initials}
-                  </span>
-                )}
-              </div>
-
-              {/* Avatar Upload/Remove Overlay */}
-              <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                  disabled={isUploadingAvatar}
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingAvatar}
-                    className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50"
-                    aria-label="Upload profile picture"
-                  >
-                    {isUploadingAvatar ? (
-                      <Upload className="h-5 w-5 animate-pulse" />
+    <>
+      <PageHeader title="Profile" />
+      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <div className="max-w-4xl mx-auto w-full space-y-6">
+          {/* Profile Header Card */}
+          <Card className="border-none shadow-sm">
+            <CardContent className="pt-8 pb-8">
+              <div className="flex flex-col items-center text-center space-y-6">
+                {/* Profile Picture */}
+                <div className="relative group">
+                  <div className="h-32 w-32 rounded-full overflow-hidden bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+                    {avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt={name || "Profile picture"}
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <Camera className="h-5 w-5" />
+                      <span className="text-5xl font-bold text-primary-foreground">
+                        {initials}
+                      </span>
                     )}
-                  </button>
-                  {avatarUrl && (
-                    <button
-                      onClick={handleRemoveAvatar}
+                  </div>
+
+                  {/* Avatar Upload/Remove Overlay */}
+                  <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
                       disabled={isUploadingAvatar}
-                      className="p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors disabled:opacity-50"
-                      aria-label="Remove profile picture"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingAvatar}
+                        className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        aria-label="Upload profile picture"
+                      >
+                        {isUploadingAvatar ? (
+                          <Upload className="h-5 w-5 animate-pulse" />
+                        ) : (
+                          <Camera className="h-5 w-5" />
+                        )}
+                      </button>
+                      {avatarUrl && (
+                        <button
+                          onClick={handleRemoveAvatar}
+                          disabled={isUploadingAvatar}
+                          className="p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                          aria-label="Remove profile picture"
+                        >
+                          <Trash2 className="h-5 w-5 text-white" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div className="w-full max-w-md">
+                  {!isEditingName ? (
+                    <button
+                      type="button"
+                      className="group relative inline-flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg hover:bg-accent/50 transition-colors"
+                      onClick={() => setIsEditingName(true)}
                     >
-                      <Trash2 className="h-5 w-5 text-white" />
+                      <h1 className="text-3xl font-bold">
+                        {name || "Add your name"}
+                      </h1>
+                      <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Enter your name"
+                        className="text-2xl font-bold text-center"
+                        autoFocus
+                        disabled={isLoading}
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={handleSaveName}
+                        disabled={isLoading}
+                        className="shrink-0"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={handleCancelName}
+                        disabled={isLoading}
+                        className="shrink-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Email */}
+                <p className="text-muted-foreground">{claims.email}</p>
+
+                {/* Bio */}
+                <div className="w-full max-w-2xl">
+                  {!isEditingBio ? (
+                    <div
+                      className="group relative cursor-pointer px-4 py-3 rounded-lg hover:bg-accent/50 transition-colors min-h-[60px] flex items-center justify-center"
+                      onClick={() => setIsEditingBio(true)}
+                    >
+                      <p className="text-muted-foreground text-center leading-relaxed">
+                        {bio || "Add a bio to tell others about yourself..."}
+                      </p>
+                      <Pencil className="absolute right-4 top-4 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Tell us about yourself..."
+                        className="w-full min-h-[100px] px-3 py-2 text-sm rounded-md border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        autoFocus
+                        disabled={isLoading}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleCancelBio}
+                          disabled={isLoading}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleSaveBio}
+                          disabled={isLoading}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          {isLoading ? "Saving..." : "Save"}
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Name */}
-            <div className="w-full max-w-md">
-              {!isEditingName ? (
-                <button
-                  type="button"
-                  className="group relative inline-flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg hover:bg-accent/50 transition-colors"
-                  onClick={() => setIsEditingName(true)}
-                >
-                  <h1 className="text-3xl font-bold">
-                    {name || "Add your name"}
-                  </h1>
-                  <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="text-2xl font-bold text-center"
-                    autoFocus
-                    disabled={isLoading}
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={handleSaveName}
-                    disabled={isLoading}
-                    className="shrink-0"
-                  >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={handleCancelName}
-                    disabled={isLoading}
-                    className="shrink-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Email */}
-            <p className="text-muted-foreground">{claims.email}</p>
-
-            {/* Bio */}
-            <div className="w-full max-w-2xl">
-              {!isEditingBio ? (
-                <div
-                  className="group relative cursor-pointer px-4 py-3 rounded-lg hover:bg-accent/50 transition-colors min-h-[60px] flex items-center justify-center"
-                  onClick={() => setIsEditingBio(true)}
-                >
-                  <p className="text-muted-foreground text-center leading-relaxed">
-                    {bio || "Add a bio to tell others about yourself..."}
+          {/* Organization Context */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-3 gap-6 text-center">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Organization</p>
+                  <p className="font-semibold">
+                    {claims.company_name || subdomain}
                   </p>
-                  <Pencil className="absolute right-4 top-4 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  <textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell us about yourself..."
-                    className="w-full min-h-[100px] px-3 py-2 text-sm rounded-md border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    autoFocus
-                    disabled={isLoading}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleCancelBio}
-                      disabled={isLoading}
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveBio}
-                      disabled={isLoading}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      {isLoading ? "Saving..." : "Save"}
-                    </Button>
-                  </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Subdomain</p>
+                  <p className="font-mono text-sm font-medium">{subdomain}</p>
                 </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Role</p>
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary capitalize">
+                    {claims.user_role}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Organization Context */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-3 gap-6 text-center">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Organization</p>
-              <p className="font-semibold">
-                {claims.company_name || subdomain}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Subdomain</p>
-              <p className="font-mono text-sm font-medium">{subdomain}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Role</p>
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary capitalize">
-                {claims.user_role}
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Danger Zone */}
-      <Card className="border-destructive/50">
-        <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium text-destructive">
-                Delete Account
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data. This
-                action cannot be undone.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:bg-destructive hover:text-destructive-foreground shrink-0 ml-4"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          {/* Danger Zone */}
+          <Card className="border-destructive/50">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-destructive">
+                    Delete Account
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently delete your account and all associated data.
+                    This action cannot be undone.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive hover:text-destructive-foreground shrink-0 ml-4"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </>
   );
 }

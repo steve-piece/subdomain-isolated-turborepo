@@ -23,6 +23,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
+import { PageHeader } from "@/components/shared/page-header";
 
 interface AdminWrapperProps {
   subdomain: string;
@@ -48,16 +49,10 @@ export function AdminWrapper({ subdomain }: AdminWrapperProps) {
   const organizationName = claims.company_name || subdomain;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Advanced settings and administration tools for {organizationName}
-          </p>
-        </div>
-
-        <div className="mx-auto max-w-6xl space-y-6">
+    <>
+      <PageHeader title="Admin Dashboard" />
+      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <div className="mx-auto w-full max-w-6xl space-y-6">
           {/* Admin Overview */}
           <Card className="bg-gradient-to-r from-card to-card/50 shadow-lg">
             <CardHeader>
@@ -211,6 +206,6 @@ export function AdminWrapper({ subdomain }: AdminWrapperProps) {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

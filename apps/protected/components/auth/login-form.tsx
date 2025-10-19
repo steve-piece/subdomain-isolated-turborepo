@@ -42,6 +42,7 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null); // shows auth errors
   const [isLoading, setIsLoading] = useState(false); // disables submit, shows spinner
   const [isMagicLoading, setIsMagicLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false); // shows success checkmark in button
 
   // Next.js navigation + search params access for handling query-driven messaging
   const router = useRouter();
@@ -209,15 +210,18 @@ export function LoginForm({
         await supabase.auth.signOut();
         setError("Please confirm your email before logging in.");
         router.push(
-          "/auth/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in.",
+          "/auth/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in."
         );
         return;
       }
 
-      router.push("/dashboard");
+      // Show success checkmark in button before redirecting
+      setShowSuccess(true);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1200); // Show success for 1.2 seconds before redirect
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -278,9 +282,7 @@ export function LoginForm({
           });
 
           setError(
-            error instanceof Error
-              ? error.message
-              : "Unable to send magic link",
+            error instanceof Error ? error.message : "Unable to send magic link"
           );
           addToast({
             title: "Unable to send magic link",
@@ -295,16 +297,16 @@ export function LoginForm({
           span.end();
           setIsMagicLoading(false);
         }
-      },
+      }
     );
   };
 
   // The UI: a card with inputs, optional success/error banners, and a submit button.
   // - Email input (required)
   // - Password input (required)
-  // - “Forgot password” link goes to a clean URL
+  // - "Forgot password" link goes to a clean URL
   // - Success banner appears when a verification flow sends the user here with a message
-  // - Error banner shows the last auth error (with a convenient “resend verification” link)
+  // - Error banner shows the last auth error (with a convenient "resend verification" link)
   // - Submit button shows a spinner while isLoading = true
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -408,12 +410,23 @@ export function LoginForm({
                 </div>
               )}
 
-              {/* Submit button with loading spinner */}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <span className="flex items-center">
-                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
-                    Logging in...
+              {/* Submit button with loading spinner and success checkmark */}
+              <Button
+                type="submit"
+                className="w-full relative"
+                disabled={isLoading || showSuccess}
+              >
+                {showSuccess ? (
+                  <span className="flex items-center justify-center">
+                    <span className="circle-loader load-complete">
+                      <span className="checkmark draw"></span>
+                    </span>
+                  </span>
+                ) : isLoading ? (
+                  <span className="flex items-center justify-center">
+                    <span className="circle-loader">
+                      <span className="checkmark"></span>
+                    </span>
                   </span>
                 ) : (
                   <span className="flex items-center">

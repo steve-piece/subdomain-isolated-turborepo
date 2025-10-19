@@ -22,6 +22,13 @@ import {
 import { useToast } from "@workspace/ui/components/toast";
 import { Badge } from "@workspace/ui/components/badge";
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
+import {
   Users,
   Search,
   UserPlus,
@@ -141,7 +148,7 @@ export function ManageMembersDialog({
         projectId,
         selectedMember,
         selectedPermission,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {
@@ -174,7 +181,7 @@ export function ManageMembersDialog({
         projectId,
         userId,
         editPermission,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {
@@ -202,7 +209,7 @@ export function ManageMembersDialog({
       const result = await revokeProjectPermission(
         projectId,
         userId,
-        subdomain,
+        subdomain
       );
 
       if (result.success) {
@@ -226,13 +233,13 @@ export function ManageMembersDialog({
   const filteredMembers = members.filter(
     (member: ProjectMember) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      member.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filteredAvailableMembers = availableMembers.filter(
     (member: AvailableOrgMember) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      member.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const permissionColors = {
@@ -353,7 +360,7 @@ export function ManageMembersDialog({
                                         value={selectedPermission}
                                         onValueChange={(value) =>
                                           setSelectedPermission(
-                                            value as "read" | "write" | "admin",
+                                            value as "read" | "write" | "admin"
                                           )
                                         }
                                       >
@@ -390,7 +397,7 @@ export function ManageMembersDialog({
                                     </div>
                                   )}
                                 </div>
-                              ),
+                              )
                             )
                           )}
                         </div>
@@ -442,9 +449,19 @@ export function ManageMembersDialog({
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-3">
                   {filteredMembers.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No members found
-                    </div>
+                    <Empty className="border-0">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <Users />
+                        </EmptyMedia>
+                        <EmptyTitle>No Members Found</EmptyTitle>
+                        <EmptyDescription>
+                          {searchQuery
+                            ? "No members match your search criteria. Try a different search term."
+                            : "This project doesn't have any members yet. Add members to collaborate."}
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
                   ) : (
                     <>
                       {filteredMembers.map((member: ProjectMember) => {
@@ -482,7 +499,7 @@ export function ManageMembersDialog({
                                     value={editPermission}
                                     onValueChange={(value) =>
                                       setEditPermission(
-                                        value as "read" | "write" | "admin",
+                                        value as "read" | "write" | "admin"
                                       )
                                     }
                                   >

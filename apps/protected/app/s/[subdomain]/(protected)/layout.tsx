@@ -12,6 +12,10 @@ import { TenantClaimsProvider } from "@/lib/contexts/tenant-claims-context";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@workspace/ui/components/sidebar";
 
 export default async function ProtectedLayout({
   children,
@@ -212,7 +216,7 @@ export default async function ProtectedLayout({
         userCapabilities={userCapabilities}
         subdomain={subdomain}
       />
-      <div className="flex h-screen overflow-hidden bg-background">
+      <SidebarProvider defaultOpen>
         <AppSidebar
           organizationName={organizationName}
           userRole={userRole}
@@ -221,8 +225,12 @@ export default async function ProtectedLayout({
           userName={userFullName}
           userAvatarUrl={userAvatarUrl}
         />
-        <main className="flex-1 overflow-y-auto">{children}</main>
-      </div>
+        <SidebarInset>
+          <main className="flex flex-1 flex-col content-background">
+            {children}
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
     </TenantClaimsProvider>
   );
 }

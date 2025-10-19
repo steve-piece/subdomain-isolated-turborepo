@@ -6,6 +6,7 @@ import * as Sentry from "@sentry/nextjs";
 export interface TenantSearchResult {
   subdomain: string;
   name: string;
+  logo_url?: string | null;
 }
 
 export interface SearchTenantsResponse {
@@ -23,7 +24,7 @@ export interface VerifyTenantResponse {
  * Search for tenants by name or subdomain
  */
 export async function searchTenants(
-  query: string,
+  query: string
 ): Promise<SearchTenantsResponse> {
   const trimmedQuery = query.trim();
 
@@ -43,7 +44,7 @@ export async function searchTenants(
       keyPrefix:
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY?.substring(
           0,
-          30,
+          30
         ),
     });
 
@@ -105,7 +106,7 @@ export async function searchTenants(
 
     const { data: tenants, error } = await supabase
       .from("tenants_public")
-      .select("subdomain, company_name")
+      .select("subdomain, company_name, logo_url")
       .or(searchCondition)
       .order("company_name")
       .limit(5);
@@ -132,6 +133,7 @@ export async function searchTenants(
     const mappedTenants = (tenants || []).map((tenant) => ({
       subdomain: tenant.subdomain,
       name: tenant.company_name,
+      logo_url: tenant.logo_url,
     }));
 
     return {
@@ -155,7 +157,7 @@ export async function searchTenants(
  * Verify if a tenant exists by exact subdomain match
  */
 export async function verifyTenant(
-  subdomain: string,
+  subdomain: string
 ): Promise<VerifyTenantResponse> {
   if (!subdomain || typeof subdomain !== "string") {
     return {
@@ -176,7 +178,7 @@ export async function verifyTenant(
 
     const { data: tenant, error } = await supabase
       .from("tenants_public")
-      .select("subdomain, company_name")
+      .select("subdomain, company_name, logo_url")
       .eq("subdomain", normalizedSubdomain)
       .maybeSingle();
 
@@ -205,6 +207,7 @@ export async function verifyTenant(
       tenant: {
         subdomain: tenant.subdomain,
         name: tenant.company_name,
+        logo_url: tenant.logo_url,
       },
     };
   } catch (error) {

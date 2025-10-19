@@ -22,9 +22,16 @@ import {
 } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
+import { Spinner } from "@workspace/ui/components/spinner";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@workspace/ui/components/avatar";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { ChevronRight, Building2, Sparkles } from "lucide-react";
 
 export function SubdomainLookupForm({
   className,
@@ -32,21 +39,21 @@ export function SubdomainLookupForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<TenantSearchResult[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Search organizations as user types
   useEffect(() => {
     const searchOrganizations = async () => {
       if (searchTerm.length < 2) {
         setSearchResults([]);
-        setShowDropdown(false);
+        setHasSearched(false);
         return;
       }
 
-      setIsLoading(true);
+      setIsSearching(true);
 
       try {
         const result = await searchTenants(searchTerm);
@@ -63,7 +70,6 @@ export function SubdomainLookupForm({
           setError(null);
         }
 
-        setShowDropdown(true);
         setHasSearched(true);
       } catch (error) {
         Sentry.captureException(error);
@@ -71,11 +77,10 @@ export function SubdomainLookupForm({
           message: error instanceof Error ? error.message : "Unknown error",
         });
         setSearchResults([]);
-        setShowDropdown(true);
         setHasSearched(true);
         setError("Failed to search organizations");
       } finally {
-        setIsLoading(false);
+        setIsSearching(false);
       }
     };
 
@@ -95,7 +100,6 @@ export function SubdomainLookupForm({
     }
 
     setSearchTerm(tenant.name); // Show the friendly name in the input
-    setShowDropdown(false);
 
     // Redirect to the organization's base URL - middleware will check JWT and route accordingly
     // If user has valid JWT: routes to dashboard
@@ -105,7 +109,7 @@ export function SubdomainLookupForm({
       tenant.subdomain,
       "/",
       isDevelopment,
-      process.env.NEXT_PUBLIC_APP_DOMAIN,
+      process.env.NEXT_PUBLIC_APP_DOMAIN
     );
 
     window.location.href = targetUrl;
@@ -113,7 +117,6 @@ export function SubdomainLookupForm({
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -121,7 +124,6 @@ export function SubdomainLookupForm({
 
       if (!searchValue) {
         setError("Please enter an organization name");
-        setIsLoading(false);
         return;
       }
 
@@ -145,7 +147,6 @@ export function SubdomainLookupForm({
           query: searchValue,
         });
         setError(result.error);
-        setIsLoading(false);
         return;
       }
 
@@ -155,11 +156,11 @@ export function SubdomainLookupForm({
         // Prioritize exact subdomain matches first, then name matches
         const exactSubdomainMatch = tenants.find(
           (tenant) =>
-            tenant.subdomain.toLowerCase() === searchValue.toLowerCase(),
+            tenant.subdomain.toLowerCase() === searchValue.toLowerCase()
         );
 
         const exactNameMatch = tenants.find(
-          (tenant) => tenant.name.toLowerCase() === searchValue.toLowerCase(),
+          (tenant) => tenant.name.toLowerCase() === searchValue.toLowerCase()
         );
 
         const exactMatch = exactSubdomainMatch || exactNameMatch;
@@ -168,15 +169,13 @@ export function SubdomainLookupForm({
           // Set the subdomain state and redirect
           handleSelectOrganization(exactMatch);
         } else {
-          // Show results in dropdown for user selection
+          // Show results in popover for user selection
           setSearchResults(tenants);
-          setShowDropdown(true);
           setHasSearched(true);
         }
       } else {
         // Show "no results"
         setSearchResults([]);
-        setShowDropdown(true);
         setHasSearched(true);
         setError("No organizations found matching your search");
       }
@@ -186,93 +185,148 @@ export function SubdomainLookupForm({
         message: error instanceof Error ? error.message : "An error occurred",
       });
       setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Find your team</CardTitle>
-          <CardDescription>
-            Enter your organization or company name
-          </CardDescription>
+      <Card className="relative overflow-hidden border-primary/10 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+
+        <CardHeader className="relative">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-2xl font-semibold">
+                Find your team
+              </CardTitle>
+              <Sparkles className="h-4 w-4 text-primary/60" />
+            </div>
+            <CardDescription className="text-sm">
+              Start typing to search your organization
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
           <form onSubmit={handleLookup}>
             <div className="flex flex-col gap-6">
-              <div className="grid gap-2 relative">
-                <Label htmlFor="search">Organization or Company Name</Label>
-                <Input
-                  id="search"
-                  type="text"
-                  placeholder="Search for your organization..."
-                  required
-                  autoComplete="off"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onFocus={() =>
-                    setShowDropdown(searchResults.length > 0 || hasSearched)
-                  }
-                  className="w-full"
-                />
+              <div className="grid gap-2">
+                <Label htmlFor="search" className="text-sm font-semibold">
+                  Organization or Company Name
+                </Label>
+                <div className="relative z-40">
+                  <Input
+                    ref={inputRef}
+                    id="search"
+                    type="text"
+                    placeholder="Search for your organization..."
+                    required
+                    autoComplete="off"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pr-10 h-11 transition-all hover:border-primary/20 focus:border-primary/30 focus:ring-1 focus:ring-primary/10"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Spinner className="size-4 text-primary" />
+                    </div>
+                  )}
 
-                {/* Dropdown */}
-                {showDropdown && (
-                  <div
-                    className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-50 text-gray-700
-                  "
-                  >
-                    {searchResults.length > 0 ? (
-                      <>
-                        {searchResults.map((tenant) => (
-                          <button
-                            key={tenant.subdomain}
-                            type="button"
-                            onClick={() => handleSelectOrganization(tenant)}
-                            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center justify-between"
-                          >
-                            <span className="font-medium">{tenant.name}</span>
-                            <span className="text-sm text-gray-500">
-                              {tenant.subdomain}.
-                              {process.env.NEXT_PUBLIC_APP_DOMAIN ||
-                                "yourapp.com"}
-                            </span>
-                          </button>
-                        ))}
-                      </>
-                    ) : hasSearched ? (
-                      <div className="px-4 py-2 text-gray-500 text-center">
-                        No results found
+                  {/* Search results - rendered as floating dropdown */}
+                  {(searchResults.length > 0 ||
+                    (hasSearched && searchResults.length === 0)) && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-background border border-border rounded-lg shadow-lg z-50">
+                      <div className="max-h-64 overflow-y-auto">
+                        {searchResults.length > 0 ? (
+                          <div className="p-2">
+                            {searchResults.map((tenant, index) => (
+                              <button
+                                key={tenant.subdomain}
+                                type="button"
+                                onClick={() => handleSelectOrganization(tenant)}
+                                className={cn(
+                                  "w-full px-3 py-2.5 text-left rounded-md transition-all duration-200",
+                                  "hover:bg-primary/10 hover:shadow-sm",
+                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                  "group relative",
+                                  index > 0 && "mt-1"
+                                )}
+                              >
+                                <div className="flex items-center justify-between gap-2.5">
+                                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                    <Avatar className="h-8 w-8 shrink-0 rounded-md">
+                                      <AvatarImage
+                                        src={tenant.logo_url || undefined}
+                                        alt={tenant.name}
+                                        className="object-cover"
+                                      />
+                                      <AvatarFallback className="rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                        <Building2 className="h-3.5 w-3.5 text-primary" />
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                                      <span className="font-semibold text-[13px] text-foreground truncate">
+                                        {tenant.name}
+                                      </span>
+                                      <span className="text-[11px] text-muted-foreground truncate">
+                                        {tenant.subdomain}.
+                                        {process.env.NEXT_PUBLIC_APP_DOMAIN ||
+                                          "yourapp.com"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="px-4 py-6 text-sm text-muted-foreground text-center">
+                            No organizations found
+                          </div>
+                        )}
                       </div>
-                    ) : null}
+                    </div>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <p className="text-sm text-destructive font-medium">
+                      {error}
+                    </p>
                   </div>
                 )}
-
-                <p className="text-sm text-muted-foreground">
-                  We&apos;ll find your organization and take you to the right
-                  place
-                </p>
               </div>
 
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {/* Separator with gradient */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-3 text-muted-foreground font-medium">
+                    Or
+                  </span>
+                </div>
+              </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || !searchTerm.trim()}
-              >
-                {isLoading ? "Searching..." : "Find my organization"}
-              </Button>
-            </div>
-
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an organization yet?{" "}
-              <Link href="/signup" className="underline underline-offset-4">
-                Create one
-              </Link>
+              {/* Create organization section */}
+              <div className="text-center space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Don&apos;t have an organization yet?
+                </p>
+                <Link href="/signup">
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 relative transition-all duration-200 hover:bg-primary/2 hover:border-primary/30 hover:shadow-md hover:ring-1 hover:ring-primary/10"
+                    type="button"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                    Create your organization
+                  </Button>
+                </Link>
+              </div>
             </div>
           </form>
         </CardContent>

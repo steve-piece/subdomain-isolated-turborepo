@@ -7,7 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { Check, CreditCard, Receipt, TrendingUp, Zap } from "lucide-react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
+import {
+  Check,
+  CreditCard,
+  Receipt,
+  TrendingUp,
+  Zap,
+  AlertCircle,
+} from "lucide-react";
 import { UpgradeButton } from "./upgrade-button";
 import { ManageBillingButton } from "./manage-billing-button";
 import { format } from "date-fns";
@@ -33,6 +48,7 @@ export function BillingWrapper({
 }: BillingWrapperProps) {
   const currentTier = billingData.subscription?.tier || "Free";
   const usage = billingData.usage;
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   // Format currency
   const formatPrice = (cents: number) => {
@@ -180,17 +196,31 @@ export function BillingWrapper({
               <ManageBillingButton orgId={orgId} subdomain={subdomain} />
             </div>
           ) : (
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-              <div className="flex items-center gap-3">
-                <CreditCard className="h-10 w-10 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">No payment method added</p>
-                  <p className="text-xs text-muted-foreground">
-                    Add a payment method to upgrade your plan
-                  </p>
-                </div>
-              </div>
-            </div>
+            <Empty className="border-0 py-8">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <CreditCard />
+                </EmptyMedia>
+                <EmptyTitle>No Payment Method</EmptyTitle>
+                <EmptyDescription>
+                  {isDevelopment ? (
+                    <>
+                      <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                      Development mode - Payment methods are disabled for
+                      testing. Connect a payment method in production to upgrade
+                      your plan.
+                    </>
+                  ) : (
+                    "Add a payment method to upgrade your plan and unlock premium features."
+                  )}
+                </EmptyDescription>
+              </EmptyHeader>
+              {!isDevelopment && (
+                <EmptyContent>
+                  <ManageBillingButton orgId={orgId} subdomain={subdomain} />
+                </EmptyContent>
+              )}
+            </Empty>
           )}
         </CardContent>
       </Card>
@@ -240,13 +270,25 @@ export function BillingWrapper({
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Receipt className="h-12 w-12 mx-auto mb-3 opacity-20" />
-              <p className="text-sm">No invoices yet</p>
-              <p className="text-xs mt-1">
-                Your billing history will appear here once you upgrade
-              </p>
-            </div>
+            <Empty className="border-0 py-8">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Receipt />
+                </EmptyMedia>
+                <EmptyTitle>No Invoices Yet</EmptyTitle>
+                <EmptyDescription>
+                  {isDevelopment ? (
+                    <>
+                      <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                      Development mode - Your billing history will appear here
+                      in production once you subscribe to a paid plan.
+                    </>
+                  ) : (
+                    "Your billing history will appear here once you upgrade to a paid plan."
+                  )}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
         </CardContent>
       </Card>

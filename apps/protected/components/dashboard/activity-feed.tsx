@@ -5,6 +5,13 @@ import { type ActivityItem } from "@/app/actions/activity/get-recent-activity";
 import { formatDistanceToNow } from "date-fns";
 import { RefreshCw, Folder, User, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
 
 interface ActivityFeedProps {
   activities: ActivityItem[];
@@ -20,13 +27,18 @@ const iconMap: Record<string, LucideIcon> = {
 export function ActivityFeed({ activities }: ActivityFeedProps) {
   if (activities.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <RefreshCw className="h-10 w-10 mx-auto mb-2" />
-        <p className="text-sm">No recent activity</p>
-        <p className="text-xs mt-1">
-          Activity will appear here as your team starts working
-        </p>
-      </div>
+      <Empty className="border-0 p-8">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <RefreshCw />
+          </EmptyMedia>
+          <EmptyTitle>No Recent Activity</EmptyTitle>
+          <EmptyDescription>
+            Activity will appear here as your team starts working on projects
+            and making updates.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 

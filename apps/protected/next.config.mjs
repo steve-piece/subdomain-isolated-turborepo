@@ -5,7 +5,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 // Extract hostname from SUPABASE_URL
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseHostname = new URL(supabaseUrl).hostname;
+const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : "localhost";
 
 const nextConfig = {
   transpilePackages: ["@workspace/ui"],

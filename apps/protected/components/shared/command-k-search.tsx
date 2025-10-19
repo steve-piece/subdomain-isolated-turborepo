@@ -233,9 +233,12 @@ export function CommandKSearch({
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
-    } else if (e.key === "Enter" && filteredItems[selectedIndex]) {
+    } else if (e.key === "Enter") {
       e.preventDefault();
-      handleSelect(filteredItems[selectedIndex]);
+      const selectedItem = filteredItems[selectedIndex];
+      if (selectedItem) {
+        handleSelect(selectedItem);
+      }
     }
   };
 
@@ -271,7 +274,7 @@ export function CommandKSearch({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px] p-0 gap-0">
-          <DialogHeader className="px-4 pt-4 pb-0">
+          <DialogHeader className="px-4 pt-4 pb-0 pr-12">
             <DialogTitle className="flex items-center gap-2 text-base font-normal">
               <Search className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Quick Search</span>

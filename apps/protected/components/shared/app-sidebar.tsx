@@ -5,7 +5,6 @@ import Link from "next/link";
 import NextImage from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
-import { Input } from "@workspace/ui/components/input";
 import { Badge } from "@workspace/ui/components/badge";
 import { useToast } from "@workspace/ui/components/toast";
 import { signOut } from "@actions/auth";
@@ -17,16 +16,51 @@ import {
   Bell,
   User,
   Lock,
-  ChevronDown,
   LayoutDashboard,
   ShieldCheck,
   Search,
   Crown,
-  PanelLeftClose,
-  PanelLeftOpen,
   Folder,
   LogOut,
+  ChevronRight,
+  MoreVertical,
 } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInput,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  useSidebar,
+} from "@workspace/ui/components/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/components/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
 import type { AppRole } from "../../lib/types";
 import { hasRoleAccess } from "../../lib/utils/role-hierarchy";
 
@@ -35,7 +69,7 @@ const DEBUG_SIDEBAR_ACCESS = false;
 
 // Default logo URL - used when organization doesn't have a custom logo
 const DEFAULT_LOGO_URL =
-  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || "ISERT_DEFAULT_LOGO_URL";
+  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || "INSERT_DEFAULT_LOGO_URL";
 
 /**
  * Validates that navigation hrefs are internal paths only (no external URLs or injections)
@@ -79,8 +113,6 @@ interface NavigationGroup {
 
 // Define navigation structure with RBAC requirements
 // SECURITY NOTE: All href values in this array are static strings defined at build time.
-// User input (searchQuery) only filters which items are displayed - it never modifies href values.
-// This design prevents XSS attacks as navigation URLs cannot be manipulated by user input.
 const navigationGroups: NavigationGroup[] = [
   {
     title: "Main",
@@ -149,7 +181,7 @@ const navigationGroups: NavigationGroup[] = [
   },
 ];
 
-// User settings items for the bottom settings section
+// User settings items for the user menu dropdown
 const userSettingsItems: NavigationItem[] = [
   {
     title: "Profile",
@@ -181,7 +213,8 @@ export function AppSidebar({
   logoUrl,
   userName,
   userAvatarUrl,
-}: AppSidebarProps) {
+  ...props
+}: AppSidebarProps & React.ComponentProps<typeof Sidebar>) {
   // Debug: Log authentication context
   React.useEffect(() => {
     console.log("🔐 Sidebar Auth Context:", {
@@ -194,47 +227,18 @@ export function AppSidebar({
   const [searchQuery, setSearchQuery] = React.useState("");
   const [showSearchDropdown, setShowSearchDropdown] = React.useState(false);
   const [selectedSearchIndex, setSelectedSearchIndex] = React.useState(0);
-  const [expandedGroups, setExpandedGroups] = React.useState<
-    Record<string, boolean>
-  >({
-    Main: false,
-    Organization: false,
-  });
-  const [userMenuExpanded, setUserMenuExpanded] = React.useState(false);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(false); // Always start expanded to match SSR
   const pathname = usePathname();
   const router = useRouter();
   const { addToast } = useToast();
   const searchInputRef = React.useRef<HTMLInputElement>(null);
-
-  // Load collapsed state from localStorage after mount to avoid hydration mismatch
-  React.useEffect(() => {
-    const saved = localStorage.getItem("sidebar-collapsed");
-    if (saved === "true") {
-      setIsCollapsed(true);
-    }
-  }, []);
-
-  const toggleGroup = (title: string) => {
-    setExpandedGroups((prev) => ({ ...prev, [title]: !prev[title] }));
-  };
-
-  const toggleSidebar = () => {
-    const newCollapsedState = !isCollapsed;
-    setIsCollapsed(newCollapsedState);
-    // Persist to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem("sidebar-collapsed", String(newCollapsedState));
-    }
-  };
+  const { isMobile } = useSidebar();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
       const result = await signOut();
       if (result.success) {
-        // Redirect to login page on same subdomain (like LogoutButton)
         router.push("/auth/login");
       } else {
         addToast({
@@ -269,7 +273,7 @@ export function AppSidebar({
               {
                 userRole,
                 requiredRoles: item.requiredRoles,
-              },
+              }
             );
           }
           return false;
@@ -279,12 +283,12 @@ export function AppSidebar({
       // Check capability requirements
       if (item.requiredCapabilities && item.requiredCapabilities.length > 0) {
         const hasAllCapabilities = item.requiredCapabilities.every((cap) =>
-          userCapabilities.includes(cap),
+          userCapabilities.includes(cap)
         );
         if (!hasAllCapabilities) {
           if (DEBUG_SIDEBAR_ACCESS) {
             const missingCaps = item.requiredCapabilities.filter(
-              (cap) => !userCapabilities.includes(cap),
+              (cap) => !userCapabilities.includes(cap)
             );
             console.log(
               `⛔ Access denied to "${item.title}": missing capabilities`,
@@ -292,7 +296,7 @@ export function AppSidebar({
                 required: item.requiredCapabilities,
                 missing: missingCaps,
                 userHas: userCapabilities,
-              },
+              }
             );
           }
           return false;
@@ -304,13 +308,11 @@ export function AppSidebar({
       }
       return true;
     },
-    [userRole, userCapabilities],
+    [userRole, userCapabilities]
   );
 
   /**
    * Filter navigation groups to show only accessible items
-   * SECURITY: Filtering logic only controls visibility - item.href values are never modified.
-   * searchQuery is used for string matching against title/description only, not URL construction.
    */
   const filteredGroups = React.useMemo(() => {
     let groups = navigationGroups
@@ -320,7 +322,7 @@ export function AppSidebar({
       }))
       .filter((group) => group.items.length > 0);
 
-    // Filter by search query if present (affects visibility only, not href values)
+    // Filter by search query if present
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       groups = groups
@@ -329,7 +331,7 @@ export function AppSidebar({
           items: group.items.filter(
             (item) =>
               item.title.toLowerCase().includes(query) ||
-              item.description.toLowerCase().includes(query),
+              item.description.toLowerCase().includes(query)
           ),
         }))
         .filter((group) => group.items.length > 0);
@@ -340,8 +342,6 @@ export function AppSidebar({
 
   /**
    * Flat list of search results for dropdown
-   * SECURITY: Search only filters items - href values remain unchanged from static navigationGroups.
-   * User input (searchQuery) cannot modify URLs, preventing XSS/injection attacks.
    */
   const searchResults = React.useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -354,11 +354,11 @@ export function AppSidebar({
       groupTitle: string;
     }> = [];
 
-    // Add navigation items (href values are static, only filtering by searchQuery)
+    // Add navigation items
     filteredGroups.forEach((group) => {
       group.items.forEach((item) => {
         results.push({
-          ...item, // Spreading static item properties including href
+          ...item,
           groupTitle: group.title,
         });
       });
@@ -371,7 +371,7 @@ export function AppSidebar({
       .filter(
         (item) =>
           item.title.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query),
+          item.description.toLowerCase().includes(query)
       )
       .forEach((item) => {
         results.push({
@@ -401,7 +401,7 @@ export function AppSidebar({
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedSearchIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : prev,
+        prev < searchResults.length - 1 ? prev + 1 : prev
       );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -441,336 +441,268 @@ export function AppSidebar({
   }, []);
 
   return (
-    <aside
-      className={cn(
-        "flex flex-col border-r bg-background h-screen sticky top-0 transition-all duration-300",
-        isCollapsed ? "w-16" : "w-64",
-      )}
-    >
-      <div className="flex h-full flex-col">
-        {/* Header with Toggle */}
-        <div className="p-4">
-          <div className="flex items-start justify-end mb-3">
-            <button
-              onClick={toggleSidebar}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
-              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {isCollapsed ? (
-                <PanelLeftOpen className="h-5 w-5" />
-              ) : (
-                <PanelLeftClose className="h-5 w-5" />
-              )}
-            </button>
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 text-white overflow-hidden">
+                  <NextImage
+                    src={logoUrl || DEFAULT_LOGO_URL}
+                    alt={`${organizationName} logo`}
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">
+                    {organizationName}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {userName || "Welcome"}
+                  </span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+
+        {/* Search - only show when expanded */}
+        <div className="relative group-data-[collapsible=icon]:hidden px-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <SidebarInput
+              ref={searchInputRef}
+              type="search"
+              placeholder="Search..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyDown={handleSearchKeyDown}
+              onFocus={() => searchQuery && setShowSearchDropdown(true)}
+            />
           </div>
-          {!isCollapsed && (
-            <div className="flex items-center gap-3">
-              <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white overflow-hidden">
-                <NextImage
-                  src={logoUrl || DEFAULT_LOGO_URL}
-                  alt={`${organizationName} logo`}
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-semibold text-sm truncate">
-                  {organizationName}
-                </h2>
-                <p className="text-xs text-muted-foreground truncate">
-                  {userName || "Welcome"}
-                </p>
-              </div>
+
+          {/* Search Results Dropdown */}
+          {showSearchDropdown && searchResults.length > 0 && (
+            <div className="absolute left-2 right-2 mt-2 bg-popover border rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
+              {searchResults.map((result, index) => {
+                const Icon = result.icon;
+                const isSelected = index === selectedSearchIndex;
+
+                // SECURITY: Validate href is a safe internal path
+                if (!isValidNavigationPath(result.href)) {
+                  console.error(
+                    "Invalid navigation path detected:",
+                    result.href
+                  );
+                  return null;
+                }
+
+                return (
+                  <Link
+                    key={result.href}
+                    href={result.href}
+                    onClick={() => {
+                      setSearchQuery("");
+                      setShowSearchDropdown(false);
+                    }}
+                    className={cn(
+                      "flex items-start gap-3 px-3 py-2 hover:bg-muted transition-colors border-b last:border-b-0",
+                      isSelected && "bg-muted"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate">
+                          {result.title}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {result.groupTitle}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {result.description}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* No Results */}
+          {showSearchDropdown && searchQuery && searchResults.length === 0 && (
+            <div className="absolute left-2 right-2 mt-2 bg-popover border rounded-lg shadow-lg p-3 z-50">
+              <p className="text-sm text-muted-foreground text-center">
+                No results found for &quot;{searchQuery}&quot;
+              </p>
             </div>
           )}
         </div>
+      </SidebarHeader>
 
-        {/* Search */}
-        {!isCollapsed && (
-          <div className="px-3 py-2 relative">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                ref={searchInputRef}
-                type="search"
-                placeholder="Search..."
-                className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyDown={handleSearchKeyDown}
-                onFocus={() => searchQuery && setShowSearchDropdown(true)}
-              />
-            </div>
-
-            {/* Search Results Dropdown */}
-            {showSearchDropdown && searchResults.length > 0 && (
-              <div className="absolute left-3 right-3 mt-2 bg-popover border rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
-                {searchResults.map((result, index) => {
-                  const Icon = result.icon;
-                  const isSelected = index === selectedSearchIndex;
-
-                  // SECURITY: Validate href is a safe internal path (defensive check)
-                  if (!isValidNavigationPath(result.href)) {
-                    console.error(
-                      "Invalid navigation path detected:",
-                      result.href,
-                    );
-                    return null;
-                  }
-
-                  return (
-                    <Link
-                      key={result.href}
-                      href={result.href}
-                      onClick={() => {
-                        setSearchQuery("");
-                        setShowSearchDropdown(false);
-                      }}
-                      className={cn(
-                        "flex items-start gap-3 px-3 py-2 hover:bg-muted transition-colors border-b last:border-b-0",
-                        isSelected && "bg-muted",
-                      )}
-                    >
-                      <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium truncate">
-                            {result.title}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {result.groupTitle}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {result.description}
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* No Results */}
-            {showSearchDropdown &&
-              searchQuery &&
-              searchResults.length === 0 && (
-                <div className="absolute left-3 right-3 mt-2 bg-popover border rounded-lg shadow-lg p-3 z-50">
-                  <p className="text-sm text-muted-foreground text-center">
-                    No results found for &quot;{searchQuery}&quot;
-                  </p>
-                </div>
-              )}
-          </div>
-        )}
-
-        {/* Navigation */}
-        <div className="flex-1 overflow-y-auto px-3 py-2">
-          <div className="space-y-1">
-            {filteredGroups.map((group) => (
-              <div key={group.title} className="mb-1">
-                {!isCollapsed && (
-                  <button
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted",
-                    )}
-                    onClick={() => toggleGroup(group.title)}
-                  >
-                    <span>{group.title}</span>
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 transition-transform",
-                        expandedGroups[group.title] ? "rotate-180" : "",
-                      )}
-                    />
-                  </button>
-                )}
-
-                {(isCollapsed || expandedGroups[group.title]) && (
-                  <div
-                    className={cn(
-                      "space-y-1",
-                      !isCollapsed && "mt-1 ml-6 border-l pl-3",
-                    )}
-                  >
+      <SidebarContent>
+        {filteredGroups.map((group) => (
+          <Collapsible
+            key={group.title}
+            defaultOpen
+            className="group/collapsible"
+          >
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center justify-between">
+                  {group.title}
+                  <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
                     {group.items.map((item) => {
                       const Icon = item.icon;
                       const isExactMatch = pathname === item.href;
                       const isNestedRoute = pathname?.startsWith(
-                        item.href + "/",
+                        item.href + "/"
                       );
                       const hasSiblingMatch = group.items.some(
                         (sibling) =>
                           sibling.href !== item.href &&
                           (pathname === sibling.href ||
-                            pathname?.startsWith(sibling.href + "/")),
+                            pathname?.startsWith(sibling.href + "/"))
                       );
                       const isActive =
                         isExactMatch || (isNestedRoute && !hasSiblingMatch);
 
-                      // SECURITY: Validate href is a safe internal path (defensive check)
+                      // SECURITY: Validate href is a safe internal path
                       if (!isValidNavigationPath(item.href)) {
                         console.error(
                           "Invalid navigation path detected:",
-                          item.href,
+                          item.href
                         );
                         return null;
                       }
 
                       return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          title={isCollapsed ? item.title : undefined}
-                          className={cn(
-                            "flex items-center rounded-2xl px-3 py-2 text-sm hover:bg-muted transition-colors",
-                            isActive &&
-                              "bg-primary/10 text-primary font-medium",
-                            isCollapsed && "justify-center",
-                          )}
-                        >
-                          {isCollapsed ? (
-                            <Icon className="h-5 w-5" />
-                          ) : (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <Icon className="h-4 w-4" />
-                                {item.title}
-                              </div>
+                        <SidebarMenuItem key={item.href}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive}
+                            tooltip={item.title}
+                          >
+                            <Link href={item.href}>
+                              <Icon />
+                              <span>{item.title}</span>
                               {item.isPremium && (
                                 <Badge
                                   variant="outline"
-                                  className="ml-auto rounded-full px-2 py-0.5 text-xs"
+                                  className="ml-auto rounded-full h-5"
                                 >
                                   <Crown className="h-3 w-3" />
                                 </Badge>
                               )}
-                            </>
-                          )}
-                        </Link>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
                       );
                     })}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        ))}
+      </SidebarContent>
 
-        {/* Footer - Settings & User */}
-        <div className="border-t p-3">
-          <div className="space-y-1">
-            {/* User Menu Section */}
-            {isCollapsed ? (
-              // Collapsed: Show user avatar only
-              <Link
-                href="/profile"
-                title={userName || "View Profile"}
-                className="flex w-full items-center justify-center rounded-2xl px-3 py-2 hover:bg-muted transition-colors"
-              >
-                <div className="h-8 w-8 min-w-8 aspect-square rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
-                  {userAvatarUrl ? (
-                    <NextImage
-                      src={userAvatarUrl}
-                      alt={userName || "User avatar"}
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage
+                      src={userAvatarUrl || undefined}
+                      alt={userName || "User"}
                     />
-                  ) : (
-                    <span>
+                    <AvatarFallback className="rounded-lg">
                       {userName?.charAt(0)?.toUpperCase() ||
                         organizationName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      {userName || "User"}
                     </span>
-                  )}
-                </div>
-              </Link>
-            ) : (
-              // Expanded: Show user menu with full name
-              <div>
-                <button
-                  className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted"
-                  onClick={() => setUserMenuExpanded(!userMenuExpanded)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href="/profile"
-                      className="h-8 w-8 min-w-8 aspect-square rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden flex-shrink-0 hover:opacity-90 transition-opacity"
-                      title="View Profile"
-                    >
-                      {userAvatarUrl ? (
-                        <NextImage
-                          src={userAvatarUrl}
-                          alt={userName || "User avatar"}
-                          width={32}
-                          height={32}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span>
-                          {userName?.charAt(0)?.toUpperCase() ||
-                            organizationName.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </Link>
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm font-medium">
+                    <span className="truncate text-xs capitalize">
+                      {userRole}
+                    </span>
+                  </div>
+                  <MoreVertical className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-56 rounded-lg"
+                side={isMobile ? "bottom" : "right"}
+                align="end"
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarImage
+                        src={userAvatarUrl || undefined}
+                        alt={userName || "User"}
+                      />
+                      <AvatarFallback className="rounded-lg">
+                        {userName?.charAt(0)?.toUpperCase() ||
+                          organizationName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">
                         {userName || "User"}
                       </span>
-                      <Badge
-                        variant="outline"
-                        className="text-xs capitalize mt-0.5"
-                      >
+                      <span className="truncate text-xs capitalize">
                         {userRole}
-                      </Badge>
+                      </span>
                     </div>
                   </div>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 transition-transform",
-                      userMenuExpanded ? "rotate-180" : "",
-                    )}
-                  />
-                </button>
-
-                {userMenuExpanded && (
-                  <div className="mt-1 ml-6 space-y-1 border-l pl-3">
-                    {userSettingsItems.filter(hasAccess).map((item) => {
-                      const Icon = item.icon;
-                      const isActive = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={cn(
-                            "flex items-center gap-2 rounded-2xl px-3 py-2 text-sm hover:bg-muted",
-                            isActive &&
-                              "bg-primary/10 text-primary font-medium",
-                          )}
-                        >
-                          <Icon className="h-4 w-4" />
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  {userSettingsItems.filter(hasAccess).map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link href={item.href}>
+                          <Icon className="mr-2 h-4 w-4" />
                           {item.title}
                         </Link>
-                      );
-                    })}
-
-                    {/* Sign Out button at bottom of menu */}
-                    <button
-                      onClick={handleLogout}
-                      disabled={isLoggingOut}
-                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-sm hover:bg-destructive/10 hover:text-destructive transition-colors text-left"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      {isLoggingOut ? "Signing out..." : "Sign Out"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </aside>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {isLoggingOut ? "Signing out..." : "Sign Out"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }

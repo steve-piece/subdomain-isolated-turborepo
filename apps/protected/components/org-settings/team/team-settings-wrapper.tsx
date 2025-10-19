@@ -14,6 +14,14 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
+import {
   UserPlus,
   UserCog,
   Users,
@@ -300,9 +308,34 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
         <CardContent>
           <div className="space-y-3">
             {teamMembers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No team members yet. Invite your first team member!
-              </p>
+              <Empty className="border-0 py-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Users />
+                  </EmptyMedia>
+                  <EmptyTitle>No Team Members Yet</EmptyTitle>
+                  <EmptyDescription>
+                    Start collaborating by inviting your first team member to
+                    join your organization.
+                  </EmptyDescription>
+                </EmptyHeader>
+                {claims.user_role === "owner" ||
+                  claims.user_role === "admin" ||
+                  (claims.user_role === "superadmin" && (
+                    <EmptyContent>
+                      <TeamMemberDialog
+                        mode="invite"
+                        subdomain={subdomain}
+                        trigger={
+                          <Button>
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Invite Member
+                          </Button>
+                        }
+                      />
+                    </EmptyContent>
+                  ))}
+              </Empty>
             ) : (
               teamMembers.map((member) => {
                 const isCurrentUser = member.user_id === claims.user_id;
