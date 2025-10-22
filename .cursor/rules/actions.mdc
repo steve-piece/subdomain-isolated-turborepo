@@ -39,8 +39,7 @@ alwaysApply: false
 
 ## Redirects
 
-- Always redirect with clean URLs (e.g., `/dashboard`, `/auth/login`).
-- Never redirect to `/s/${subdomain}/*` from actions; middleware handles translation.
+- Always redirect with clean URLs (e.g., `/dashboard`, `/login`).
 
 ## Example Skeleton
 

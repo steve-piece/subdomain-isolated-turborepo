@@ -4,7 +4,7 @@
  * Import actions using @actions/category pattern
  *
  * Examples:
- * - import { loginWithToast, signOut } from "@actions/auth";
+ * - import { loginWithToast, signOut } from "@actions/billing/auth";
  * - import { inviteUserToOrganization } from "@actions/invitations";
  * - import { enrollMFA, verifyMFA } from "@actions/mfa";
  * - import { uploadOrganizationLogo } from "@actions/onboarding";

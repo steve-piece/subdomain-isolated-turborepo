@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { resendEmailVerification } from "@actions/auth";
+import { resendEmailVerification } from "@actions/billing/auth";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -70,7 +70,7 @@ export default function ResendVerificationPage({
       }
     } catch (error: unknown) {
       setError(
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred"
       );
     } finally {
       setIsLoading(false);

@@ -4,7 +4,7 @@
 import { useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { verifyReauthentication } from "@actions/auth";
+import { verifyReauthentication } from "@actions/billing/auth";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -99,7 +99,7 @@ export function ReauthenticateForm({
           setIsLoading(false);
           span.end();
         }
-      },
+      }
     );
   };
 

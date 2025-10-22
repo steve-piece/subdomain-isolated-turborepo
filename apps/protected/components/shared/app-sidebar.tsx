@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Badge } from "@workspace/ui/components/badge";
 import { useToast } from "@workspace/ui/components/toast";
-import { signOut } from "@actions/auth";
+import { signOut } from "@actions/billing/auth";
 import {
   Home,
   Users,

@@ -19,7 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@workspace/ui/components/toast";
-import { sendMagicLink } from "@actions/auth";
+import { sendMagicLink } from "@actions/billing/auth";
 import { Lock, AlertCircle } from "lucide-react";
 
 // Props define the tenant context needed by this component.

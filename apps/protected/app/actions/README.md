@@ -50,7 +50,7 @@ Use barrel exports for cleaner imports:
 
 ```typescript
 // Import from category - uses barrel export
-import { loginWithToast, updatePassword, signOut } from "@actions/auth";
+import { loginWithToast, updatePassword, signOut } from "@actions/billing/auth";
 import {
   inviteUserToOrganization,
   completeInvitation,
