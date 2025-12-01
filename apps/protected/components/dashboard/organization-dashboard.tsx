@@ -3,8 +3,9 @@
 "use client";
 
 import { LogoutButton } from "@/components/shared/logout-button";
-import { RoleProtectedAction } from "@/components/shared/role-protected-action";
+import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
 import { Button } from "@workspace/ui/components/button";
+import { useToast } from "@workspace/ui/components/toast";
 import {
   Card,
   CardContent,
@@ -31,6 +32,25 @@ export function OrganizationDashboard({
   subdomain,
   userEmail,
 }: OrganizationDashboardProps) {
+  const claims = useTenantClaims();
+  const { addToast } = useToast();
+
+  // Check if user has admin privileges
+  const hasAdminAccess = ["owner", "admin", "superadmin"].includes(
+    claims.user_role,
+  );
+
+  const handleRestrictedAction = (actionName: string) => {
+    if (!hasAdminAccess) {
+      addToast({
+        title: "Access Denied",
+        description: `Only owners and admins can ${actionName}. Your current role: ${claims.user_role}`,
+        variant: "warning",
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <div className="flex h-screen w-full flex-col">
       <header className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6 shadow-sm">
@@ -107,18 +127,24 @@ export function OrganizationDashboard({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <RoleProtectedAction
-                  subdomain={subdomain}
-                  allowedRoles={["owner", "admin", "superadmin"]}
-                  fallbackMessage="Only owners and admins can invite team members"
-                >
+                {hasAdminAccess ? (
                   <Link href="/invite-user">
                     <Button className="w-full justify-start" size="lg">
                       <span className="mr-2">👤</span>
                       Invite Team Members
                     </Button>
                   </Link>
-                </RoleProtectedAction>
+                ) : (
+                  <Button
+                    className="w-full justify-start"
+                    size="lg"
+                    variant="outline"
+                    onClick={() => handleRestrictedAction("invite team members")}
+                  >
+                    <span className="mr-2">👤</span>
+                    Invite Team Members
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="w-full justify-start"
@@ -127,11 +153,7 @@ export function OrganizationDashboard({
                   <span className="mr-2">📁</span>
                   Create New Project
                 </Button>
-                <RoleProtectedAction
-                  subdomain={subdomain}
-                  allowedRoles={["owner", "admin", "superadmin"]}
-                  fallbackMessage="Only owners and admins can access organization settings"
-                >
+                {hasAdminAccess ? (
                   <Button
                     variant="outline"
                     className="w-full justify-start"
@@ -140,7 +162,19 @@ export function OrganizationDashboard({
                     <span className="mr-2">⚙️</span>
                     Organization Settings
                   </Button>
-                </RoleProtectedAction>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    size="lg"
+                    onClick={() =>
+                      handleRestrictedAction("access organization settings")
+                    }
+                  >
+                    <span className="mr-2">⚙️</span>
+                    Organization Settings
+                  </Button>
+                )}
               </CardContent>
             </Card>
 

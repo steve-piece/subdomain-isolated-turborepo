@@ -99,6 +99,18 @@ export function SubdomainLookupForm({
       return;
     }
 
+    // Security: Additional validation - ensure tenant data is trustworthy
+    // Only allow alphanumeric subdomains with hyphens (no special chars)
+    const subdomainRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+    if (!subdomainRegex.test(tenant.subdomain)) {
+      Sentry.logger.error("invalid_subdomain_format", {
+        subdomain: tenant.subdomain,
+        tenantName: tenant.name,
+      });
+      setError("Invalid organization subdomain format");
+      return;
+    }
+
     setSearchTerm(tenant.name); // Show the friendly name in the input
 
     // Redirect to the organization's base URL - middleware will check JWT and route accordingly
@@ -112,7 +124,29 @@ export function SubdomainLookupForm({
       process.env.NEXT_PUBLIC_APP_DOMAIN
     );
 
-    window.location.href = targetUrl;
+    // Security: Validate the final URL before redirecting
+    try {
+      const url = new URL(targetUrl);
+      const expectedDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
+      
+      // Ensure URL is for our domain only (prevent external redirects)
+      if (isDevelopment) {
+        // In dev, allow localhost
+        if (!url.hostname.includes("localhost")) {
+          throw new Error("Invalid redirect domain in development");
+        }
+      } else {
+        // In production, must be our app domain
+        if (!url.hostname.endsWith(expectedDomain)) {
+          throw new Error("Invalid redirect domain");
+        }
+      }
+      
+      window.location.href = targetUrl;
+    } catch (error) {
+      Sentry.captureException(error);
+      setError("Invalid redirect URL");
+    }
   };
 
   const handleLookup = async (e: React.FormEvent) => {
