@@ -1,5 +1,4 @@
 // apps/marketing/next.config.mjs
-/* eslint-disable no-undef */
 /** @type {import('next').NextConfig} */
 import { withSentryConfig } from "@sentry/nextjs";
 

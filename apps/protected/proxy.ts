@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
 import * as Sentry from "@sentry/nextjs";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   Sentry.logger.debug("protected_middleware_request", {
     url: request.url,
     hostname: request.headers.get("host"),

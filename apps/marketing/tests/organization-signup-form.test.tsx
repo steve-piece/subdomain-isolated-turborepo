@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import { vi, describe, it, beforeEach, afterEach, expect } from "vitest";
 import { OrganizationSignUpForm } from "@/components/organization-signup-form";
-import * as actions from "@/app/actions";
 import type { VerifyTenantResponse } from "@/app/actions";
 
 const routerMock = { push: vi.fn(), replace: vi.fn() };

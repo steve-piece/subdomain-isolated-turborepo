@@ -23,7 +23,7 @@ describe("UpdatePasswordForm", () => {
         getSession,
         getUser,
       },
-    } as any);
+    } as unknown as ReturnType<typeof supabaseClient.createClient>);
 
     updateUser.mockResolvedValue({ error: null });
     getSession.mockResolvedValue({

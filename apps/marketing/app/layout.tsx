@@ -11,7 +11,7 @@ import { Analytics } from "@vercel/analytics/next";
 export function generateMetadata(): Metadata {
   const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
   const description = "Transform your workflow with AI-powered tools";
-  const marketingDomain = process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "";
+  const marketingDomain = process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "localhost:3002";
   const siteUrl = `https://${marketingDomain}`;
 
   return {

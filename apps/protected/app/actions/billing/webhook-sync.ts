@@ -1,7 +1,6 @@
 // apps/protected/app/actions/billing/webhook-sync.ts
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/lib/stripe/server";
 import type Stripe from "stripe";
 
@@ -10,18 +9,24 @@ interface StripeInvoiceExtended extends Stripe.Invoice {
   tax: number | null;
 }
 
-// Create service role client for webhook handlers
+// Create service role client for webhook handlers (lazy initialization)
 // Note: This bypasses RLS as webhooks need elevated privileges
-const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!,
-  {
+async function getSupabaseAdmin() {
+  const { createClient } = await import("@supabase/supabase-js");
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+  
+  if (!supabaseUrl || !supabaseSecretKey) {
+    throw new Error("supabaseUrl is required.");
+  }
+  
+  return createClient(supabaseUrl, supabaseSecretKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
-);
+  });
+}
 
 /**
  * Sync subscription data from Stripe to database
@@ -30,6 +35,7 @@ export async function syncSubscription(
   subscription: Stripe.Subscription,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     // Type assertion for Stripe properties that come as snake_case from the API
     const sub = subscription as unknown as {
       current_period_start: number;
@@ -109,6 +115,7 @@ export async function syncSubscriptionDeleted(
   subscription: Stripe.Subscription,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const { error } = await supabaseAdmin
       .from("subscriptions")
       .update({
@@ -139,6 +146,7 @@ export async function syncCheckoutCompleted(
   session: Stripe.Checkout.Session,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const orgId = session.metadata?.org_id;
 
     if (!orgId) {
@@ -177,6 +185,7 @@ export async function syncCustomerUpdated(
   customer: Stripe.Customer,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const orgId = customer.metadata.org_id;
 
     if (!orgId) {
@@ -216,6 +225,7 @@ export async function syncCustomerDeleted(
   customer: Stripe.Customer,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const orgId = customer.metadata.org_id;
 
     if (!orgId) {
@@ -252,6 +262,7 @@ export async function syncInvoicePaid(
   invoice: Stripe.Invoice,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const orgId = invoice.metadata?.org_id;
 
     if (!orgId) {
@@ -272,7 +283,6 @@ export async function syncInvoicePaid(
       .select("id")
       .eq("stripe_subscription_id", subscriptionId)
       .single();
-
     const { error } = await supabaseAdmin.from("invoices").upsert(
       {
         org_id: orgId,
@@ -330,6 +340,7 @@ export async function syncInvoicePaymentFailed(
   invoice: Stripe.Invoice,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const orgId = invoice.metadata?.org_id;
 
     if (!orgId) {
@@ -374,6 +385,7 @@ export async function syncInvoiceFinalized(
   invoice: Stripe.Invoice,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const orgId = invoice.metadata?.org_id;
 
     if (!orgId) {
@@ -394,7 +406,6 @@ export async function syncInvoiceFinalized(
       .select("id")
       .eq("stripe_subscription_id", subscriptionId)
       .single();
-
     const { error } = await supabaseAdmin.from("invoices").upsert(
       {
         org_id: orgId,
@@ -466,6 +477,7 @@ export async function syncPaymentMethodAttached(
       return { success: false, error: "No org_id in customer metadata" };
     }
 
+    const supabaseAdmin = await getSupabaseAdmin();
     const { error } = await supabaseAdmin.from("payment_methods").insert({
       org_id: orgId,
       stripe_payment_method_id: paymentMethod.id,
@@ -500,6 +512,7 @@ export async function syncPaymentMethodDetached(
   paymentMethod: Stripe.PaymentMethod,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const { error } = await supabaseAdmin
       .from("payment_methods")
       .delete()
@@ -526,6 +539,7 @@ export async function syncPaymentMethodUpdated(
   paymentMethod: Stripe.PaymentMethod,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabaseAdmin = await getSupabaseAdmin();
     const { error } = await supabaseAdmin
       .from("payment_methods")
       .update({

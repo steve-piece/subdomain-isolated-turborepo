@@ -1,7 +1,6 @@
 // apps/protected/app/api/webhooks/stripe/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, STRIPE_CONFIG } from "@/lib/stripe/server";
-import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import {
   syncSubscription,
@@ -17,23 +16,31 @@ import {
   syncPaymentMethodUpdated,
 } from "@/app/actions/billing/webhook-sync";
 
-// Create service role client for webhook handlers
-const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!,
-  {
+// Disable body parsing so we can get raw body for signature verification
+export const runtime = "nodejs";
+export const preferredRegion = "auto";
+export const dynamic = "force-dynamic";
+
+// Create service role client for webhook handlers (lazy initialization)
+async function getSupabaseAdmin() {
+  const { createClient } = await import("@supabase/supabase-js");
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+  
+  if (!supabaseUrl || !supabaseSecretKey) {
+    throw new Error("supabaseUrl is required.");
+  }
+  
+  return createClient(supabaseUrl, supabaseSecretKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
-);
-
-// Disable body parsing so we can get raw body for signature verification
-export const runtime = "nodejs";
-export const preferredRegion = "auto";
+  });
+}
 
 export async function POST(req: NextRequest) {
+  const supabaseAdmin = await getSupabaseAdmin();
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 

@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   Sentry.logger.debug("marketing_middleware_request", {
     url: request.url,
   });
