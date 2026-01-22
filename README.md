@@ -2,6 +2,11 @@
 
 A multi-tenant Turborepo built with Next.js 15, featuring custom subdomains for each tenant and a shared UI component library.
 
+**NOTE**: The marketing site domain and the domain for subdomain isolated accounts are listed below. These are just two domains I owned and wasn't using, but for production you might choose domains with somewhat similar naming conventions.
+
+**Marketing Site Domain**: bask-app.com
+**Isolated Domain for Customer Accounts**: ghostwrite.app
+
 ## Features
 
 - ✅ Custom subdomain routing with Next.js middleware
