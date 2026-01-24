@@ -148,7 +148,7 @@ export function ManageMembersDialog({
         projectId,
         selectedMember,
         selectedPermission,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -181,7 +181,7 @@ export function ManageMembersDialog({
         projectId,
         userId,
         editPermission,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -209,7 +209,7 @@ export function ManageMembersDialog({
       const result = await revokeProjectPermission(
         projectId,
         userId,
-        subdomain
+        subdomain,
       );
 
       if (result.success) {
@@ -233,13 +233,13 @@ export function ManageMembersDialog({
   const filteredMembers = members.filter(
     (member: ProjectMember) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase())
+      member.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const filteredAvailableMembers = availableMembers.filter(
     (member: AvailableOrgMember) =>
       member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase())
+      member.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const permissionColors = {
@@ -360,7 +360,7 @@ export function ManageMembersDialog({
                                         value={selectedPermission}
                                         onValueChange={(value) =>
                                           setSelectedPermission(
-                                            value as "read" | "write" | "admin"
+                                            value as "read" | "write" | "admin",
                                           )
                                         }
                                       >
@@ -397,7 +397,7 @@ export function ManageMembersDialog({
                                     </div>
                                   )}
                                 </div>
-                              )
+                              ),
                             )
                           )}
                         </div>
@@ -499,7 +499,7 @@ export function ManageMembersDialog({
                                     value={editPermission}
                                     onValueChange={(value) =>
                                       setEditPermission(
-                                        value as "read" | "write" | "admin"
+                                        value as "read" | "write" | "admin",
                                       )
                                     }
                                   >

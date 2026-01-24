@@ -70,9 +70,7 @@ export async function updateSession(
   if (
     requireAuth &&
     !user &&
-    !authExcludedPaths.some((path) =>
-      request.nextUrl.pathname.startsWith(path),
-    )
+    !authExcludedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";

@@ -99,7 +99,7 @@ export function ReauthenticateForm({
           setIsLoading(false);
           span.end();
         }
-      }
+      },
     );
   };
 

@@ -7,18 +7,24 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
-import { buildSubdomainUrl, isValidSubdomain } from "@workspace/ui/lib/subdomains";
+import {
+  buildSubdomainUrl,
+  isValidSubdomain,
+} from "@workspace/ui/lib/subdomains";
 import Link from "next/link";
 
 interface PageProps {
-  searchParams: Promise<{ subdomain?: string | string[]; email?: string | string[] }>;
+  searchParams: Promise<{
+    subdomain?: string | string[];
+    email?: string | string[];
+  }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
   const subdomainParam = params.subdomain;
   const emailParam = params.email;
-  
+
   // Handle both string and string[] cases
   const subdomainValue = Array.isArray(subdomainParam)
     ? subdomainParam[0]
@@ -27,12 +33,8 @@ export default async function Page({ searchParams }: PageProps) {
     ? decodeURIComponent(subdomainValue).trim().toLowerCase()
     : null;
 
-  const emailValue = Array.isArray(emailParam)
-    ? emailParam[0]
-    : emailParam;
-  const email = emailValue
-    ? decodeURIComponent(emailValue)
-    : null;
+  const emailValue = Array.isArray(emailParam) ? emailParam[0] : emailParam;
+  const email = emailValue ? decodeURIComponent(emailValue) : null;
 
   // Build login URL if subdomain is valid
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -73,18 +75,19 @@ export default async function Page({ searchParams }: PageProps) {
                 {subdomain && (
                   <div className="rounded-lg bg-muted p-3 space-y-1">
                     <p className="text-sm font-medium">
-                      Organization: <span className="font-mono">{subdomain}</span>
+                      Organization:{" "}
+                      <span className="font-mono">{subdomain}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Your subdomain is reserved for 48 hours. Please confirm your
-                      email to complete setup.
+                      Your subdomain is reserved for 48 hours. Please confirm
+                      your email to complete setup.
                     </p>
                   </div>
                 )}
                 <div className="pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Didn&apos;t receive the email? Check your spam folder or click
-                    below to resend.
+                    Didn&apos;t receive the email? Check your spam folder or
+                    click below to resend.
                   </p>
                 </div>
               </div>
@@ -101,7 +104,11 @@ export default async function Page({ searchParams }: PageProps) {
                 <Link href="/">Back to Homepage</Link>
               </Button>
               {loginUrl && (
-                <Button asChild variant="secondary" className="w-full sm:w-auto">
+                <Button
+                  asChild
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                >
                   <Link href={loginUrl}>Go to Login</Link>
                 </Button>
               )}

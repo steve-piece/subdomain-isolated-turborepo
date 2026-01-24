@@ -278,14 +278,11 @@ export function AppSidebar({
         const hasRole = hasRoleAccess(userRole, item.requiredRoles);
         if (!hasRole) {
           if (DEBUG_SIDEBAR_ACCESS) {
-            console.log(
-              "⛔ Access denied: role hierarchy check failed",
-              {
-                itemTitle: item.title,
-                userRole,
-                requiredRoles: item.requiredRoles,
-              }
-            );
+            console.log("⛔ Access denied: role hierarchy check failed", {
+              itemTitle: item.title,
+              userRole,
+              requiredRoles: item.requiredRoles,
+            });
           }
           return false;
         }
@@ -294,22 +291,19 @@ export function AppSidebar({
       // Check capability requirements
       if (item.requiredCapabilities && item.requiredCapabilities.length > 0) {
         const hasAllCapabilities = item.requiredCapabilities.every((cap) =>
-          userCapabilities.includes(cap)
+          userCapabilities.includes(cap),
         );
         if (!hasAllCapabilities) {
           if (DEBUG_SIDEBAR_ACCESS) {
             const missingCaps = item.requiredCapabilities.filter(
-              (cap) => !userCapabilities.includes(cap)
+              (cap) => !userCapabilities.includes(cap),
             );
-            console.log(
-              "⛔ Access denied: missing capabilities",
-              {
-                itemTitle: item.title,
-                required: item.requiredCapabilities,
-                missing: missingCaps,
-                userHas: userCapabilities,
-              }
-            );
+            console.log("⛔ Access denied: missing capabilities", {
+              itemTitle: item.title,
+              required: item.requiredCapabilities,
+              missing: missingCaps,
+              userHas: userCapabilities,
+            });
           }
           return false;
         }
@@ -320,12 +314,12 @@ export function AppSidebar({
       }
       return true;
     },
-    [userRole, userCapabilities]
+    [userRole, userCapabilities],
   );
 
   /**
    * Filter navigation groups to show only accessible items
-   * 
+   *
    * SECURITY NOTE: searchQuery only filters VISIBILITY, not the href values.
    * All hrefs come from the static navigationGroups constant defined at lines 116-182.
    */
@@ -346,7 +340,7 @@ export function AppSidebar({
           items: group.items.filter(
             (item) =>
               item.title.toLowerCase().includes(query) ||
-              item.description.toLowerCase().includes(query)
+              item.description.toLowerCase().includes(query),
           ),
         }))
         .filter((group) => group.items.length > 0);
@@ -357,7 +351,7 @@ export function AppSidebar({
 
   /**
    * Flat list of search results for dropdown
-   * 
+   *
    * SECURITY NOTE: This function is safe from XSS despite SAST warnings.
    * - searchQuery is ONLY used for filtering (title/description matching)
    * - All href values originate from static constants (navigationGroups, userSettingsItems)
@@ -392,7 +386,7 @@ export function AppSidebar({
       .filter(
         (item) =>
           item.title.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query)
+          item.description.toLowerCase().includes(query),
       )
       .forEach((item) => {
         results.push({
@@ -422,7 +416,7 @@ export function AppSidebar({
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedSearchIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : prev
+        prev < searchResults.length - 1 ? prev + 1 : prev,
       );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -526,7 +520,7 @@ export function AppSidebar({
                 if (!isValidNavigationPath(result.href)) {
                   console.error(
                     "Invalid navigation path detected:",
-                    result.href
+                    result.href,
                   );
                   return null;
                 }
@@ -541,7 +535,7 @@ export function AppSidebar({
                     }}
                     className={cn(
                       "flex items-start gap-3 px-3 py-2 hover:bg-muted transition-colors border-b last:border-b-0",
-                      isSelected && "bg-muted"
+                      isSelected && "bg-muted",
                     )}
                   >
                     <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -596,13 +590,13 @@ export function AppSidebar({
                       const Icon = item.icon;
                       const isExactMatch = pathname === item.href;
                       const isNestedRoute = pathname?.startsWith(
-                        item.href + "/"
+                        item.href + "/",
                       );
                       const hasSiblingMatch = group.items.some(
                         (sibling) =>
                           sibling.href !== item.href &&
                           (pathname === sibling.href ||
-                            pathname?.startsWith(sibling.href + "/"))
+                            pathname?.startsWith(sibling.href + "/")),
                       );
                       const isActive =
                         isExactMatch || (isNestedRoute && !hasSiblingMatch);
@@ -611,7 +605,7 @@ export function AppSidebar({
                       if (!isValidNavigationPath(item.href)) {
                         console.error(
                           "Invalid navigation path detected:",
-                          item.href
+                          item.href,
                         );
                         return null;
                       }

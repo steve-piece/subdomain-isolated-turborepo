@@ -75,12 +75,14 @@ We follow strict coding standards enforced by rules in `.cursor/rules/`:
 #### 1. Performance & Auth Architecture
 
 **✅ DO:**
+
 - Check auth once at layout level, share via context
 - Use `getClaims()` for auth checks (faster than `getUser()`)
 - Default to server components, extract client components for interactivity
 - Use `revalidate` for caching (avoid `noStore()` unless critical)
 
 **❌ DON'T:**
+
 - Duplicate auth checks in page components
 - Use `noStore()` without justification
 - Make entire pages client-side
@@ -91,12 +93,14 @@ See [.cursor/rules/qauthContext.mdc](./.cursor/rules/qauthContext.mdc) for compl
 #### 2. Server Actions & Database Access
 
 **✅ DO:**
+
 - Validate user claims and tenant subdomain
 - Use transactions for multi-table operations
 - Include proper error handling
 - Revalidate cache after mutations
 
 **❌ DON'T:**
+
 - Access database without auth validation
 - Use service role key in client code
 - Skip RLS policy checks
@@ -106,6 +110,7 @@ See [.cursor/rules/actions.mdc](./.cursor/rules/actions.mdc) for complete rules.
 #### 3. Component Organization
 
 **File Structure:**
+
 ```
 components/
 ├── shared/              # Used across 2+ routes
@@ -116,6 +121,7 @@ components/
 ```
 
 **Naming Conventions:**
+
 - Wrappers: `{route}-wrapper.tsx`
 - Features: `{feature}-{type}.tsx`
 - Actions: `actions.ts` (co-located with components)
@@ -177,6 +183,7 @@ git commit -m "refactor(rbac): improve permission checking performance"
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -186,11 +193,13 @@ git commit -m "refactor(rbac): improve permission checking performance"
 - `chore`: Maintenance tasks
 
 **Scopes:**
+
 - `auth`, `email`, `billing`, `database`, `ui`, `docs`, etc.
 
 ### 3. Create Pull Request
 
 1. **Push your branch**
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -206,26 +215,32 @@ git commit -m "refactor(rbac): improve permission checking performance"
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Motivation
+
 Why is this change needed?
 
 ## Changes Made
+
 - Added X
 - Fixed Y
 - Updated Z
 
 ## Testing
+
 - [ ] Tested locally
 - [ ] No console errors
 - [ ] Builds successfully
 - [ ] Follows coding standards
 
 ## Screenshots (if applicable)
+
 [Add screenshots here]
 
 ## Related Issues
+
 Fixes #123
 ```
 
@@ -281,20 +296,25 @@ If documentation is unclear:
 
 ```markdown
 ## Bug Description
+
 Clear description of the bug
 
 ## Steps to Reproduce
+
 1. Go to...
 2. Click on...
 3. See error...
 
 ## Expected Behavior
+
 What should happen?
 
 ## Actual Behavior
+
 What actually happens?
 
 ## Environment
+
 - OS: [e.g., macOS 14.0]
 - Node Version: [e.g., v20.11.0]
 - pnpm Version: [e.g., 9.15.0]
@@ -302,7 +322,9 @@ What actually happens?
 
 ## Error Messages
 ```
+
 Paste full error messages and stack traces
+
 ```
 
 ## Screenshots
@@ -326,21 +348,27 @@ Any other relevant information
 
 ```markdown
 ## Feature Description
+
 Clear description of the proposed feature
 
 ## Problem it Solves
+
 What problem does this address?
 
 ## Proposed Solution
+
 How should this work?
 
 ## Alternatives Considered
+
 What other solutions did you consider?
 
 ## Use Cases
+
 Who would benefit from this?
 
 ## Implementation Ideas
+
 (Optional) Suggestions for how to implement
 ```
 
@@ -402,6 +430,7 @@ Before submitting a PR:
 **DO NOT** open public issues for security vulnerabilities.
 
 Instead:
+
 1. Email security@yourdomain.com with details
 2. Include reproduction steps
 3. Suggest a fix if possible

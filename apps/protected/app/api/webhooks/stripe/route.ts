@@ -26,11 +26,11 @@ async function getSupabaseAdmin() {
   const { createClient } = await import("@supabase/supabase-js");
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
-  
+
   if (!supabaseUrl || !supabaseSecretKey) {
     throw new Error("supabaseUrl is required.");
   }
-  
+
   return createClient(supabaseUrl, supabaseSecretKey, {
     auth: {
       autoRefreshToken: false,

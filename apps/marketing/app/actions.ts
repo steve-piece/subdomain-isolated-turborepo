@@ -24,7 +24,7 @@ export interface VerifyTenantResponse {
  * Search for tenants by name or subdomain
  */
 export async function searchTenants(
-  query: string
+  query: string,
 ): Promise<SearchTenantsResponse> {
   const trimmedQuery = query.trim();
 
@@ -44,7 +44,7 @@ export async function searchTenants(
       keyPrefix:
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY?.substring(
           0,
-          30
+          30,
         ),
     });
 
@@ -157,7 +157,7 @@ export async function searchTenants(
  * Verify if a tenant exists by exact subdomain match
  */
 export async function verifyTenant(
-  subdomain: string
+  subdomain: string,
 ): Promise<VerifyTenantResponse> {
   if (!subdomain || typeof subdomain !== "string") {
     return {

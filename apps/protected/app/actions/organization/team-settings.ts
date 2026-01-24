@@ -30,7 +30,7 @@ export interface TeamSettingsResponse {
  * Fetches organization team settings with subscription tier info
  */
 export async function getTeamSettings(
-  orgId: string
+  orgId: string,
 ): Promise<TeamSettingsResponse> {
   try {
     const supabase = await createClient();
@@ -85,7 +85,7 @@ export async function getTeamSettings(
           name,
           max_team_members
         )
-      `
+      `,
       )
       .eq("org_id", orgId)
       .eq("status", "active")
@@ -132,7 +132,7 @@ export async function getTeamSettings(
  */
 export async function updateTeamSettings(
   orgId: string,
-  settings: Partial<TeamSettings>
+  settings: Partial<TeamSettings>,
 ): Promise<TeamSettingsResponse> {
   try {
     const supabase = await createClient();
@@ -173,7 +173,7 @@ export async function updateTeamSettings(
         },
         {
           onConflict: "org_id",
-        }
+        },
       );
 
     if (upsertError) {
@@ -209,7 +209,7 @@ export async function updateTeamSettings(
  * Called during org creation or first team settings access
  */
 export async function ensureTeamSettings(
-  orgId: string
+  orgId: string,
 ): Promise<TeamSettingsResponse> {
   try {
     const supabase = await createClient();

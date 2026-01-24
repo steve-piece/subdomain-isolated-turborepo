@@ -23,7 +23,7 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<React.ReactNode> {
   const { subdomain } = await params;
   const supabase = await createClient();
 
@@ -89,7 +89,7 @@ export default async function ProtectedLayout({
         // Force logout
         await supabase.auth.signOut();
         redirect(
-          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`
+          `/auth/login?message=${encodeURIComponent(logoutCheck.reason || "Please log in again")}`,
         );
       }
     } catch (error) {

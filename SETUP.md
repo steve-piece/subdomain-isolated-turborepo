@@ -33,6 +33,7 @@ npx supabase secrets set APP_NAME="Your App Name"
 ### Priority Order
 
 The app name is resolved in this order:
+
 1. `configuredAppName` variable in `supabase/functions/send-email/index.ts`
 2. `APP_NAME` environment variable (Supabase secret)
 3. Fallback: `"our platform"`

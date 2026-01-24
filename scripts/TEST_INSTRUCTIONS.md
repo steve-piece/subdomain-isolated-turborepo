@@ -29,6 +29,7 @@ The script should:
 ## File Structure Analysis
 
 Your file has:
+
 - **6,830 lines** total
 - **46+ migration entries** (based on VALUES count)
 - Format: Single INSERT statement with multiple VALUES rows
@@ -54,7 +55,7 @@ Check that the output starts with something like:
 -- DECLARATIVE DATABASE SCHEMA
 -- Generated from supabase_migrations.schema_migrations table export
 -- Generated: 2026-01-21T...
--- 
+--
 -- Total Migrations: 46
 -- ============================================================================
 

@@ -73,7 +73,7 @@ export function TeamMemberDialog({
 
   // Manage state
   const [selectedRole, setSelectedRole] = useState<UserRole>(
-    currentRole || "member"
+    currentRole || "member",
   );
   const [updateLoading, setUpdateLoading] = useState(false);
 
@@ -135,7 +135,7 @@ export function TeamMemberDialog({
       const result = await inviteUserToOrganization(
         email,
         inviteRole,
-        subdomain
+        subdomain,
       );
       if (result.success) {
         setInviteSuccess(result.message);
@@ -150,7 +150,7 @@ export function TeamMemberDialog({
       }
     } catch (error: unknown) {
       setInviteError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setInviteLoading(false);

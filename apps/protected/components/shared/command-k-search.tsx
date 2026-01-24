@@ -167,7 +167,7 @@ export function CommandKSearch({
       // Check capability requirements
       if (item.requiredCapabilities && item.requiredCapabilities.length > 0) {
         const hasAllCapabilities = item.requiredCapabilities.every((cap) =>
-          userCapabilities.includes(cap)
+          userCapabilities.includes(cap),
         );
         if (!hasAllCapabilities) {
           return false;
@@ -176,7 +176,7 @@ export function CommandKSearch({
 
       return true;
     },
-    [userRole, userCapabilities]
+    [userRole, userCapabilities],
   );
 
   // Get accessible items
@@ -194,7 +194,7 @@ export function CommandKSearch({
       (item) =>
         item.title.toLowerCase().includes(query) ||
         item.description.toLowerCase().includes(query) ||
-        item.group.toLowerCase().includes(query)
+        item.group.toLowerCase().includes(query),
     );
   }, [search, accessibleItems]);
 
@@ -228,7 +228,7 @@ export function CommandKSearch({
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((prev) =>
-        prev < filteredItems.length - 1 ? prev + 1 : prev
+        prev < filteredItems.length - 1 ? prev + 1 : prev,
       );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -326,7 +326,7 @@ export function CommandKSearch({
                               "w-full flex items-center gap-3 px-2 py-2.5 rounded-md text-sm transition-colors",
                               "hover:bg-accent hover:text-accent-foreground",
                               isSelected && "bg-accent text-accent-foreground",
-                              isActive && "bg-primary/10 text-primary"
+                              isActive && "bg-primary/10 text-primary",
                             )}
                           >
                             <Icon className="h-4 w-4 shrink-0" />

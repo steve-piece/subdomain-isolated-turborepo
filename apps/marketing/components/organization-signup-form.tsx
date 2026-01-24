@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { verifyTenant, type VerifyTenantResponse } from "@/app/actions";
+import * as Sentry from "@sentry/nextjs";
 
 type VerifyTenantFn = (subdomain: string) => Promise<VerifyTenantResponse>;
 
@@ -317,14 +318,12 @@ export function OrganizationSignUpForm({
             details: reservationError.details,
             hint: reservationError.hint,
           });
-          
+
           // Log to Sentry for monitoring
-          if (typeof window !== "undefined" && (window as any).Sentry) {
-            (window as any).Sentry.captureException(reservationError, {
-              tags: { flow: "signup", step: "create_reservation" },
-              extra: { subdomain: normalizedSubdomain, userId: authData.user.id },
-            });
-          }
+          Sentry.captureException(reservationError, {
+            tags: { flow: "signup", step: "create_reservation" },
+            extra: { subdomain: normalizedSubdomain, userId: authData.user.id },
+          });
         }
       }
 
@@ -335,7 +334,9 @@ export function OrganizationSignUpForm({
         setStatus("pending_email");
         setSuccess(true);
         await new Promise((resolve) => setTimeout(resolve, 1200));
-        router.push(`/signup/success?subdomain=${encodeURIComponent(normalizedSubdomain)}&email=${encodeURIComponent(email)}`);
+        router.push(
+          `/signup/success?subdomain=${encodeURIComponent(normalizedSubdomain)}&email=${encodeURIComponent(email)}`,
+        );
         return;
       }
 
@@ -345,7 +346,9 @@ export function OrganizationSignUpForm({
       setSuccess(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      router.push(`/signup/success?subdomain=${encodeURIComponent(subdomain.trim().toLowerCase())}&email=${encodeURIComponent(email)}`);
+      router.push(
+        `/signup/success?subdomain=${encodeURIComponent(subdomain.trim().toLowerCase())}&email=${encodeURIComponent(email)}`,
+      );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setStatus("error");
@@ -508,7 +511,9 @@ export function OrganizationSignUpForm({
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? (
@@ -576,7 +581,11 @@ export function OrganizationSignUpForm({
                     type="button"
                     onClick={() => setShowRepeatPassword(!showRepeatPassword)}
                     tabIndex={-1}
-                    aria-label={showRepeatPassword ? "Hide confirm password" : "Show confirm password"}
+                    aria-label={
+                      showRepeatPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showRepeatPassword ? (

@@ -218,7 +218,7 @@ export function TeamSettingsConfig() {
                         ((settings.current_team_count || 0) /
                           settings.tier_max_team_size) *
                           100,
-                        100
+                        100,
                       )}%`
                     : "0%",
                 }}

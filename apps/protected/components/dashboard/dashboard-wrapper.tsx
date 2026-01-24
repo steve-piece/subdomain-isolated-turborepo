@@ -240,7 +240,7 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
 
                 {/* Show invite button based on role */}
                 {["owner", "admin", "superadmin"].includes(
-                  claims.user_role
+                  claims.user_role,
                 ) && (
                   <Link href="/org-settings/team" className="w-full block">
                     <Button
@@ -410,7 +410,7 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
                               <>
                                 {task.id === "invite-team" &&
                                 !["owner", "admin", "superadmin"].includes(
-                                  claims.user_role
+                                  claims.user_role,
                                 ) ? (
                                   <Button size="sm" disabled>
                                     {task.actionLabel}

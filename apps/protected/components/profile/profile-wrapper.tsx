@@ -206,7 +206,7 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
   }
 
   async function handleAvatarUpload(
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) {
     const file = event.target.files?.[0];
     if (!file) return;

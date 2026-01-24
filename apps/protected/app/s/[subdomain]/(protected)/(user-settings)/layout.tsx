@@ -64,7 +64,7 @@ export default function UserSettingsLayout({
                       "hover:bg-accent hover:text-accent-foreground",
                       isActive
                         ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                     )}
                   >
                     <Icon className="h-4 w-4" />

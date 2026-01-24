@@ -115,7 +115,9 @@ export default async function AcceptInvitationPage({
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Welcome to {process.env.APP_NAME || "the platform"}!</CardTitle>
+            <CardTitle className="text-2xl">
+              Welcome to {process.env.APP_NAME || "the platform"}!
+            </CardTitle>
             <CardDescription>
               Set up your password to complete your invitation
             </CardDescription>

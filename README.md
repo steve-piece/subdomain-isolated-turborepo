@@ -97,14 +97,14 @@ pnpm dev
 
 ### Core Guides
 
-| Guide | Description |
-|-------|-------------|
-| **[🚀 Getting Started](./docs/GETTING_STARTED.md)** | Complete setup guide (database, email, auth, deployment) |
-| **[🏗️ Architecture](./docs/ARCHITECTURE.md)** | How the platform works (multi-tenant, RBAC, auth patterns) |
-| **[🗄️ Database](./docs/DATABASE.md)** | Complete database schema reference |
-| **[🚀 Deployment](./docs/DEPLOYMENT.md)** | Production deployment guide (Vercel, DNS) |
-| **[💳 Stripe](./docs/STRIPE.md)** | Billing and subscription setup (optional) |
-| **[🤝 Contributing](./CONTRIBUTING.md)** | How to contribute to this project |
+| Guide                                               | Description                                                |
+| --------------------------------------------------- | ---------------------------------------------------------- |
+| **[🚀 Getting Started](./docs/GETTING_STARTED.md)** | Complete setup guide (database, email, auth, deployment)   |
+| **[🏗️ Architecture](./docs/ARCHITECTURE.md)**       | How the platform works (multi-tenant, RBAC, auth patterns) |
+| **[🗄️ Database](./docs/DATABASE.md)**               | Complete database schema reference                         |
+| **[🚀 Deployment](./docs/DEPLOYMENT.md)**           | Production deployment guide (Vercel, DNS)                  |
+| **[💳 Stripe](./docs/STRIPE.md)**                   | Billing and subscription setup (optional)                  |
+| **[🤝 Contributing](./CONTRIBUTING.md)**            | How to contribute to this project                          |
 
 ### Settings & RBAC System
 

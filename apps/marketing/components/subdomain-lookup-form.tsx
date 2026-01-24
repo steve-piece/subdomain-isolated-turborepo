@@ -121,14 +121,14 @@ export function SubdomainLookupForm({
       tenant.subdomain,
       "/",
       isDevelopment,
-      process.env.NEXT_PUBLIC_APP_DOMAIN
+      process.env.NEXT_PUBLIC_APP_DOMAIN,
     );
 
     // Security: Validate the final URL before redirecting
     try {
       const url = new URL(targetUrl);
       const expectedDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
-      
+
       // Ensure URL is for our domain only (prevent external redirects)
       if (isDevelopment) {
         // In dev, allow localhost
@@ -141,7 +141,7 @@ export function SubdomainLookupForm({
           throw new Error("Invalid redirect domain");
         }
       }
-      
+
       window.location.href = targetUrl;
     } catch (error) {
       Sentry.captureException(error);
@@ -190,11 +190,11 @@ export function SubdomainLookupForm({
         // Prioritize exact subdomain matches first, then name matches
         const exactSubdomainMatch = tenants.find(
           (tenant) =>
-            tenant.subdomain.toLowerCase() === searchValue.toLowerCase()
+            tenant.subdomain.toLowerCase() === searchValue.toLowerCase(),
         );
 
         const exactNameMatch = tenants.find(
-          (tenant) => tenant.name.toLowerCase() === searchValue.toLowerCase()
+          (tenant) => tenant.name.toLowerCase() === searchValue.toLowerCase(),
         );
 
         const exactMatch = exactSubdomainMatch || exactNameMatch;
@@ -283,7 +283,7 @@ export function SubdomainLookupForm({
                                   "hover:bg-primary/10 hover:shadow-sm",
                                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                                   "group relative",
-                                  index > 0 && "mt-1"
+                                  index > 0 && "mt-1",
                                 )}
                               >
                                 <div className="flex items-center justify-between gap-2.5">

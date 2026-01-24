@@ -139,7 +139,9 @@ export function OrganizationDashboard({
                     className="w-full justify-start"
                     size="lg"
                     variant="outline"
-                    onClick={() => handleRestrictedAction("invite team members")}
+                    onClick={() =>
+                      handleRestrictedAction("invite team members")
+                    }
                   >
                     <span className="mr-2">👤</span>
                     Invite Team Members
