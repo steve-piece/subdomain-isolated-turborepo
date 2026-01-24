@@ -43,9 +43,11 @@ const stageCopy: Record<string, StageCopyEntry> = {
   },
 };
 
+import type { ReactElement } from "react";
+
 export default async function EmailChangeSuccessPage({
   searchParams,
-}: EmailChangeSuccessPageProps) {
+}: EmailChangeSuccessPageProps): Promise<ReactElement> {
   const query = await searchParams;
   const stageParam = query.stage;
   const stage = Array.isArray(stageParam) ? stageParam[0] : stageParam;

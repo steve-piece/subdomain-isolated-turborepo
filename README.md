@@ -91,7 +91,7 @@ pnpm dev
 
 **First Time Setup?** Follow the [Getting Started Guide](./docs/GETTING_STARTED.md) to configure Supabase, Resend, and deploy edge functions.
 
-**Note**: See [Deployment Guide](./docs/DEPLOYMENT.md) for complete production deployment instructions.
+**Note**: See [Vercel Deployment Guide](./VERCEL_DEPLOYMENT.md) for complete production deployment instructions.
 
 ## 📚 Documentation
 
@@ -102,7 +102,7 @@ pnpm dev
 | **[🚀 Getting Started](./docs/GETTING_STARTED.md)** | Complete setup guide (database, email, auth, deployment)   |
 | **[🏗️ Architecture](./docs/ARCHITECTURE.md)**       | How the platform works (multi-tenant, RBAC, auth patterns) |
 | **[🗄️ Database](./docs/DATABASE.md)**               | Complete database schema reference                         |
-| **[🚀 Deployment](./docs/DEPLOYMENT.md)**           | Production deployment guide (Vercel, DNS)                  |
+| **[🚀 Vercel Deployment](./VERCEL_DEPLOYMENT.md)**  | Production deployment guide (Vercel, DNS, GitHub import)   |
 | **[💳 Stripe](./docs/STRIPE.md)**                   | Billing and subscription setup (optional)                  |
 | **[🤝 Contributing](./CONTRIBUTING.md)**            | How to contribute to this project                          |
 
@@ -261,7 +261,7 @@ Target structure for feature pages:
 
 1. **[🚀 Getting Started](./docs/GETTING_STARTED.md)** - Complete setup guide
 2. **[🏗️ Architecture](./docs/ARCHITECTURE.md)** - Understand how it works
-3. **[🚀 Deployment](./docs/DEPLOYMENT.md)** - Deploy to production
+3. **[🚀 Vercel Deployment](./VERCEL_DEPLOYMENT.md)** - Deploy to production
 
 ### For Developers
 

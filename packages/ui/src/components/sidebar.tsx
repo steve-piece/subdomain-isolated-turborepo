@@ -661,7 +661,7 @@ function SidebarMenuSkeleton({
         style={
           {
             "--skeleton-width": width,
-          } as React.CSSProperties & { "--skeleton-width": string }
+          } as React.CSSProperties & Record<`--${string}`, string>
         }
       />
     </div>

@@ -6,11 +6,12 @@
  * - Role check moved to wrapper component
  * - ⚠️ NO CACHING - billing needs real-time subscription status
  */
+import type { ReactElement } from "react";
 import { unstable_noStore as noStore } from "next/cache";
 import { BillingSettingsWrapper } from "@/components/org-settings/billing/billing-settings-wrapper";
 import { RequireTierAccess } from "@/components/shared/require-tier-access";
 
-export default async function BillingSettingsPage() {
+export default async function BillingSettingsPage(): Promise<ReactElement> {
   // ⚠️ Keep noStore() - billing needs real-time data
   noStore();
 

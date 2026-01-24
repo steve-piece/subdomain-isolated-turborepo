@@ -1,4 +1,5 @@
 // apps/protected/app/s/[subdomain]/auth/confirm/page.tsx
+import type { ReactElement } from "react";
 import { redirect } from "next/navigation";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import {
@@ -15,7 +16,7 @@ interface ConfirmPageProps {
 export default async function ConfirmPage({
   params,
   searchParams,
-}: ConfirmPageProps) {
+}: ConfirmPageProps): Promise<ReactElement> {
   const { subdomain } = await params;
   const query = await searchParams;
 

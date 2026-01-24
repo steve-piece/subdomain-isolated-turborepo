@@ -44,7 +44,7 @@ export function ClientRoleGuard({
         } permissions. Your current role: ${failure.actual ?? "unknown"}`,
       error: "Authentication check failed",
     },
-    createClient,
+    createClient: () => Promise.resolve(createClient()) as Promise<ReturnType<typeof createClient>>,
     // Removed onDenied callback to prevent toast spam on page load
     // This component is deprecated - use useTenantClaims() instead
   });

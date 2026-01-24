@@ -5,6 +5,7 @@
  * - Role check moved to wrapper component
  * - Caching enabled (revalidate = 30)
  */
+import type { ReactElement } from "react";
 import { TeamSettingsWrapper } from "@/components/org-settings/team/team-settings-wrapper";
 
 // ✅ Team page is more dynamic - cache for 30 seconds
@@ -14,7 +15,7 @@ export default async function TeamSettingsPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
 
   // ✅ No auth calls - layout provides via context

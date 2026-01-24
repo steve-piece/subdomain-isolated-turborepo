@@ -5,6 +5,7 @@
  * - Simple role check (owner only)
  * - Caching enabled (revalidate = 60)
  */
+import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 import { getAllCapabilities, getOrgCustomCapabilities } from "@actions/rbac";
@@ -19,7 +20,7 @@ export default async function RolesCustomizationPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   await params; // Consume params
   const supabase = await createClient();
 

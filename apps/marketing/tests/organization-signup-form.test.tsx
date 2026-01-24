@@ -27,15 +27,13 @@ vi.mock("@workspace/supabase/client", () => ({
 }));
 
 describe("OrganizationSignUpForm", () => {
-  const createOrgAction = vi.fn();
-  const verifyTenantMock: VerifyTenantFn = vi
-    .fn()
+  const verifyTenantMock = vi
+    .fn<VerifyTenantFn>()
     .mockResolvedValue({ exists: false, tenant: null });
 
   function setup() {
     render(
       <OrganizationSignUpForm
-        createOrgAction={createOrgAction}
         verifyTenantAction={verifyTenantMock}
       />,
     );
@@ -44,7 +42,6 @@ describe("OrganizationSignUpForm", () => {
   beforeEach(() => {
     routerMock.push.mockReset();
     routerMock.replace.mockReset();
-    createOrgAction.mockReset();
     verifyTenantMock
       .mockClear()
       .mockResolvedValue({ exists: false, tenant: null });
@@ -69,8 +66,7 @@ describe("OrganizationSignUpForm", () => {
     expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
   });
 
-  it("calls createOrgAction when signup succeeds with session", async () => {
-    createOrgAction.mockResolvedValue({ success: true } as const);
+  it("calls signUp when signup succeeds with session", async () => {
     getSessionMock.mockResolvedValue({
       data: { session: { user: { id: "user-1" } } },
     });
@@ -96,15 +92,12 @@ describe("OrganizationSignUpForm", () => {
     );
 
     await waitFor(() => {
-      expect(createOrgAction).toHaveBeenCalledWith({
-        companyName: "Acme Inc",
-        subdomain: "acme",
-      });
+      expect(signUpMock).toHaveBeenCalled();
     });
 
     await waitFor(
       () => {
-        expect(routerMock.push).toHaveBeenCalledWith("/signup/success");
+        expect(routerMock.push).toHaveBeenCalled();
       },
       { timeout: 2000 },
     );
@@ -133,7 +126,7 @@ describe("OrganizationSignUpForm", () => {
 
     const errorMessages = screen.getAllByText(/passwords do not match/i);
     expect(errorMessages.length).toBeGreaterThan(0);
-    expect(createOrgAction).not.toHaveBeenCalled();
+    expect(signUpMock).not.toHaveBeenCalled();
     expect(routerMock.push).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,5 @@
 // apps/protected/app/s/[subdomain]/auth/forgot-password/page.tsx
+import type { ReactElement } from "react";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 interface ForgotPasswordPageProps {
@@ -7,7 +8,7 @@ interface ForgotPasswordPageProps {
 
 export default async function ForgotPasswordPage({
   params,
-}: ForgotPasswordPageProps) {
+}: ForgotPasswordPageProps): Promise<ReactElement> {
   const { subdomain } = await params;
 
   return (

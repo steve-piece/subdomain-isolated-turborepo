@@ -1,4 +1,5 @@
 // apps/protected/app/s/[subdomain]/auth/reauthenticate/page.tsx
+import type { ReactElement } from "react";
 import { ReauthenticateForm } from "@/components/auth/reauthenticate-form";
 import RequireTenantAuth from "@/components/shared/require-tenant-auth";
 
@@ -10,7 +11,7 @@ interface ReauthenticatePageProps {
 export default async function ReauthenticatePage({
   params,
   searchParams,
-}: ReauthenticatePageProps) {
+}: ReauthenticatePageProps): Promise<ReactElement> {
   const { subdomain } = await params;
   const query = await searchParams;
 

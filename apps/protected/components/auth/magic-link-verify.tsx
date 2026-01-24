@@ -1,6 +1,7 @@
 // apps/protected/components/magic-link-verify.tsx
 "use client";
 
+import type { ReactElement } from "react";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@workspace/supabase/client";
@@ -19,7 +20,7 @@ interface MagicLinkVerifyProps {
   type: "magiclink" | "reauthenticate";
 }
 
-export function MagicLinkVerify({ type }: MagicLinkVerifyProps) {
+export function MagicLinkVerify({ type }: MagicLinkVerifyProps): ReactElement {
   const [status, setStatus] = useState<
     "verifying" | "success" | "error" | "expired"
   >("verifying");

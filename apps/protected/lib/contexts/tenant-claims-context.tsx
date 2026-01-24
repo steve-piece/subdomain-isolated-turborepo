@@ -1,7 +1,7 @@
 // lib/contexts/tenant-claims-context.tsx
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, type ReactElement } from "react";
 
 /**
  * Minimal JWT Claims Interface
@@ -41,7 +41,7 @@ export function TenantClaimsProvider({
 }: {
   children: React.ReactNode;
   claims: TenantClaims;
-}) {
+}): ReactElement {
   return (
     <TenantClaimsContext.Provider value={claims}>
       {children}

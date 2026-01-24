@@ -1,6 +1,7 @@
 // apps/protected/components/accept-invitation-form.tsx
 "use client";
 
+import type { ReactElement } from "react";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
@@ -19,7 +20,7 @@ interface AcceptInvitationFormProps {
 export function AcceptInvitationForm({
   email,
   redirectTo = "/dashboard",
-}: AcceptInvitationFormProps) {
+}: AcceptInvitationFormProps): ReactElement {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

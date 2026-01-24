@@ -25,7 +25,7 @@ export function SubdomainAuthChecker({ subdomain }: SubdomainAuthCheckerProps) {
     subdomain,
     redirectTo: "/auth/login",
     navigate: (path) => window.location.replace(path),
-    createClient,
+    createClient: () => Promise.resolve(createClient()) as Promise<ReturnType<typeof createClient>>,
     showToast: false,
     messages: {
       no_session: "Please sign in to access this organization",

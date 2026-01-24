@@ -1,6 +1,7 @@
 // apps/protected/components/mfa-setup.tsx
 "use client";
 
+import type { ReactElement } from "react";
 import { useState, useEffect } from "react";
 import {
   enrollMFA,
@@ -21,7 +22,7 @@ import {
 import { useToast } from "@workspace/ui/components/toast";
 import { Smartphone } from "lucide-react";
 
-export function MFASetup() {
+export function MFASetup(): ReactElement {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [factorId, setFactorId] = useState<string | null>(null);

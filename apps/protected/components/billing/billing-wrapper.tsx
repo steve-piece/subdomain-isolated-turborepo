@@ -1,4 +1,5 @@
 // apps/protected/components/billing/billing-wrapper.tsx
+import type { ReactElement } from "react";
 import { BillingData } from "@/app/actions/billing/get-billing-data";
 import {
   Card,
@@ -45,7 +46,7 @@ export function BillingWrapper({
   subdomain,
   billingData,
   plans,
-}: BillingWrapperProps) {
+}: BillingWrapperProps): ReactElement {
   const currentTier = billingData.subscription?.tier || "Free";
   const usage = billingData.usage;
   const isDevelopment = process.env.NODE_ENV === "development";

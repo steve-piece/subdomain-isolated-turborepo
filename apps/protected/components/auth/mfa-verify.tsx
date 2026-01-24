@@ -1,6 +1,7 @@
 // apps/protected/components/mfa-verify.tsx
 "use client";
 
+import type { ReactElement } from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { challengeMFA, verifyMFA } from "@actions/mfa";
@@ -22,7 +23,7 @@ interface MFAVerifyProps {
   onCancel?: () => void;
 }
 
-export function MFAVerify({ factorId, onSuccess, onCancel }: MFAVerifyProps) {
+export function MFAVerify({ factorId, onSuccess, onCancel }: MFAVerifyProps): ReactElement {
   const [verificationCode, setVerificationCode] = useState("");
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);

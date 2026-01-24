@@ -5,6 +5,7 @@
  * - Data fetching moved to wrapper component
  * - Caching enabled (revalidate = 60)
  */
+import type { ReactElement } from "react";
 import { ProjectDetailWrapper } from "@/components/projects/project-detail-wrapper";
 
 // ✅ Project details can be cached for 60 seconds
@@ -14,7 +15,7 @@ export default async function ProjectDetailPage({
   params,
 }: {
   params: Promise<{ subdomain: string; id: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain, id: projectId } = await params;
 
   // ✅ No auth calls - layout provides via context

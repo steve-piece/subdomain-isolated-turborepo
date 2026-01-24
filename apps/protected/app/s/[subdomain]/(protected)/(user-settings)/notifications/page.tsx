@@ -4,6 +4,7 @@
  * - No duplicate auth checks (layout handles it)
  * - Caching enabled (revalidate = 120)
  */
+import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { NotificationPreferencesForm } from "@/components/notifications/notification-preferences-form";
 
@@ -14,7 +15,7 @@ export default async function NotificationsPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement | null> {
   await params; // Consume params
   const supabase = await createClient();
 

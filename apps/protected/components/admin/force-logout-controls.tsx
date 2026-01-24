@@ -1,6 +1,7 @@
 // components/admin/force-logout-controls.tsx
 "use client";
 
+import type { ReactElement } from "react";
 import { useState } from "react";
 import {
   forceLogoutOrganization,
@@ -31,7 +32,7 @@ import {
 import { AlertCircle, LogOut, Shield, CheckCircle2 } from "lucide-react";
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
 
-export function ForceLogoutControls() {
+export function ForceLogoutControls(): ReactElement | null {
   const claims = useTenantClaims();
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{

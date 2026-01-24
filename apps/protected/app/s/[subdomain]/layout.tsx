@@ -4,6 +4,7 @@
  * Validates that the organization exists before allowing access
  * Redirects to marketing site if organization doesn't exist
  */
+import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
@@ -84,7 +85,7 @@ export default async function SubdomainLayout({
 }: {
   children: React.ReactNode;
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
 
   // Verify subdomain exists (either as active organization or active reservation)

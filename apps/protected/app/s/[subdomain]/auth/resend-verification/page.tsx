@@ -16,13 +16,15 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 
+import type { ReactElement } from "react";
+
 interface ResendVerificationPageProps {
   params: Promise<{ subdomain: string }>;
 }
 
 export default function ResendVerificationPage({
   params,
-}: ResendVerificationPageProps) {
+}: ResendVerificationPageProps): ReactElement {
   const [subdomain, setSubdomain] = useState<string>("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);

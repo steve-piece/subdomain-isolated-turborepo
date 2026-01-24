@@ -2,6 +2,7 @@
 // Handles sending password reset emails targeted to a tenant-specific subdomain.
 "use client";
 
+import type { ReactElement } from "react";
 import { useState } from "react";
 import { createClient } from "@workspace/supabase/client";
 import { Button } from "@workspace/ui/components/button";
@@ -21,7 +22,7 @@ interface ForgotPasswordFormProps {
   subdomain: string;
 }
 
-export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps): ReactElement {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);

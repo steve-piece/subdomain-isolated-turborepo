@@ -1,4 +1,5 @@
 // apps/protected/app/s/[subdomain]/auth/error/page.tsx
+import type { ReactElement } from "react";
 import {
   Card,
   CardContent,
@@ -10,7 +11,7 @@ export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ error: string }>;
-}) {
+}): Promise<ReactElement> {
   const params = await searchParams;
 
   return (

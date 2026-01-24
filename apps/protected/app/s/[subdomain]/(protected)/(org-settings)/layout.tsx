@@ -37,7 +37,7 @@ export default function OrgSettingsLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): React.ReactElement {
   const pathname = usePathname();
   const params = useParams();
   const subdomain = params?.subdomain as string;

@@ -32,7 +32,7 @@ export default function UserSettingsLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): React.ReactElement {
   const pathname = usePathname();
   const params = useParams();
   const subdomain = params?.subdomain as string;

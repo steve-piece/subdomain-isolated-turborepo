@@ -4,6 +4,7 @@
  * - No duplicate auth checks (layout handles it)
  * - Caching enabled (revalidate = 120)
  */
+import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { SecurityWrapper } from "@/components/security/security-wrapper";
 
@@ -14,7 +15,7 @@ export default async function SecuritySettingsPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
   const supabase = await createClient();
 

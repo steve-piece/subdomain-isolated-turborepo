@@ -1,11 +1,12 @@
 // apps/protected/app/s/[subdomain]/auth/reset-password/page.tsx
+import type { ReactElement } from "react";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 export default async function ResetPasswordPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
 
   return (

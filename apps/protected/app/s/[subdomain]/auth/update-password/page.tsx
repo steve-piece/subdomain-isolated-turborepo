@@ -13,6 +13,8 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
 
+import type { ReactElement } from "react";
+
 interface UpdatePasswordPageProps {
   params: Promise<{ subdomain: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -21,7 +23,7 @@ interface UpdatePasswordPageProps {
 export default async function UpdatePasswordPage({
   params,
   searchParams,
-}: UpdatePasswordPageProps) {
+}: UpdatePasswordPageProps): Promise<ReactElement> {
   noStore();
   const { subdomain } = await params;
   const searchParamsData = await searchParams;

@@ -1,4 +1,5 @@
 // apps/protected/app/not-found.tsx
+import type { ReactElement } from "react";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -11,7 +12,7 @@ import {
 import { Home, Search } from "lucide-react";
 
 const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "";
-export default function NotFound() {
+export default function NotFound(): ReactElement {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Empty>

@@ -57,7 +57,7 @@ export function RoleProtectedAction({
     navigate: (path) => window.location.replace(path),
     showToast: false,
     messages: centralizedMessages,
-    createClient,
+    createClient: () => Promise.resolve(createClient()) as Promise<ReturnType<typeof createClient>>,
     // Removed onDenied callback to prevent toast spam on page load
     // Toasts will only show on actual user interaction via handleClick
   });

@@ -1,7 +1,8 @@
+import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function SecurityAuditLogPage() {
+export default async function SecurityAuditLogPage(): Promise<ReactElement> {
   const supabase = await createClient();
 
   // Get authenticated user

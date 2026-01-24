@@ -10,6 +10,8 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 
+import type { ReactElement } from "react";
+
 interface UpdatePasswordErrorPageProps {
   params: Promise<{ subdomain: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -18,7 +20,7 @@ interface UpdatePasswordErrorPageProps {
 export default async function UpdatePasswordErrorPage({
   params,
   searchParams,
-}: UpdatePasswordErrorPageProps) {
+}: UpdatePasswordErrorPageProps): Promise<ReactElement> {
   const { subdomain } = await params;
   const query = await searchParams;
   const messageParam = query.message;

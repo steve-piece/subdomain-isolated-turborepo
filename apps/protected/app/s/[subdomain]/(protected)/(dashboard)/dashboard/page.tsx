@@ -5,6 +5,7 @@
  * - Caching enabled (revalidate = 60)
  * - Minimal page, logic in wrapper component
  */
+import type { ReactElement } from "react";
 import { DashboardWrapper } from "@/components/dashboard/dashboard-wrapper";
 import { createClient } from "@workspace/supabase/server";
 import type { Metadata } from "next";
@@ -36,7 +37,7 @@ export default async function DashboardPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
 
   // ✅ No auth calls - layout provides via context

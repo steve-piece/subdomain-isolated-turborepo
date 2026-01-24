@@ -10,13 +10,15 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 
+import type { ReactElement } from "react";
+
 interface UpdatePasswordSuccessPageProps {
   params: Promise<{ subdomain: string }>;
 }
 
 export default async function UpdatePasswordSuccessPage({
   params,
-}: UpdatePasswordSuccessPageProps) {
+}: UpdatePasswordSuccessPageProps): Promise<ReactElement> {
   const { subdomain } = await params;
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">

@@ -5,6 +5,7 @@
  * - Data fetching moved to wrapper component
  * - Caching enabled (revalidate = 120)
  */
+import type { ReactElement } from "react";
 import { ProfileWrapper } from "@/components/profile/profile-wrapper";
 
 // ✅ Profile changes infrequently - cache for 2 minutes
@@ -14,7 +15,7 @@ export default async function ProfilePage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
 
   // ✅ No auth calls - layout provides via context

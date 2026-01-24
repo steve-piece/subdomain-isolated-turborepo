@@ -80,36 +80,6 @@ export type Database = {
           },
         ];
       };
-      codebase_embeddings: {
-        Row: {
-          content: string | null;
-          created_at: string;
-          embedding: string | null;
-          file_path: string;
-          id: number;
-          metadata: Json | null;
-          updated_at: string;
-        };
-        Insert: {
-          content?: string | null;
-          created_at?: string;
-          embedding?: string | null;
-          file_path: string;
-          id?: number;
-          metadata?: Json | null;
-          updated_at?: string;
-        };
-        Update: {
-          content?: string | null;
-          created_at?: string;
-          embedding?: string | null;
-          file_path?: string;
-          id?: number;
-          metadata?: Json | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       customer_billing_profiles: {
         Row: {
           billing_address: Json | null;
@@ -1270,30 +1240,6 @@ export type Database = {
         Args: { p_feature_key: string; p_org_id: string };
         Returns: Json;
       };
-      find_architecture_patterns: {
-        Args: {
-          match_count?: number;
-          match_threshold?: number;
-          query_embedding: string;
-        };
-        Returns: {
-          content: string;
-          file_path: string;
-          similarity: number;
-        }[];
-      };
-      find_existing_implementations: {
-        Args: {
-          file_pattern?: string;
-          match_threshold?: number;
-          query_embedding: string;
-        };
-        Returns: {
-          content: string;
-          file_path: string;
-          similarity: number;
-        }[];
-      };
       force_logout_organization: {
         Args: { p_org_id: string };
         Returns: Json;
@@ -1377,16 +1323,6 @@ export type Database = {
           p_user_id: string;
         };
         Returns: string;
-      };
-      match_documents: {
-        Args: { filter?: Json; match_count: number; query_embedding: string };
-        Returns: {
-          content: string;
-          file_path: string;
-          id: number;
-          metadata: Json;
-          similarity: number;
-        }[];
       };
       should_force_logout: {
         Args: { p_jwt_issued_at: string; p_org_id: string; p_user_id: string };

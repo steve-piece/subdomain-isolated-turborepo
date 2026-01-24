@@ -34,7 +34,7 @@ export function ClientTenantAuth({
     allowedRoles,
     redirectTo: redirectToLogin ? "/auth/login" : undefined,
     navigate: (path: string | URL) => window.location.replace(path),
-    createClient,
+    createClient: () => Promise.resolve(createClient()) as Promise<ReturnType<typeof createClient>>,
     showToast: false,
     messages: {
       no_session: "Please sign in to access this content",

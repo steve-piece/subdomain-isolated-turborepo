@@ -1,4 +1,5 @@
 // apps/protected/app/s/[subdomain]/auth/login/page.tsx
+import type { ReactElement } from "react";
 import { LoginForm } from "@/components/auth/login-form";
 import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
@@ -9,7 +10,7 @@ export default async function LoginPage({
 }: {
   params: Promise<{ subdomain: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
   const search = await searchParams;
 

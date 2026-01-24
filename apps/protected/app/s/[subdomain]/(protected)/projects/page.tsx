@@ -5,6 +5,7 @@
  * - Data fetched on server for performance
  * - Caching enabled (revalidate = 30)
  */
+import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { ProjectsWrapper } from "@/components/projects/projects-wrapper";
 import { redirect } from "next/navigation";
@@ -15,7 +16,7 @@ export default async function ProjectsPage({
   params,
 }: {
   params: Promise<{ subdomain: string }>;
-}) {
+}): Promise<ReactElement> {
   const { subdomain } = await params;
   const supabase = await createClient();
 

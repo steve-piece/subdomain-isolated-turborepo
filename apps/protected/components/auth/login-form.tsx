@@ -2,6 +2,7 @@
 // Tenant-scoped login card handling Supabase email/password auth and flows.
 "use client";
 
+import type { ReactElement } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
@@ -34,7 +35,7 @@ export function LoginForm({
   subdomain,
   className,
   ...props
-}: LoginFormProps & React.ComponentPropsWithoutRef<"div">) {
+}: LoginFormProps & React.ComponentPropsWithoutRef<"div">): ReactElement {
   // Local UI state for controlled inputs and UX feedback
   const [email, setEmail] = useState(""); // bound to the email input
   const [password, setPassword] = useState(""); // bound to the password input

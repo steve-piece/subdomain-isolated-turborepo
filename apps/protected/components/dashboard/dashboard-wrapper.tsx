@@ -1,6 +1,7 @@
 // components/dashboard/dashboard-wrapper.tsx
 "use client";
 
+import type { ReactElement } from "react";
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -41,7 +42,7 @@ interface DashboardWrapperProps {
   subdomain: string;
 }
 
-export function DashboardWrapper({ subdomain }: DashboardWrapperProps) {
+export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactElement {
   // ✅ Get user data from context - no API calls!
   const claims = useTenantClaims();
 

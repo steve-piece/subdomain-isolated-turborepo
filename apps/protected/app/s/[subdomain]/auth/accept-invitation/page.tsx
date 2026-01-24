@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "@workspace/ui/components/card";
+import type { ReactElement } from "react";
 import Link from "next/link";
 
 interface AcceptInvitationPageProps {
@@ -18,7 +19,7 @@ interface AcceptInvitationPageProps {
 export default async function AcceptInvitationPage({
   params,
   searchParams,
-}: AcceptInvitationPageProps) {
+}: AcceptInvitationPageProps): Promise<ReactElement> {
   noStore();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { subdomain } = await params;

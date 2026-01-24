@@ -47,10 +47,12 @@ function resolveCopy(reasonParam?: string | string[]) {
       };
 }
 
+import type { ReactElement } from "react";
+
 export default async function EmailChangeErrorPage({
   params,
   searchParams,
-}: EmailChangeErrorPageProps) {
+}: EmailChangeErrorPageProps): Promise<ReactElement> {
   const { subdomain } = await params;
   const query = await searchParams;
   const messageParam = query.message;

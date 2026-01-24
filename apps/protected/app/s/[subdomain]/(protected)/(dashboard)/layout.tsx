@@ -6,7 +6,7 @@ export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): React.ReactNode {
   return (
     <div className="dashboard-layout pb-10">
       {/* Add shared dashboard UI components here */}
