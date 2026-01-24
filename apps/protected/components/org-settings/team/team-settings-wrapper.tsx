@@ -3,7 +3,7 @@
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import {
   Card,
   CardContent,

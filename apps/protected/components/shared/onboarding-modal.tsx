@@ -36,6 +36,7 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({
   organizationName,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subdomain,
   onComplete,
 }: OnboardingModalProps) {
@@ -44,8 +45,6 @@ export function OnboardingModal({
   const [description, setDescription] = useState("");
   const [industry, setIndustry] = useState("");
   const [companySize, setCompanySize] = useState("");
-  const [website, setWebsite] = useState("");
-  const [address, setAddress] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [step, setStep] = useState<"welcome" | "details" | "logo">("welcome");
@@ -178,8 +177,6 @@ export function OnboardingModal({
       formData.append("description", description);
       formData.append("industry", industry);
       formData.append("company-size", companySize);
-      formData.append("website", website);
-      formData.append("address", address);
 
       const result = await completeOnboarding(formData);
 
@@ -212,7 +209,7 @@ export function OnboardingModal({
 
           <div className="mt-8 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Welcome to {subdomain}!
+              Welcome to {process.env.NEXT_PUBLIC_APP_NAME || "the platform"}!
             </h2>
             <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
               Let&apos;s set up your organization profile in just a few steps.
@@ -273,7 +270,7 @@ export function OnboardingModal({
             Help us get to know your organization better
           </p>
 
-          <div className="mt-6 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="mt-6 space-y-4 max-h-[60vh] overflow-y-auto p-1 pr-2 pb-2">
             <div className="space-y-2">
               <Label htmlFor="org-name">Organization Name *</Label>
               <Input
@@ -329,28 +326,6 @@ export function OnboardingModal({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="website">Website (Optional)</Label>
-              <Input
-                id="website"
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://example.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Address (Optional)</Label>
-              <Input
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="123 Main St, City, Country"
-                maxLength={500}
-              />
             </div>
           </div>
 

@@ -15,12 +15,11 @@ const __dirname = dirname(__filename);
 // Supabase configuration
 const supabaseUrl =
   process.env.SUPABASE_URL || "https://qnbqrlpvokzgtfevnuzv.supabase.co";
-const supabaseKey =
-  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = process.env.SUPABASE_SECRET_KEY;
 
 if (!supabaseKey) {
   console.error(
-    "❌ SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY environment variable is required"
+    "❌ SUPABASE_SECRET_KEY environment variable is required"
   );
   process.exit(1);
 }

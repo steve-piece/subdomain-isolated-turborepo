@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 export interface AdminDashboardData {
   teamMemberCount: number | null;

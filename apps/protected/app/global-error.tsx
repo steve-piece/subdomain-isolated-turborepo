@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
 import { useEffect } from "react";
+import type { ReactElement } from "react";
 
 export default function GlobalError({
   error,
@@ -11,7 +12,7 @@ export default function GlobalError({
 }: {
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}): ReactElement {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);

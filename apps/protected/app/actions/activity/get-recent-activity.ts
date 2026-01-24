@@ -1,7 +1,7 @@
 // apps/protected/app/actions/activity/get-recent-activity.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 export interface ActivityItem {
   id: string;

@@ -1,7 +1,7 @@
 // apps/protected/app/actions/organization/team-settings.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 

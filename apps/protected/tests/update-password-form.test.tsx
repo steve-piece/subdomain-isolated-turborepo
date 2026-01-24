@@ -3,7 +3,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
-import * as supabaseClient from "@/lib/supabase/client";
+import * as supabaseClient from "@workspace/supabase/client";
 
 const mockPush = vi.fn();
 

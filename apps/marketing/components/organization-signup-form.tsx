@@ -3,7 +3,7 @@
 "use client";
 
 import { cn } from "@workspace/ui/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import {
   generateSubdomainSuggestion,
   isValidSubdomain,
@@ -286,6 +286,48 @@ export function OrganizationSignUpForm({
 
       if (authError) throw authError;
 
+      // Create subdomain reservation (48 hour expiration)
+      if (authData.user) {
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 48);
+
+        const { error: reservationError } = await supabase
+          .from("subdomain_reservations")
+          .insert({
+            subdomain: normalizedSubdomain,
+            email,
+            user_id: authData.user.id,
+            organization_name: organizationName,
+            expires_at: expiresAt.toISOString(),
+            metadata: {
+              full_name: userName,
+              subdomain_url: tenantBaseUrl,
+              auth_redirect_url: authRedirectUrl,
+            },
+          });
+
+        if (reservationError) {
+          // If reservation creation fails, log but don't block signup
+          // The activate_reservation function can handle missing reservation
+          // This can happen if RLS policies block the insert (e.g., during signup before session is established)
+          console.error("Failed to create subdomain reservation:", {
+            error: reservationError,
+            message: reservationError.message,
+            code: reservationError.code,
+            details: reservationError.details,
+            hint: reservationError.hint,
+          });
+          
+          // Log to Sentry for monitoring
+          if (typeof window !== "undefined" && (window as any).Sentry) {
+            (window as any).Sentry.captureException(reservationError, {
+              tags: { flow: "signup", step: "create_reservation" },
+              extra: { subdomain: normalizedSubdomain, userId: authData.user.id },
+            });
+          }
+        }
+      }
+
       const { data: sessionRes } = await supabase.auth.getSession();
       const hasSession = Boolean(sessionRes?.session);
 
@@ -293,13 +335,8 @@ export function OrganizationSignUpForm({
         setStatus("pending_email");
         setSuccess(true);
         await new Promise((resolve) => setTimeout(resolve, 1200));
-        router.push("/signup/success");
+        router.push(`/signup/success?subdomain=${encodeURIComponent(normalizedSubdomain)}&email=${encodeURIComponent(email)}`);
         return;
-      }
-
-      if (authData.user) {
-        // No direct org creation here; database trigger inserts inactive org.
-        // Email verification will complete setup via /auth/confirm.
       }
 
       setStatus(null);
@@ -308,7 +345,7 @@ export function OrganizationSignUpForm({
       setSuccess(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      router.push("/signup/success");
+      router.push(`/signup/success?subdomain=${encodeURIComponent(subdomain.trim().toLowerCase())}&email=${encodeURIComponent(email)}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setStatus("error");
@@ -470,6 +507,8 @@ export function OrganizationSignUpForm({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? (
@@ -482,6 +521,7 @@ export function OrganizationSignUpForm({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                       >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
@@ -497,6 +537,7 @@ export function OrganizationSignUpForm({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                       >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
@@ -534,6 +575,8 @@ export function OrganizationSignUpForm({
                   <button
                     type="button"
                     onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                    tabIndex={-1}
+                    aria-label={showRepeatPassword ? "Hide confirm password" : "Show confirm password"}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showRepeatPassword ? (
@@ -546,6 +589,7 @@ export function OrganizationSignUpForm({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                       >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
@@ -561,6 +605,7 @@ export function OrganizationSignUpForm({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                       >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />

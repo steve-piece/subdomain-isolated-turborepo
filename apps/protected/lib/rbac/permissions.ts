@@ -4,7 +4,7 @@
  * Integrates with database capabilities and subscription tiers
  */
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 export type UserRole =
   | "owner"

@@ -1,7 +1,7 @@
 // app/actions/team/update-user-role.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { revalidatePath } from "next/cache";
 
 type UserRole = "owner" | "superadmin" | "admin" | "member" | "view-only";

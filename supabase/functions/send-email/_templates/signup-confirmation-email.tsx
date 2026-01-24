@@ -23,18 +23,17 @@ export function SignupConfirmationEmail({
   appName,
   marketingUrl,
 }: SignupConfirmationEmailProps): React.ReactElement {
-  const previewText = `Welcome to ${organizationName} on ${appName}! Please confirm your email address.`;
+  const previewText = `Welcome to ${appName}! Please confirm your email address.`;
 
   return (
     <BaseEmail previewText={previewText}>
-      <EmailHeading>Welcome to {organizationName}!</EmailHeading>
+      <EmailHeading>Welcome to {appName}!</EmailHeading>
 
       <EmailText>Hi {userName}!</EmailText>
 
       <EmailText>
-        Thank you for creating your organization on <strong>{appName}</strong>.
-        Please click the button below to verify your email address and complete
-        your setup:
+        Thank you for signing up. Please click the button below to verify your
+        email address and complete your setup:
       </EmailText>
 
       <div style={{ textAlign: "center", margin: "32px 0" }}>

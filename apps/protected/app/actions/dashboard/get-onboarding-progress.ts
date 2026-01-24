@@ -1,7 +1,7 @@
 // apps/protected/app/actions/dashboard/get-onboarding-progress.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 export interface OnboardingTask {
   id: string;

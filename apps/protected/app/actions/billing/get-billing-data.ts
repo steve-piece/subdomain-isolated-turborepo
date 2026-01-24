@@ -1,7 +1,7 @@
 // apps/protected/app/actions/billing/get-billing-data.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 export interface BillingData {
   subscription: {

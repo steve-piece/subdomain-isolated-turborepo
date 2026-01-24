@@ -9,7 +9,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import {
   updateUserProfile,
   uploadProfileAvatar,

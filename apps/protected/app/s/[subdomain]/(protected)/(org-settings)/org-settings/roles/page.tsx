@@ -5,7 +5,7 @@
  * - Simple role check (owner only)
  * - Caching enabled (revalidate = 60)
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 import { getAllCapabilities, getOrgCustomCapabilities } from "@actions/rbac";
 import { RoleCapabilitiesManager } from "@/components/org-settings/roles/role-capabilities-manager";

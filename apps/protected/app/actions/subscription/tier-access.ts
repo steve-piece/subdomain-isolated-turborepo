@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import * as Sentry from "@sentry/nextjs";
 
 export interface OrgTierInfo {

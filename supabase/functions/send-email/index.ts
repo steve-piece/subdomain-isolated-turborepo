@@ -33,7 +33,15 @@ const webhookVerifier = new Webhook(hookSecret);
 
 const appDomain = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN");
 const marketingDomain = Deno.env.get("NEXT_PUBLIC_MARKETING_DOMAIN");
-const appName = Deno.env.get("APP_NAME") ?? "Your App Name";
+
+// Configure your app name here or via APP_NAME environment variable
+// Option 1: Set directly here by replacing the empty string below
+// Option 2: Set via environment variable: APP_NAME="Your App Name"
+// Default fallback: "our platform"
+const configuredAppName = "";
+const appName =
+  configuredAppName || Deno.env.get("APP_NAME")?.trim() || "our platform";
+
 const supportEmail =
   Deno.env.get("SENDER_EMAIL") ??
   Deno.env.get("SUPPORT_EMAIL") ??
@@ -84,7 +92,7 @@ interface HookPayload {
 
 interface ResolvedEmail {
   subject: string;
-  react?: React.ReactElement;
+  react?: unknown; // ReactElement is not present in Deno/Edge, so use unknown for compatibility
   text?: string;
 }
 
@@ -272,7 +280,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
   const fullName = userMetadata.full_name ?? metadata.full_name;
   const marketingUrl = marketingDomain
     ? `https://${marketingDomain}`
-    : "https://bask-app.com";
+    : "https://your-app.com";
 
   switch (email_data.email_action_type) {
     case "signup": {
@@ -291,7 +299,8 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
           userName: fullName ?? user.email,
           organizationName,
           confirmationUrl,
-          subdomain: subdomain ?? "",
+          appName,
+          marketingUrl,
         }),
       };
     }

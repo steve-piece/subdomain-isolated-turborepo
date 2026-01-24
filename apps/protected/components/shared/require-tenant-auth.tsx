@@ -9,7 +9,7 @@
  * If any check fails, we redirect BEFORE rendering any UI to avoid flicker
  * and prevent shipping unauthorized components to the browser.
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 import React, { type ReactNode } from "react";
 import * as Sentry from "@sentry/nextjs";

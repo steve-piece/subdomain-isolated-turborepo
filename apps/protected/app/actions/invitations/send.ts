@@ -2,8 +2,8 @@
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@workspace/supabase/server";
+import { createAdminClient } from "@workspace/supabase/admin";
 import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
 import { getTeamSettings } from "@/app/actions/organization/team-settings";
 

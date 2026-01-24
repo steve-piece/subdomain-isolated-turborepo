@@ -1,7 +1,7 @@
 // apps/protected/app/actions/billing/stripe-customer.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { stripe } from "@/lib/stripe/server";
 import { revalidatePath } from "next/cache";
 

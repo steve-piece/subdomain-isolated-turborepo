@@ -11,7 +11,7 @@
 
 import React from "react";
 import { useToast } from "@workspace/ui/components/toast";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import {
   type AppRole,
   useTenantAccess,

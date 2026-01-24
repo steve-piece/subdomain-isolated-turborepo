@@ -9,7 +9,7 @@ import { AppSidebar } from "@/components/shared/app-sidebar";
 import { CommandKSearch } from "@/components/shared/command-k-search";
 import { OnboardingCheck } from "@/components/shared/onboarding-check";
 import { TenantClaimsProvider } from "@/lib/contexts/tenant-claims-context";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import {
@@ -226,7 +226,7 @@ export default async function ProtectedLayout({
           userAvatarUrl={userAvatarUrl}
         />
         <SidebarInset>
-          <main className="flex flex-1 flex-col content-background">
+          <main className="flex flex-1 flex-col content-background pb-10">
             {children}
           </main>
         </SidebarInset>

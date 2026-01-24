@@ -10,7 +10,7 @@
  *
  * If any check fails, we redirect or render a fallback (e.g., upsell).
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 import {
   getOrgEntitlements,

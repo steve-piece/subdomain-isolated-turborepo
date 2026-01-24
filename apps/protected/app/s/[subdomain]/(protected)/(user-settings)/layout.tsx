@@ -76,7 +76,7 @@ export default function UserSettingsLayout({
           </div>
         </div>
       </div>
-      <div className="px-6">
+      <div className="px-6 pb-10">
         <div className="max-w-4xl mx-auto">{children}</div>
       </div>
     </div>

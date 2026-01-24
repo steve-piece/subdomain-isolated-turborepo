@@ -233,8 +233,8 @@ import { updateOrganizationIdentity } from "@actions/organization/settings";
 2. Create a new file with a descriptive name (e.g., `password-reset.ts`)
 3. Add the action with proper types and error handling
 4. Follow the "use server" directive pattern
-5. Import from `@/lib/supabase/server` for RLS-protected operations
-6. Use `@/lib/supabase/admin` only for admin operations (service role)
+5. Import from `@workspace/supabase/server` for RLS-protected operations
+6. Use `@workspace/supabase/admin` only for admin operations (service role)
 7. Export the action and add it to the category's `index.ts` barrel export
 8. Update this README with the new action
 

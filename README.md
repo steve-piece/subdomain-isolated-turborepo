@@ -52,12 +52,20 @@ packages/
 
 ## 🚀 Quick Start
 
+### New to this template?
+
+Start here: **[Getting Started Guide](./docs/GETTING_STARTED.md)** - Complete setup instructions (15-30 min)
+
+**Already configured?** Jump to [Local Development](#local-development) below
+
 ### Prerequisites
 
 - ✅ Node.js 20 or later
 - ✅ pnpm (recommended package manager)
-- ✅ Supabase account (for authentication)
-- ✅ Vercel account (for deployment)
+- ✅ Supabase account (for authentication & database)
+- ✅ Resend account (for transactional emails)
+- ✅ Two domain names (or use localhost for testing)
+- ✅ Vercel account (for deployment - optional)
 
 ### Local Development
 
@@ -67,7 +75,10 @@ git clone <your-repo-url>
 cd subdomain-isolated-turborepo
 pnpm install
 
-# Set up environment variables (see detailed setup guide)
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your Supabase & Resend credentials
+
 # Start development servers
 pnpm dev
 ```
@@ -78,51 +89,29 @@ pnpm dev
 - 🔒 **Protected App**: http://localhost:3003
 - 🏢 **Tenant Subdomains**: http://[company].localhost:3003
 
-## 🔒 SSL Certificate Setup (Vercel)
+**First Time Setup?** Follow the [Getting Started Guide](./docs/GETTING_STARTED.md) to configure Supabase, Resend, and deploy edge functions.
 
-For production deployments via GitHub → Vercel, add your Supabase SSL certificate as an environment variable:
-
-1. Download certificate from Supabase: **Project Settings** → **Database** → **SSL Configuration**
-2. In Vercel: **Settings** → **Environment Variables** → **Add New**
-3. Name: `SUPABASE_SSL_CERT`
-4. Value: Paste entire certificate contents (including `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`)
-5. Select: Production, Preview, Development
-6. Redeploy
-
-**For local development**, add to `.env.local`:
-
-```bash
-SUPABASE_SSL_CERT="-----BEGIN CERTIFICATE-----
-[paste certificate here]
------END CERTIFICATE-----"
-```
+**Note**: See [Deployment Guide](./docs/DEPLOYMENT.md) for complete production deployment instructions.
 
 ## 📚 Documentation
 
-### Setup & Configuration
+### Core Guides
 
-- **[Local Development Setup](./docs/setup/LOCAL_DEVELOPMENT.md)** - Complete local development guide
-- **[Authentication Setup](./docs/setup/AUTHENTICATION_SETUP.md)** - Supabase UI components and custom claims configuration
-
-### Architecture & Database
-
-- **[Multi-Tenant Architecture](./docs/architecture/MULTI_TENANT_ARCHITECTURE.md)** - Subdomain-based tenant isolation and clean URL routing
-- **[Database Schema](./docs/database/DATABASE_SCHEMA.md)** - Complete database structure, RLS policies, and functions
-
-### Deployment & Production
-
-- **[Production Deployment](./docs/deployment/PRODUCTION_DEPLOYMENT.md)** - Vercel deployment with DNS configuration
+| Guide | Description |
+|-------|-------------|
+| **[🚀 Getting Started](./docs/GETTING_STARTED.md)** | Complete setup guide (database, email, auth, deployment) |
+| **[🏗️ Architecture](./docs/ARCHITECTURE.md)** | How the platform works (multi-tenant, RBAC, auth patterns) |
+| **[🗄️ Database](./docs/DATABASE.md)** | Complete database schema reference |
+| **[🚀 Deployment](./docs/DEPLOYMENT.md)** | Production deployment guide (Vercel, DNS) |
+| **[💳 Stripe](./docs/STRIPE.md)** | Billing and subscription setup (optional) |
+| **[🤝 Contributing](./CONTRIBUTING.md)** | How to contribute to this project |
 
 ### Settings & RBAC System
 
-- **[RBAC Architecture](./docs/rbac-settings/RBAC_ARCHITECTURE.md)** - System overview and architecture
-- **[User Settings](./docs/rbac-settings/USER_SETTINGS.md)** - Profile, security, and notification management
-- **[Organization Settings](./docs/rbac-settings/ORGANIZATION_SETTINGS.md)** - Team, billing, and role management
-- **[RBAC System](./docs/rbac-settings/RBAC_SYSTEM.md)** - Role hierarchy, capabilities, and custom permissions
-- **[Database Schema](./docs/rbac-settings/DATABASE_SCHEMA.md)** - Complete database structure and relationships
-- **[Security Features](./docs/rbac-settings/SECURITY_FEATURES.md)** - 2FA, sessions, audit logging
-- **[Testing Guide](./docs/rbac-settings/TESTING_GUIDE.md)** - Comprehensive testing scenarios
-- **[Quick Reference](./docs/rbac-settings/RBAC_QUICK_REFERENCE.md)** - Developer reference for implementation
+Production-ready Role-Based Access Control with 5 role levels and 41+ granular capabilities:
+
+- **Built-in Permissions** - User and organization management out of the box
+- **Security Features** - 2FA ready, session management, audit logging included
 
 ## 🏗️ Built on Supabase UI Components
 
@@ -144,12 +133,12 @@ npx shadcn@latest add https://supabase.com/ui/r/password-based-auth-nextjs.json
 
 ## 🗄️ Database Structure
 
-The project includes a complete multi-tenant database setup script (`database-setup.sql`) that creates:
+The project includes a complete multi-tenant database schema in `supabase/schemas/`:
 
 **Core Tables:** (all RLS enabled)
 
 - `organizations`, `tenants`, `user_profiles` - Multi-tenant org structure
-- `subscriptions`, `subscription_tiers`, `feature_limits`, `usage_counters` - Billing & usage
+- `subscriptions`, `subscription_tiers`, `feature_limits` - Billing & usage
 - `projects`, `project_permissions` - Project management with granular access
 - `capabilities`, `role_capabilities`, `org_role_capabilities` - RBAC system
 
@@ -161,25 +150,19 @@ The project includes a complete multi-tenant database setup script (`database-se
 - 🔐 **Role-Based Access**: `owner` → `superadmin` → `admin` → `member` → `view-only`
 - 🛡️ **Row Level Security**: Comprehensive RLS policies for tenant isolation
 
+See [Database Schema Reference](./docs/DATABASE.md) for complete details.
+
 ## Multi-Tenant Architecture
 
 This application demonstrates a **subdomain‑based multi‑tenant architecture** with strict domain separation and **clean URL routing**:
 
-### Domain Structure
+- **Marketing Site**: `https://yourdomain.com` - Landing page, signup, and tenant discovery
+- **Tenant Apps**: `https://[company].yourdomain.app` - Individual workspace applications
+- Each tenant gets their own subdomain with clean URLs
+- Middleware handles transparent routing between subdomains and internal structure
+- Complete data isolation via Row Level Security (RLS) policies
 
-- **Marketing Site**: `https://${NEXT_PUBLIC_MARKETING_DOMAIN}` - Landing page, signup, and tenant discovery
-- **Tenant Apps**: `https://[company].${NEXT_PUBLIC_APP_DOMAIN}` - Individual workspace applications
-- **Base App Domain**: `https://${NEXT_PUBLIC_APP_DOMAIN}` - Redirects to marketing site (no subdomain access)
-
-### Key Features
-
-- Each tenant gets their own subdomain (`company.${NEXT_PUBLIC_APP_DOMAIN}`)
-- Users see clean URLs like `company.${NEXT_PUBLIC_APP_DOMAIN}/admin` instead of `${NEXT_PUBLIC_APP_DOMAIN}/s/company/admin`
-- The middleware handles transparent routing between clean URLs and internal file structure
-- Strict domain separation: marketing on `${NEXT_PUBLIC_MARKETING_DOMAIN}`, workspaces on `*.${NEXT_PUBLIC_APP_DOMAIN}`
-- Session evaluation on protected app homepage redirects based on subdomain presence
-- Subdomains are dynamically mapped to tenant-specific content with proper authentication
-- Shared UI components are available across all apps via the workspace package
+See [Architecture Guide](./docs/ARCHITECTURE.md) for complete details on how the platform works.
 
 ## 🎨 Settings & RBAC System
 
@@ -198,12 +181,12 @@ The application features a comprehensive settings management system integrated w
 
 ### Quick Start
 
-1. **Apply Database Migrations**: Run the database setup script
+1. **Apply Database Migrations**: Run the schema files in `supabase/schemas/`
 2. **Check User Permissions**: Use the RBAC utilities for permission checking
 3. **Implement UI Components**: Use `RequireCapability` and `useCapability` for conditional rendering
-4. **Customize Roles**: Business+ organizations can customize role capabilities
+4. **Customize Roles**: Business+ tier organizations can customize role capabilities
 
-See the individual documentation files for detailed implementation guides.
+See [Architecture Guide](./docs/ARCHITECTURE.md) for detailed implementation patterns.
 
 ## Available Scripts
 
@@ -243,15 +226,23 @@ Target structure for feature pages:
 
 ```
 📦 subdomain-isolated-turborepo/
-├── 📄 database-setup.sql          # Complete Supabase database setup
-├── 📄 AGENTS.md                   # AI agent development guide
 ├── 📄 README.md                   # This documentation
-├── 📁 docs/                       # Detailed documentation
-│   ├── 📁 setup/                  # Setup guides
-│   ├── 📁 architecture/            # Architecture documentation
-│   ├── 📁 deployment/              # Deployment guides
-│   ├── 📁 database/                # Database documentation
-│   └── 📁 rbac-settings/           # RBAC system documentation
+├── 📄 CONTRIBUTING.md             # Contribution guidelines
+├── 📁 docs/                       # Documentation
+│   ├── GETTING_STARTED.md         # Complete setup guide
+│   ├── ARCHITECTURE.md            # Platform architecture
+│   ├── DATABASE.md                # Database schema reference
+│   ├── DEPLOYMENT.md              # Production deployment
+│   └── STRIPE.md                  # Billing setup
+├── 📁 supabase/
+│   └── 📁 schemas/                # Database schema files
+│       ├── 00_extensions.sql
+│       ├── 01_enums.sql
+│       ├── 02_tables.sql
+│       ├── 03_functions.sql
+│       ├── 04_views.sql
+│       ├── 05_rls_policies.sql
+│       └── seed_data.sql
 ├── 📁 .cursor/rules/               # Optional Cursor rules (.mdc)
 ├── 📁 apps/
 │   ├── 📁 marketing/              # Landing page & tenant discovery
@@ -264,4 +255,46 @@ Target structure for feature pages:
 
 ---
 
-**Ready to get started?** Check out the [Local Development Setup](./docs/setup/LOCAL_DEVELOPMENT.md) guide to begin building your multi-tenant application!
+## 🎯 Ready to Build?
+
+### For New Users
+
+1. **[🚀 Getting Started](./docs/GETTING_STARTED.md)** - Complete setup guide
+2. **[🏗️ Architecture](./docs/ARCHITECTURE.md)** - Understand how it works
+3. **[🚀 Deployment](./docs/DEPLOYMENT.md)** - Deploy to production
+
+### For Developers
+
+- **🏗️ Patterns** → Review `.cursor/rules/` for coding standards
+- **🗄️ Database** → [Database Schema Reference](./docs/DATABASE.md)
+- **💳 Billing** → [Stripe Setup](./docs/STRIPE.md) (optional)
+- **🤝 Contribute** → [Contributing Guide](./CONTRIBUTING.md)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
+- 📝 Documentation improvements
+- 🐛 Bug reports and fixes
+- ✨ Feature suggestions
+- 💻 Code contributions
+
+---
+
+## 🆘 Support
+
+- **📖 Docs**: See [Getting Started](./docs/GETTING_STARTED.md) for setup and troubleshooting
+- **🐛 Issues**: Report bugs at [GitHub Issues](https://github.com/your-repo/issues)
+- **💬 Discussions**: Ask questions at [GitHub Discussions](https://github.com/your-repo/discussions)
+
+---
+
+## 📄 License
+
+[Your License Here]
+
+---
+
+**Happy building!** 🚀

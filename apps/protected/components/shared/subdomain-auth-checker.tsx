@@ -10,7 +10,7 @@
 "use client";
 
 import React from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import { useTenantAccess, type GuardFailure } from "@workspace/ui/hooks";
 import { Building2, Search } from "lucide-react";
 

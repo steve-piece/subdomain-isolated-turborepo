@@ -1,7 +1,7 @@
 // apps/protected/app/actions/admin/force-logout.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 

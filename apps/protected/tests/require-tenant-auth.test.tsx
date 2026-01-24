@@ -2,9 +2,9 @@
 import React from "react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import RequireTenantAuth from "@/components/shared/require-tenant-auth";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
-vi.mock("@/lib/supabase/server", () => ({
+vi.mock("@workspace/supabase/server", () => ({
   createClient: vi.fn(),
 }));
 

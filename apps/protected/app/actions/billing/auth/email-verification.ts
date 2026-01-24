@@ -2,7 +2,7 @@
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { type EmailOtpType } from "@supabase/supabase-js";
 
 export interface ResendVerificationResponse {
@@ -23,10 +23,44 @@ export interface ConfirmEmailResponse {
  */
 export async function resendEmailVerification(
   email: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _subdomain: string,
+  subdomain: string,
 ): Promise<ResendVerificationResponse> {
   const supabase = await createClient();
+
+  // Extend reservation expiration if one exists
+  try {
+    const newExpiresAt = new Date();
+    newExpiresAt.setHours(newExpiresAt.getHours() + 48); // Extend by 48 hours
+
+    const { error: updateError } = await supabase
+      .from("subdomain_reservations")
+      .update({ expires_at: newExpiresAt.toISOString() })
+      .eq("email", email)
+      .eq("subdomain", subdomain.trim().toLowerCase())
+      .is("confirmed_at", null);
+
+    if (updateError) {
+      Sentry.logger.warn("reservation_extension_failed", {
+        email,
+        subdomain,
+        error: updateError.message,
+      });
+      // Don't fail the resend if reservation extension fails
+    } else {
+      Sentry.logger.info("reservation_extended", {
+        email,
+        subdomain,
+        newExpiresAt: newExpiresAt.toISOString(),
+      });
+    }
+  } catch (err) {
+    // Non-critical error - log but continue with email resend
+    Sentry.logger.warn("reservation_extension_error", {
+      email,
+      subdomain,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
 
   // Directly resend verification email without requiring password
   const { error: resendError } = await supabase.auth.resend({
@@ -104,37 +138,70 @@ export async function confirmEmailAndBootstrap(
       };
     }
 
-    // After successful verification, attempt to bootstrap the organization
+    // After successful verification, attempt to activate the reservation or bootstrap organization
     try {
       let attempts = 0;
       // small retry loop to wait for session
       while (attempts < 3) {
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData?.session) {
-          // Only bootstrap for owner signups based on auth.users user_metadata
+          // Only activate for owner signups based on auth.users user_metadata
           const role = (
             sessionData.session.user.user_metadata as Record<string, unknown>
           )?.user_role;
           if (role === "owner") {
-            await supabase.rpc("bootstrap_organization", {
-              p_user_id: sessionData.session.user.id,
-              p_subdomain: subdomain,
-            });
+            // Try to activate reservation first (new flow)
+            const { data: orgId, error: activateError } = await supabase.rpc(
+              "activate_reservation",
+              {
+                p_user_id: sessionData.session.user.id,
+                p_subdomain: subdomain,
+              },
+            );
+
+            if (activateError) {
+              // If reservation doesn't exist or expired, fall back to bootstrap
+              // This handles backward compatibility with existing signups
+              Sentry.withScope((scope) => {
+                scope.setTag("auth.flow", "activate_reservation_fallback");
+                scope.setContext("activate_reservation", {
+                  subdomain,
+                  error: activateError.message,
+                });
+                scope.setLevel("info");
+                Sentry.captureMessage(
+                  "Reservation activation failed, falling back to bootstrap",
+                );
+              });
+
+              // Fall back to bootstrap_organization for backward compatibility
+              await supabase.rpc("bootstrap_organization", {
+                p_user_id: sessionData.session.user.id,
+                p_subdomain: subdomain,
+              });
+            } else if (orgId) {
+              Sentry.logger.info("reservation_activated", {
+                userId: sessionData.session.user.id,
+                subdomain,
+                orgId,
+              });
+            }
           }
           break;
         }
         attempts++;
         await new Promise((r) => setTimeout(r, 300));
       }
-    } catch {
+    } catch (err) {
       // Non-fatal: bootstrap can be retried later from app UI
       Sentry.withScope((scope) => {
-        scope.setTag("auth.flow", "bootstrap_organization");
-        scope.setContext("bootstrap_organization", {
+        scope.setTag("auth.flow", "organization_activation");
+        scope.setContext("organization_activation", {
           subdomain,
+          error: err instanceof Error ? err.message : String(err),
         });
         scope.setLevel("info");
-        Sentry.captureMessage("bootstrap_organization_retry_skipped");
+        Sentry.captureMessage("organization_activation_retry_skipped");
       });
     }
 

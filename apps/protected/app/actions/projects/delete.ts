@@ -1,7 +1,7 @@
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export interface ProjectActionResponse {

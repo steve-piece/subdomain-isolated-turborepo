@@ -7,7 +7,7 @@
  * - Minimal page, logic in wrapper component
  */
 import { AdminWrapper } from "@/components/admin/admin-wrapper";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import type { Metadata } from "next";
 
 // ✅ Enable caching - auth is handled by layout

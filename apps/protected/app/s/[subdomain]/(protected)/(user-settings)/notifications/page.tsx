@@ -4,7 +4,7 @@
  * - No duplicate auth checks (layout handles it)
  * - Caching enabled (revalidate = 120)
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { NotificationPreferencesForm } from "@/components/notifications/notification-preferences-form";
 
 // ✅ Notification preferences change infrequently - cache for 2 minutes

@@ -10,7 +10,7 @@
 "use client";
 
 import React from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import { type AppRole, useTenantAccess } from "@workspace/ui/hooks";
 
 interface ClientRoleGuardProps {

@@ -1,0 +1,27 @@
+{
+  "name": "@workspace/supabase",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.9",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "^9.32.0",
+    "typescript": "^5.9.2"
+  },
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./middleware": "./src/middleware.ts",
+    "./admin": "./src/admin.ts",
+    "./types": "./src/types.ts"
+  }
+}

@@ -1,6 +1,6 @@
 // apps/protected/app/s/[subdomain]/auth/login/page.tsx
 import { LoginForm } from "@/components/auth/login-form";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function LoginPage({

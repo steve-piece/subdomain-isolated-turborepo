@@ -4,7 +4,7 @@
  */
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import type { CapabilityKey } from "./capabilities";
 import * as Sentry from "@sentry/nextjs";
 

@@ -6,7 +6,7 @@
  */
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 export type Entitlement = {
   feature_key: string;

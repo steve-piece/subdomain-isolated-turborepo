@@ -163,7 +163,7 @@ const handleManageBilling = async () => {
 ### Check Usage Limits
 
 ```tsx
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 const supabase = await createClient();
 

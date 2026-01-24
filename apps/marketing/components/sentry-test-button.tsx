@@ -60,7 +60,7 @@ export function SentryTestButton() {
         Use these buttons to verify Sentry error capture is working correctly.
       </p>
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap justify-center">
         <button
           onClick={testClientSideError}
           className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"

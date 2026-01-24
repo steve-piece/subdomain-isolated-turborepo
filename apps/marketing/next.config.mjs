@@ -4,6 +4,16 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig = {
   transpilePackages: ["@workspace/ui"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   // Fix OpenTelemetry/Sentry instrumentation package conflicts
   serverExternalPackages: [
     "require-in-the-middle",

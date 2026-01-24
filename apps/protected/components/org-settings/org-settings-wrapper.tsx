@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { updateOrganizationIdentity } from "@/app/actions/organization";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 

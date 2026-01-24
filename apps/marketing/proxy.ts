@@ -1,5 +1,5 @@
-// apps/marketing/middleware.ts
-import { updateSession } from "@/lib/supabase/middleware";
+// apps/marketing/proxy.ts
+import { updateSession } from "@workspace/supabase/middleware";
 import { type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 

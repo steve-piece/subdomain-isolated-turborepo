@@ -1,6 +1,6 @@
 // apps/marketing/app/actions.ts
 "use server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import * as Sentry from "@sentry/nextjs";
 
 export interface TenantSearchResult {
@@ -39,10 +39,10 @@ export async function searchTenants(
 
     Sentry.logger.debug("tenant_search_env_vars", {
       hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY,
+      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
       urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30),
       keyPrefix:
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY?.substring(
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY?.substring(
           0,
           30
         ),
@@ -196,6 +196,32 @@ export async function verifyTenant(
 
     // maybeSingle returns null when no row is found, which is the expected behavior
     if (!tenant) {
+      // Also check if there's an active reservation for this subdomain
+      const { data: reservation, error: reservationError } = await supabase
+        .from("subdomain_reservations")
+        .select("subdomain")
+        .eq("subdomain", normalizedSubdomain)
+        .gt("expires_at", new Date().toISOString())
+        .is("confirmed_at", null)
+        .maybeSingle();
+
+      if (reservationError) {
+        Sentry.logger.error("reservation_check_error", {
+          message: reservationError.message,
+          subdomain,
+        });
+        // Don't fail the request if reservation check fails
+        // Just assume no reservation exists
+      }
+
+      if (reservation) {
+        // Subdomain is reserved but not yet confirmed
+        return {
+          exists: true,
+          tenant: null,
+        };
+      }
+
       return {
         exists: false,
         tenant: null,

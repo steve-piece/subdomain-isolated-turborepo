@@ -20,6 +20,7 @@ export default async function AcceptInvitationPage({
   searchParams,
 }: AcceptInvitationPageProps) {
   noStore();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { subdomain } = await params;
   const searchParamsData = await searchParams;
 
@@ -114,7 +115,7 @@ export default async function AcceptInvitationPage({
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Welcome to {subdomain}!</CardTitle>
+            <CardTitle className="text-2xl">Welcome to {process.env.APP_NAME || "the platform"}!</CardTitle>
             <CardDescription>
               Set up your password to complete your invitation
             </CardDescription>

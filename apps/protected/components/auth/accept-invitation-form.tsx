@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { completeInvitation } from "@actions/invitations";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -515,6 +515,8 @@ export function AcceptInvitationForm({
           <button
             type="button"
             onClick={() => setShowPassword((val) => !val)}
+            tabIndex={-1}
+            aria-label={showPassword ? "Hide password" : "Show password"}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
             {showPassword ? (
@@ -527,6 +529,7 @@ export function AcceptInvitationForm({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />
@@ -542,6 +545,7 @@ export function AcceptInvitationForm({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />
@@ -566,6 +570,8 @@ export function AcceptInvitationForm({
           <button
             type="button"
             onClick={() => setShowConfirmPassword((val) => !val)}
+            tabIndex={-1}
+            aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
             {showConfirmPassword ? (
@@ -578,6 +584,7 @@ export function AcceptInvitationForm({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />
@@ -593,6 +600,7 @@ export function AcceptInvitationForm({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />

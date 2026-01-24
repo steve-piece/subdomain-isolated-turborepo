@@ -17,7 +17,7 @@ import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@workspace/supabase/client";
 import { useToast } from "@workspace/ui/components/toast";
 import { sendMagicLink } from "@actions/billing/auth";
 import { Lock, AlertCircle } from "lucide-react";
@@ -356,6 +356,8 @@ export function LoginForm({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? (
@@ -368,6 +370,7 @@ export function LoginForm({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                       >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
@@ -383,6 +386,7 @@ export function LoginForm({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                       >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />

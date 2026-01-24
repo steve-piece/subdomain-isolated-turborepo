@@ -17,7 +17,7 @@ const getSessionMock = vi.fn();
 
 type VerifyTenantFn = (subdomain: string) => Promise<VerifyTenantResponse>;
 
-vi.mock("@/lib/supabase/client", () => ({
+vi.mock("@workspace/supabase/client", () => ({
   createClient: () => ({
     auth: {
       signUp: signUpMock,

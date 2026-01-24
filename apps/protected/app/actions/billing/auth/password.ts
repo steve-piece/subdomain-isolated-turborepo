@@ -2,7 +2,7 @@
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 
 export interface UpdatePasswordResponse {
   success: boolean;

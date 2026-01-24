@@ -4,7 +4,7 @@
  * - No duplicate auth checks (layout handles it)
  * - Caching enabled (revalidate = 120)
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { SecurityWrapper } from "@/components/security/security-wrapper";
 
 // ✅ Security settings change infrequently - cache for 2 minutes

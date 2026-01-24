@@ -2,17 +2,13 @@
 /** @type {import('next').NextConfig} */
 import { withSentryConfig } from "@sentry/nextjs";
 
-// Extract hostname from SUPABASE_URL
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : "localhost";
-
 const nextConfig = {
   transpilePackages: ["@workspace/ui"],
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: supabaseHostname,
+        hostname: "*.supabase.co",
         port: "",
         pathname: "/storage/v1/object/public/**",
       },

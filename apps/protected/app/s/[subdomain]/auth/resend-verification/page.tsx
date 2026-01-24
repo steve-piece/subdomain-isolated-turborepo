@@ -38,6 +38,12 @@ export default function ResendVerificationPage({
   useEffect(() => {
     const urlError = searchParams.get("error");
     const urlMessage = searchParams.get("message");
+    const urlEmail = searchParams.get("email");
+
+    // Pre-fill email from query params
+    if (urlEmail) {
+      setEmail(decodeURIComponent(urlEmail));
+    }
 
     if (urlError) {
       setError(urlError);
@@ -86,6 +92,17 @@ export default function ResendVerificationPage({
             <CardDescription>
               Enter your email address to receive a new verification email
             </CardDescription>
+            {subdomain && (
+              <div className="mt-4 rounded-lg bg-muted p-3 space-y-1">
+                <p className="text-sm font-medium">
+                  Organization: <span className="font-mono">{subdomain}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Your subdomain reservation will be extended for another 48 hours
+                  after resending.
+                </p>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleResendVerification}>

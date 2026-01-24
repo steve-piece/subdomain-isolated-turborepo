@@ -64,9 +64,22 @@ import { hasRoleAccess } from "../../lib/utils/role-hierarchy";
 // Set to true to enable debug logging for sidebar access checks
 const DEBUG_SIDEBAR_ACCESS = false;
 
-// Default logo URL - used when organization doesn't have a custom logo
-const DEFAULT_LOGO_URL =
-  process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || "INSERT_DEFAULT_LOGO_URL";
+/**
+ * Get initials from organization name (e.g., "Acme Corp" -> "AC")
+ */
+function getOrgInitials(name: string): string {
+  if (!name) return "?";
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) {
+    // Single word - take first 2 characters, safely
+    return (words[0]?.substring(0, 2) ?? "?").toUpperCase();
+  }
+  // Multiple words - take first letter of first two words, with checks
+  const firstInitial = words[0]?.[0] ?? "";
+  const secondInitial = words[1]?.[0] ?? "";
+  if (!firstInitial && !secondInitial) return "?";
+  return (firstInitial + secondInitial).toUpperCase();
+}
 
 /**
  * Validates that navigation hrefs are internal paths only (no external URLs or injections)
@@ -459,13 +472,19 @@ export function AppSidebar({
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 text-white overflow-hidden">
-                  <NextImage
-                    src={logoUrl || DEFAULT_LOGO_URL}
-                    alt={`${organizationName} logo`}
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-cover"
-                  />
+                  {logoUrl ? (
+                    <NextImage
+                      src={logoUrl}
+                      alt={`${organizationName} logo`}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs font-bold">
+                      {getOrgInitials(organizationName)}
+                    </span>
+                  )}
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
@@ -483,7 +502,7 @@ export function AppSidebar({
         {/* Search - only show when expanded */}
         <div className="relative group-data-[collapsible=icon]:hidden px-2">
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <SidebarInput
               ref={searchInputRef}
               type="search"

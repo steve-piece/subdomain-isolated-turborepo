@@ -5,7 +5,7 @@
  * - Data fetched on server for performance
  * - Caching enabled (revalidate = 30)
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { ProjectsWrapper } from "@/components/projects/projects-wrapper";
 import { redirect } from "next/navigation";
 

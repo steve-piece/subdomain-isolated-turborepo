@@ -1,6 +1,6 @@
 // apps/protected/app/s/[subdomain]/auth/update-password/page.tsx
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@workspace/supabase/server";
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import {
