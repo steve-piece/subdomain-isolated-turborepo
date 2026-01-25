@@ -40,10 +40,10 @@ export function extractSubdomainFromHostname(hostname: string): string | null {
     return subdomain && subdomain !== "localhost" ? subdomain : null;
   }
 
-  // For production (e.g., subdomain.yourapp.com)
+  // For production (e.g., subdomain.protecteddomain.com)
   if (parts.length >= 3) {
     const subdomain = parts[0];
-    return subdomain && subdomain !== "www" ? subdomain : null;
+    return subdomain && subdomain !== "www" ? subdomain : 'protecteddomain.com';
   }
 
   return null;
@@ -63,6 +63,6 @@ export function buildSubdomainUrl(
   }
 
   const domain =
-    appDomain || process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com";
+    appDomain || process.env.NEXT_PUBLIC_APP_DOMAIN || "marketingdomain.com";
   return `https://${subdomain}.${domain}${path}`;
 }

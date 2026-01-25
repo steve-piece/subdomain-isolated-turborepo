@@ -77,7 +77,7 @@ describe("OrganizationSignUpForm", () => {
 
     await user.type(screen.getByLabelText(/organization name/i), "Acme Inc");
     await user.type(screen.getByLabelText(/your full name/i), "Jane Founder");
-    await user.type(screen.getByLabelText(/your email/i), "jane@acme.com");
+    await user.type(screen.getByLabelText(/your email/i), "jane@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "password123");
     await user.type(screen.getByLabelText(/confirm password/i), "password123");
     await user.clear(screen.getByLabelText(/subdomain/i));
@@ -110,7 +110,7 @@ describe("OrganizationSignUpForm", () => {
 
     await user.type(screen.getByLabelText(/organization name/i), "Acme Inc");
     await user.type(screen.getByLabelText(/your full name/i), "Jane Founder");
-    await user.type(screen.getByLabelText(/your email/i), "jane@acme.com");
+    await user.type(screen.getByLabelText(/your email/i), "jane@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "password123");
     await user.type(screen.getByLabelText(/confirm password/i), "different");
     await user.clear(screen.getByLabelText(/subdomain/i));

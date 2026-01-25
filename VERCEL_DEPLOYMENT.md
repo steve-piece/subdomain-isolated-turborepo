@@ -138,7 +138,7 @@ vercel env add VARIABLE_NAME
 1. Go to your **Marketing** project in Vercel
 2. Navigate to **Settings** → **Domains**
 3. Click **"Add Domain"**
-4. Enter your marketing domain (e.g., `bask-app.com`)
+4. Enter your marketing domain (e.g., `marketingdomain.com`)
 5. Follow DNS configuration instructions
 6. Add DNS records to your domain provider
 
@@ -147,9 +147,9 @@ vercel env add VARIABLE_NAME
 1. Go to your **Protected** project in Vercel
 2. Navigate to **Settings** → **Domains**
 3. Click **"Add Domain"**
-4. Enter your protected domain (e.g., `ghostwrite.app`)
-5. **Important**: Also add wildcard subdomain: `*.ghostwrite.app`
-   - This allows tenant subdomains like `company.ghostwrite.app`
+4. Enter your protected domain (e.g., `protecteddomain.com`)
+5. **Important**: Also add wildcard subdomain: `*.protecteddomain.com`
+   - This allows tenant subdomains like `company.protecteddomain.com`
 6. Follow DNS configuration instructions
 7. Add DNS records to your domain provider
 
@@ -158,7 +158,7 @@ vercel env add VARIABLE_NAME
 ```
 Type    Name              Value
 A       @                 <Vercel IP>
-CNAME   *.ghostwrite.app  cname.vercel-dns.com
+CNAME   *.protecteddomain.com  cname.vercel-dns.com
 ```
 
 ---
@@ -168,11 +168,11 @@ CNAME   *.ghostwrite.app  cname.vercel-dns.com
 After setting up domains, update these environment variables in both projects:
 
 **Marketing App:**
-- `NEXT_PUBLIC_MARKETING_DOMAIN=bask-app.com`
+- `NEXT_PUBLIC_MARKETING_DOMAIN=marketingdomain.com`
 
 **Protected App:**
-- `NEXT_PUBLIC_APP_DOMAIN=ghostwrite.app`
-- `NEXT_PUBLIC_MARKETING_DOMAIN=bask-app.com`
+- `NEXT_PUBLIC_APP_DOMAIN=protecteddomain.com`
+- `NEXT_PUBLIC_MARKETING_DOMAIN=marketingdomain.com`
 
 Then **redeploy** both projects to pick up the new domain values.
 
@@ -190,8 +190,8 @@ SUPABASE_SECRET_KEY=your-service-role-key
 SUPABASE_URL=https://your-project.supabase.co
 
 # Domains
-NEXT_PUBLIC_MARKETING_DOMAIN=bask-app.com
-NEXT_PUBLIC_APP_DOMAIN=ghostwrite.app
+NEXT_PUBLIC_MARKETING_DOMAIN=marketingdomain.com
+NEXT_PUBLIC_APP_DOMAIN=protecteddomain.com
 
 # App Info
 APP_NAME=Ghost Write Ai
@@ -199,9 +199,9 @@ NEXT_PUBLIC_APP_NAME=Ghost Write Ai
 
 # Email (Resend)
 RESEND_API_KEY=your-resend-api-key
-EMAIL_DOMAIN=auth.voltguardai.com
-SENDER_EMAIL=support@auth.voltguardai.com
-SUPPORT_EMAIL=support@auth.voltguardai.com
+EMAIL_DOMAIN=emaildomain.com
+SENDER_EMAIL=support@emaildomain.com
+SUPPORT_EMAIL=support@emaildomain.com
 RESEND_ENABLE_INVITATION_EMAILS=true
 RESEND_ENABLE_WELCOME_EMAILS=true
 RESEND_VERIFY_EMAILS=true
@@ -289,7 +289,7 @@ After deployment, verify:
 
 ### Protected App
 - [ ] Protected app loads at your custom domain
-- [ ] Subdomain routing works (e.g., `company.ghostwrite.app`)
+- [ ] Subdomain routing works (e.g., `company.protecteddomain.com`)
 - [ ] Authentication works
 - [ ] Tenant isolation is working
 - [ ] Database connections work
@@ -324,11 +324,11 @@ After deployment, verify:
 
 ### Subdomains Not Working
 
-**Issue**: `company.ghostwrite.app` doesn't load
+**Issue**: `company.protecteddomain.com` doesn't load
 
 **Solution**:
-1. Verify wildcard domain `*.ghostwrite.app` is added in Vercel
-2. Check DNS records include CNAME for `*.ghostwrite.app`
+1. Verify wildcard domain `*.protecteddomain.com` is added in Vercel
+2. Check DNS records include CNAME for `*.protecteddomain.com`
 3. Wait for DNS propagation (can take up to 48 hours)
 4. Verify `NEXT_PUBLIC_APP_DOMAIN` is set correctly
 

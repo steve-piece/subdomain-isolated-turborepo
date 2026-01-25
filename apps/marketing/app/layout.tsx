@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 
 export function generateMetadata(): Metadata {
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
+  const appName = process.env.APP_NAME || "Your App";
   const description = "Transform your workflow with AI-powered tools";
   const marketingDomain =
     process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "localhost:3002";

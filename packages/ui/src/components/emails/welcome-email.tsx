@@ -7,8 +7,8 @@ export interface WelcomeEmailProps {
   organizationName: string;
   subdomain: string;
   dashboardUrl: string;
-  supportEmail?: string;
-  emailDomain?: string;
+  supportEmail?: string | "support@emaildomain.com";
+  emailDomain?: string | "emaildomain.com";
 }
 
 export function WelcomeEmail({
@@ -16,9 +16,9 @@ export function WelcomeEmail({
   organizationName,
   subdomain,
   dashboardUrl,
-  supportEmail = process.env.SUPPORT_EMAIL || "support@auth.voltguardai.com",
+  supportEmail = process.env.SUPPORT_EMAIL || "support@emaildomain.com",
 }: WelcomeEmailProps) {
-  const EMAIL_DOMAIN = process.env.EMAIL_DOMAIN || "yourapp.com";
+  const EMAIL_DOMAIN = process.env.EMAIL_DOMAIN || "emaildomain.com";
   const defaultSupportEmail =
     supportEmail || process.env.SUPPORT_EMAIL || `support@${EMAIL_DOMAIN}`;
   const previewText = `Welcome to ${organizationName}! Your account is now active and ready to use.`;
@@ -85,7 +85,7 @@ export function WelcomeEmail({
         <li style={{ marginBottom: "8px" }}>
           Set up your organization preferences
         </li>
-        <li>Start using the platform&apos;s features</li>
+        <li>Check out our app&apos;s features</li>
       </ul>
 
       <EmailText

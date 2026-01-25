@@ -25,8 +25,7 @@ export async function generateMetadata({
 
   const companyName = claims?.claims.company_name || subdomain;
   // Read APP_NAME from environment - ensure it's defined in .env.local
-  const appName =
-    process.env.NEXT_PUBLIC_APP_NAME || process.env.APP_NAME || "Your App Name";
+  const appName = process.env.APP_NAME || "Your App";
 
   return {
     title: `${companyName} Dashboard | ${appName}`,

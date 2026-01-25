@@ -261,7 +261,7 @@ export function OrganizationSignUpForm({
       // Sign up the user
       const normalizedSubdomain = subdomain.trim().toLowerCase();
       const isDev = process.env.NODE_ENV !== "production";
-      const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com";
+      const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com";
       const tenantBaseUrl = isDev
         ? `http://${normalizedSubdomain}.localhost:3003`
         : `https://${normalizedSubdomain}.${appDomain}`;
@@ -416,7 +416,7 @@ export function OrganizationSignUpForm({
                     )}
                   />
                   <span className="bg-muted px-3 py-2 border border-l-0 rounded-r-md text-muted-foreground">
-                    .{process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com"}
+                    .{process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com"}
                   </span>
                   {subdomainValidation === "valid" && (
                     <span className="ml-2 text-green-500">✓</span>
@@ -436,7 +436,7 @@ export function OrganizationSignUpForm({
                   {subdomainValidation === "invalid" && subdomain
                     ? "Subdomain must be 3-63 characters, letters, numbers, and hyphens only"
                     : `Your team will access the app at ${subdomain || "subdomain"}.${
-                        process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com"
+                        process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com"
                       }`}
                 </p>
               </div>
@@ -470,7 +470,7 @@ export function OrganizationSignUpForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@acme.com"
+                  placeholder="me@example.com"
                   required
                   autoComplete="email"
                   value={email}

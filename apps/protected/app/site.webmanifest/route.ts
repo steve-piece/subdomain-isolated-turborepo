@@ -6,8 +6,7 @@ import { NextResponse } from "next/server";
  * Serves web app manifest with environment-based configuration
  */
 export async function GET() {
-  const appName =
-    process.env.NEXT_PUBLIC_APP_NAME || process.env.APP_NAME || "Your App Name";
+  const appName = process.env.APP_NAME || "Your App";
 
   // Generate short name from app name (first word or first 12 chars)
   const shortName =

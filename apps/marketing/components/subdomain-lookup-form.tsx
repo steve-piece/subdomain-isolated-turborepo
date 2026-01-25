@@ -305,7 +305,7 @@ export function SubdomainLookupForm({
                                       <span className="text-[11px] text-muted-foreground truncate">
                                         {tenant.subdomain}.
                                         {process.env.NEXT_PUBLIC_APP_DOMAIN ||
-                                          "yourapp.com"}
+                                          "protecteddomain.com"}
                                       </span>
                                     </div>
                                   </div>

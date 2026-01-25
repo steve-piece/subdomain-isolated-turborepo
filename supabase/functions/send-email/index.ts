@@ -34,10 +34,6 @@ const webhookVerifier = new Webhook(hookSecret);
 const appDomain = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN");
 const marketingDomain = Deno.env.get("NEXT_PUBLIC_MARKETING_DOMAIN");
 
-// Configure your app name here or via APP_NAME environment variable
-// Option 1: Set directly here by replacing the empty string below
-// Option 2: Set via environment variable: APP_NAME="Your App Name"
-// Default fallback: "our platform"
 const configuredAppName = "";
 const appName =
   configuredAppName || Deno.env.get("APP_NAME")?.trim() || "our platform";
@@ -45,7 +41,7 @@ const appName =
 const supportEmail =
   Deno.env.get("SENDER_EMAIL") ??
   Deno.env.get("SUPPORT_EMAIL") ??
-  "support@auth.voltguardai.com";
+  "support@emaildomain.com";
 
 // Email toggle settings for testing
 const enableInvitations =
@@ -280,7 +276,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
   const fullName = userMetadata.full_name ?? metadata.full_name;
   const marketingUrl = marketingDomain
     ? `https://${marketingDomain}`
-    : "https://your-app.com";
+    : "https://marketingdomain.com";
 
   switch (email_data.email_action_type) {
     case "signup": {

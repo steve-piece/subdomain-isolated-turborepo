@@ -96,7 +96,7 @@ export default async function SubdomainLayout({
     const isDevelopment = process.env.NODE_ENV === "development";
     const marketingUrl = isDevelopment
       ? "http://localhost:3002"
-      : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "bask-app.com"}`;
+      : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "marketingdomain.com"}`;
 
     Sentry.logger.info("subdomain_redirect_to_marketing", {
       subdomain,

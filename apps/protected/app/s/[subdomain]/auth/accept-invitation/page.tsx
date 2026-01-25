@@ -117,7 +117,7 @@ export default async function AcceptInvitationPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">
-              Welcome to {process.env.APP_NAME || "the platform"}!
+              Welcome to {process.env.APP_NAME || "Your App"}!
             </CardTitle>
             <CardDescription>
               Set up your password to complete your invitation

@@ -85,7 +85,7 @@ const marketingDomain = Deno.env.get("NEXT_PUBLIC_MARKETING_DOMAIN");
 const supportEmail =
   Deno.env.get("SENDER_EMAIL") ??
   Deno.env.get("SUPPORT_EMAIL") ??
-  "support@auth.voltguardai.com";
+  "support@emaildomain.com";
 
 // Email toggle settings for testing
 const enableInvitations =

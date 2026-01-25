@@ -4,8 +4,8 @@ A multi-tenant Turborepo built with Next.js 15, featuring custom subdomains for 
 
 **NOTE**: The marketing site domain and the domain for subdomain isolated accounts are listed below. These are just two domains I owned and wasn't using, but for production you might choose domains with somewhat similar naming conventions.
 
-**Marketing Site Domain**: bask-app.com
-**Isolated Domain for Customer Accounts**: ghostwrite.app
+**Marketing Site Domain**: https://marketing-app-template.vercel.app/
+**Isolated Domain for Customer Accounts**: https://protected-app-template.vercel.app
 
 ## Features
 
@@ -74,6 +74,12 @@ Start here: **[Getting Started Guide](./docs/GETTING_STARTED.md)** - Complete se
 git clone <your-repo-url>
 cd subdomain-isolated-turborepo
 pnpm install
+
+# RECOMMENDED: Replace placeholder values across the codebase
+# Search & replace (match case, whole word):
+# - "Your App" → Your actual app name
+# - "marketingdomain.com" → Your marketing domain
+# - "protecteddomain.com" → Your protected domain
 
 # Set up environment variables
 cp .env.example .env.local

@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <div className="flex items-center justify-center min-h-svh p-6">
       <div className="text-center max-w-2xl">
-        <h1 className="text-4xl font-bold mb-6">Your App Platform</h1>
+        <h1 className="text-4xl font-bold mb-6">Your App</h1>
         <p className="text-xl text-muted-foreground mb-8">
           Create your organization and start collaborating with your team in a
           secure, subdomain-based workspace.
@@ -29,7 +29,7 @@ export default function Page() {
             Each organization gets their own secure subdomain.
             <br />
             Access your workspace at yourcompany.
-            {process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com"}
+            {process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com"}
           </p>
         </div>
 

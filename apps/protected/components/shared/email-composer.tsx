@@ -20,7 +20,7 @@ export function EmailComposer({ userId }: { userId: string }) {
         templateData: {
           title: "Important Update",
           message: "Your account has been updated with new features.",
-          actionUrl: "https://yourapp.com/dashboard",
+          actionUrl: "https://marketingdomain.com/dashboard",
           actionText: "View Dashboard",
         },
       });
