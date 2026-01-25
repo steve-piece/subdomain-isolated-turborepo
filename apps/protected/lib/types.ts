@@ -17,7 +17,7 @@ export type AppRole =
 /**
  * Subscription tier names
  */
-export type SubscriptionTier = "Free" | "Starter" | "Pro" | "Enterprise";
+export type SubscriptionTier = "Free" | "Pro" | "Business" | "Enterprise";
 
 /**
  * Subscription status

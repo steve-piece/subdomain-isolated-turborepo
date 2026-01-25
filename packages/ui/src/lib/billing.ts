@@ -5,7 +5,7 @@
 
 export type SubscriptionTier = {
   id: string;
-  name: string; // e.g., Free, Pro, Enterprise
+  name: string; // e.g., Free, Pro, Business, Enterprise
   created_at: string;
   updated_at: string;
 };
