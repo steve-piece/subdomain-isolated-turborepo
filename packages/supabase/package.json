@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.92.0"
+    "@supabase/supabase-js": "^2.92.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",
@@ -19,10 +20,26 @@
     "typescript": "^5.9.3"
   },
   "exports": {
-    "./client": "./src/client.ts",
-    "./server": "./src/server.ts",
-    "./middleware": "./src/middleware.ts",
-    "./admin": "./src/admin.ts",
-    "./types": "./src/types.ts"
+    "./client": {
+      "types": "./src/client.ts",
+      "react-server": "./src/client.ts",
+      "default": "./src/client.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    },
+    "./middleware": {
+      "types": "./src/middleware.ts",
+      "default": "./src/middleware.ts"
+    },
+    "./admin": {
+      "types": "./src/admin.ts",
+      "default": "./src/admin.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    }
   }
 }

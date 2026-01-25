@@ -14,6 +14,12 @@ const nextConfig = {
       },
     ],
   },
+  turbopack: {
+    resolveAlias: {
+      // Workaround for Turbopack issue with node:module imports in @supabase/ssr
+      "node:module": "../../packages/supabase/src/empty.ts",
+    },
+  },
   // Fix OpenTelemetry/Sentry instrumentation package conflicts
   serverExternalPackages: [
     "require-in-the-middle",
