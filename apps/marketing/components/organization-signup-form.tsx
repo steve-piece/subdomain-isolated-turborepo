@@ -383,12 +383,13 @@ export function OrganizationSignUpForm({
                   onBlur={() =>
                     handleFieldBlur("organizationName", organizationName)
                   }
-                  className={
+                  className={cn(
+                    "text-sm",
                     touchedFields.organizationName &&
-                    fieldErrors.organizationName
+                      fieldErrors.organizationName
                       ? "border-red-500"
-                      : ""
-                  }
+                      : "",
+                  )}
                 />
                 {touchedFields.organizationName &&
                   fieldErrors.organizationName && (
@@ -404,18 +405,18 @@ export function OrganizationSignUpForm({
                   <Input
                     id="subdomain"
                     type="text"
-                    placeholder="acme"
+                    placeholder=""
                     required
                     autoComplete="off"
                     value={subdomain}
                     onChange={handleSubdomainChange}
                     className={cn(
-                      "rounded-r-none min-w-0 w-[110px] h-[42px]",
+                      "rounded-r-none min-w-0 w-[110px] h-[36px] text-sm",
                       subdomainValidation === "valid" && "border-green-500",
                       subdomainValidation === "invalid" && "border-red-500",
                     )}
                   />
-                  <span className="bg-muted px-3 py-2 border border-l-0 rounded-r-[25px] text-muted-foreground whitespace-nowrap shrink-0 h-[42px] flex items-center">
+                  <span className="bg-muted pl-[10px] pr-[20px] py-2 border border-l-0 rounded-r-[25px] text-sm text-muted-foreground whitespace-nowrap shrink-0 h-[36px] flex items-center mr-0">
                     .{process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com"}
                   </span>
                   {subdomainValidation === "valid" && (
@@ -427,7 +428,7 @@ export function OrganizationSignUpForm({
                 </div>
                 <p
                   className={cn(
-                    "text-sm",
+                    "text-xs",
                     subdomainValidation === "valid" && "text-green-600",
                     subdomainValidation === "invalid" && "text-red-600",
                     !subdomainValidation && "text-muted-foreground",
@@ -452,11 +453,12 @@ export function OrganizationSignUpForm({
                   value={userName}
                   onChange={handleUserNameChange}
                   onBlur={() => handleFieldBlur("userName", userName)}
-                  className={
+                  className={cn(
+                    "text-sm",
                     touchedFields.userName && fieldErrors.userName
                       ? "border-red-500"
-                      : ""
-                  }
+                      : "",
+                  )}
                 />
                 {touchedFields.userName && fieldErrors.userName && (
                   <p className="text-sm text-red-500 mt-1">
@@ -476,11 +478,12 @@ export function OrganizationSignUpForm({
                   value={email}
                   onChange={handleEmailChange}
                   onBlur={() => handleFieldBlur("email", email)}
-                  className={
+                  className={cn(
+                    "text-sm",
                     touchedFields.email && fieldErrors.email
                       ? "border-red-500"
-                      : ""
-                  }
+                      : "",
+                  )}
                 />
                 {touchedFields.email && fieldErrors.email && (
                   <p className="text-sm text-red-500 mt-1">
@@ -501,7 +504,7 @@ export function OrganizationSignUpForm({
                     onChange={handlePasswordChange}
                     onBlur={() => handleFieldBlur("password", password)}
                     className={cn(
-                      "pr-10",
+                      "pr-10 text-sm",
                       touchedFields.password && fieldErrors.password
                         ? "border-red-500"
                         : "",
@@ -571,7 +574,7 @@ export function OrganizationSignUpForm({
                       handleFieldBlur("repeatPassword", repeatPassword)
                     }
                     className={cn(
-                      "pr-10",
+                      "pr-10 text-sm",
                       touchedFields.repeatPassword && fieldErrors.repeatPassword
                         ? "border-red-500"
                         : "",
@@ -666,7 +669,7 @@ export function OrganizationSignUpForm({
               <Button
                 type="submit"
                 className={cn(
-                  "w-full transition-all",
+                  "w-full transition-all text-base h-10",
                   success && "bg-green-600 hover:bg-green-700",
                 )}
                 aria-label="Create organization"

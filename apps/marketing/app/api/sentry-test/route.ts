@@ -15,11 +15,32 @@ export async function GET() {
   Sentry.captureMessage("Direct message capture test", "info");
 
   try {
-    // Log before the error for tracing
-    Sentry.logger.info("sentry_test_route_accessed", {
-      timestamp: new Date().toISOString(),
-      purpose: "testing_sentry_configuration",
-    });
+    // Log before the error for tracing using Sentry logger
+    try {
+      // Use logger if available (requires enableLogs: true)
+      if (Sentry.logger && typeof Sentry.logger.info === "function") {
+        Sentry.logger.info("Sentry test route accessed", {
+          timestamp: new Date().toISOString(),
+          purpose: "testing_sentry_configuration",
+        });
+      } else {
+        // Fallback: use captureMessage with context
+        Sentry.withScope((scope) => {
+          scope.setLevel("info");
+          scope.setContext("test_info", {
+            timestamp: new Date().toISOString(),
+            purpose: "testing_sentry_configuration",
+          });
+          Sentry.captureMessage("Sentry test route accessed", "info");
+        });
+      }
+    } catch (loggerError) {
+      // If logger fails, use console.log (will be captured by consoleLoggingIntegration)
+      console.log("Sentry test route accessed", {
+        timestamp: new Date().toISOString(),
+        purpose: "testing_sentry_configuration",
+      });
+    }
 
     // Intentionally throw an error to test Sentry
     const testError = new Error(
