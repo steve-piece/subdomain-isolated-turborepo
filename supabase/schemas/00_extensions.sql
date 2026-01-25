@@ -1,7 +1,6 @@
 -- ============================================================================
 -- Database Extensions
 -- Generated: 2026-01-21T10:30:00.000Z
--- Source: https://qnbqrlpvokzgtfevnuzv.supabase.co
 -- ============================================================================
 
 -- Extensions installed in the database

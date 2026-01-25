@@ -1,7 +1,6 @@
 -- ============================================================================
 -- 03_functions.sql - Additional Functions (Non-Trigger Functions)
 -- Generated: 2026-01-22
--- Source: https://qnbqrlpvokzgtfevnuzv.supabase.co
 -- ============================================================================
 -- Note: Trigger functions used by table creation are already in 02_tables.sql
 -- This file contains the remaining business logic and utility functions

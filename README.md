@@ -1,11 +1,8 @@
 # Subdomain-Isolated Turborepo
 
-A multi-tenant Turborepo built with Next.js 15, featuring custom subdomains for each tenant and a shared UI component library.
+A multi-tenant Turborepo built with Next.js 16 using seperate domains for customer accounts and marketing site. 
 
-**NOTE**: The marketing site domain and the domain for subdomain isolated accounts are listed below. These are just two domains I owned and wasn't using, but for production you might choose domains with somewhat similar naming conventions.
-
-**Marketing Site Domain**: https://marketing-app-template.vercel.app/
-**Isolated Domain for Customer Accounts**: https://protected-app-template.vercel.app
+**Demo**: https://marketing-app-template.vercel.app/
 
 ## Features
 
@@ -97,7 +94,7 @@ pnpm dev
 
 **First Time Setup?** Follow the [Getting Started Guide](./docs/GETTING_STARTED.md) to configure Supabase, Resend, and deploy edge functions.
 
-**Note**: See [Vercel Deployment Guide](./VERCEL_DEPLOYMENT.md) for complete production deployment instructions.
+**Note**: See [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) for complete production deployment instructions.
 
 ## 📚 Documentation
 
@@ -108,7 +105,7 @@ pnpm dev
 | **[🚀 Getting Started](./docs/GETTING_STARTED.md)** | Complete setup guide (database, email, auth, deployment)   |
 | **[🏗️ Architecture](./docs/ARCHITECTURE.md)**       | How the platform works (multi-tenant, RBAC, auth patterns) |
 | **[🗄️ Database](./docs/DATABASE.md)**               | Complete database schema reference                         |
-| **[🚀 Vercel Deployment](./VERCEL_DEPLOYMENT.md)**  | Production deployment guide (Vercel, DNS, GitHub import)   |
+| **[🚀 Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md)**  | Production deployment guide (Vercel, DNS, GitHub import)   |
 | **[💳 Stripe](./docs/STRIPE.md)**                   | Billing and subscription setup (optional)                  |
 | **[🤝 Contributing](./CONTRIBUTING.md)**            | How to contribute to this project                          |
 
@@ -267,7 +264,7 @@ Target structure for feature pages:
 
 1. **[🚀 Getting Started](./docs/GETTING_STARTED.md)** - Complete setup guide
 2. **[🏗️ Architecture](./docs/ARCHITECTURE.md)** - Understand how it works
-3. **[🚀 Vercel Deployment](./VERCEL_DEPLOYMENT.md)** - Deploy to production
+3. **[🚀 Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md)** - Deploy to production
 
 ### For Developers
 
@@ -299,8 +296,4 @@ We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 
 ## 📄 License
 
-[Your License Here]
-
----
-
-**Happy building!** 🚀
+**[MIT License](./LICENSE)**

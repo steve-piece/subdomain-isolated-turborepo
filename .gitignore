@@ -55,3 +55,7 @@ docs/rbac-settings/*
 # Sensitive files
 .env.email
 *.backup.gz
+
+# Scripts
+scripts/**
+scripts/*

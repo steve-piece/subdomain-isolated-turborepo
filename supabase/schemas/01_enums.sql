@@ -1,7 +1,6 @@
 -- ============================================================================
 -- Custom Types and Enums
 -- Generated: 2026-01-21T10:30:00.000Z
--- Source: https://qnbqrlpvokzgtfevnuzv.supabase.co
 -- ============================================================================
 
 -- Enum: invitation_status
