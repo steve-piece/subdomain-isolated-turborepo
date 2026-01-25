@@ -16,11 +16,11 @@ export function WelcomeEmail({
   organizationName,
   subdomain,
   dashboardUrl,
-  supportEmail = process.env.SUPPORT_EMAIL || "support@emaildomain.com",
+  supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAI || "support@emaildomain.com",
 }: WelcomeEmailProps) {
   const EMAIL_DOMAIN = process.env.EMAIL_DOMAIN || "emaildomain.com";
   const defaultSupportEmail =
-    supportEmail || process.env.SUPPORT_EMAIL || `support@${EMAIL_DOMAIN}`;
+    supportEmail || process.env.NEXT_PUBLIC_SUPPORT_EMAI || `support@${EMAIL_DOMAIN}`;
   const previewText = `Welcome to ${organizationName}! Your account is now active and ready to use.`;
 
   return (

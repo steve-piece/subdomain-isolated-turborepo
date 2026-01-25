@@ -64,7 +64,7 @@ export async function sendEmail(
     const resend = getResendClient();
 
     const defaultFrom =
-      process.env.SUPPORT_EMAIL || "support@emaildomain.com";
+      process.env.NEXT_PUBLIC_SUPPORT_EMAI || "support@emaildomain.com";
 
     // Sanitize tags to prevent Resend validation errors
     const sanitizedTags = options.tags?.map((tag) => ({

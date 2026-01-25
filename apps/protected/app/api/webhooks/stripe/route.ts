@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 // Create service role client for webhook handlers (lazy initialization)
 async function getSupabaseAdmin() {
   const { createClient } = await import("@supabase/supabase-js");
-  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 
   if (!supabaseUrl || !supabaseSecretKey) {

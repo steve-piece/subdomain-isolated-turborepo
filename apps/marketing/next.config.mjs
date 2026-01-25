@@ -3,7 +3,7 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig = {
-  transpilePackages: ["@workspace/ui"],
+  transpilePackages: ["@workspace/ui", "@workspace/supabase"],
   images: {
     remotePatterns: [
       {
@@ -14,10 +14,13 @@ const nextConfig = {
       },
     ],
   },
+  // Workaround for @supabase/supabase-js node:module reference in browser bundles
+  // See: https://github.com/vercel/next.js/issues/64525
   turbopack: {
     resolveAlias: {
-      // Workaround for Turbopack issue with node:module imports in @supabase/ssr
-      "node:module": "../../packages/supabase/src/empty.ts",
+      "node:module": {
+        browser: "../../packages/supabase/src/browser-stub.ts",
+      },
     },
   },
   // Fix OpenTelemetry/Sentry instrumentation package conflicts

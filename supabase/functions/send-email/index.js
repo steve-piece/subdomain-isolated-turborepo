@@ -84,7 +84,7 @@ const appDomain = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN");
 const marketingDomain = Deno.env.get("NEXT_PUBLIC_MARKETING_DOMAIN");
 const supportEmail =
   Deno.env.get("SENDER_EMAIL") ??
-  Deno.env.get("SUPPORT_EMAIL") ??
+  Deno.env.get("NEXT_PUBLIC_SUPPORT_EMAI") ??
   "support@emaildomain.com";
 
 // Email toggle settings for testing

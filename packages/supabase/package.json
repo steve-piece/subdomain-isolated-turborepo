@@ -22,7 +22,6 @@
   "exports": {
     "./client": {
       "types": "./src/client.ts",
-      "react-server": "./src/client.ts",
       "default": "./src/client.ts"
     },
     "./server": {

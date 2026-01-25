@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
             actionText: body.templateData.actionText,
         }));
         const result = await resend.emails.send({
-            from: Deno.env.get("SUPPORT_EMAIL") ?? "support@emaildomain.com",
+            from: Deno.env.get("NEXT_PUBLIC_SUPPORT_EMAI") ?? "support@emaildomain.com",
             to: [profile.email ?? caller.email],
             subject: body.templateData.title,
             html,

@@ -13,7 +13,7 @@ interface StripeInvoiceExtended extends Stripe.Invoice {
 // Note: This bypasses RLS as webhooks need elevated privileges
 async function getSupabaseAdmin() {
   const { createClient } = await import("@supabase/supabase-js");
-  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 
   if (!supabaseUrl || !supabaseSecretKey) {

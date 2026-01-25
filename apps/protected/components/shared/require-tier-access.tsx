@@ -200,7 +200,7 @@ export function RequireTierAccess({
               Have questions or need a custom plan?
             </p>
             <a
-              href={`mailto:${process.env.SUPPORT_EMAIL || "support@emaildomain.com"}`}
+              href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAI || "support@emaildomain.com"}`}
               className="text-xs text-primary hover:underline font-medium"
             >
               Contact our sales team →

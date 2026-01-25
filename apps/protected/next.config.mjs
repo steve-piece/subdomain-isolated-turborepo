@@ -19,10 +19,13 @@ const nextConfig = {
       bodySizeLimit: "3mb", // Allow up to 3MB for avatar uploads (2MB max file + overhead)
     },
   },
+  // Workaround for @supabase/supabase-js node:module reference in browser bundles
+  // See: https://github.com/vercel/next.js/issues/64525
   turbopack: {
     resolveAlias: {
-      // Workaround for Turbopack issue with node:module imports in @supabase/ssr
-      "node:module": "../../packages/supabase/src/empty.ts",
+      "node:module": {
+        browser: "../../packages/supabase/src/browser-stub.ts",
+      },
     },
   },
   // Fix OpenTelemetry/Sentry instrumentation package conflicts

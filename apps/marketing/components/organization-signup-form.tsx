@@ -410,12 +410,12 @@ export function OrganizationSignUpForm({
                     value={subdomain}
                     onChange={handleSubdomainChange}
                     className={cn(
-                      "rounded-r-none",
+                      "rounded-r-none min-w-0 w-[110px] h-[42px]",
                       subdomainValidation === "valid" && "border-green-500",
                       subdomainValidation === "invalid" && "border-red-500",
                     )}
                   />
-                  <span className="bg-muted px-3 py-2 border border-l-0 rounded-r-md text-muted-foreground">
+                  <span className="bg-muted px-3 py-2 border border-l-0 rounded-r-[25px] text-muted-foreground whitespace-nowrap shrink-0 h-[42px] flex items-center">
                     .{process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com"}
                   </span>
                   {subdomainValidation === "valid" && (
