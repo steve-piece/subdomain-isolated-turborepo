@@ -36,15 +36,9 @@ export default async function Page({ searchParams }: PageProps) {
   const emailValue = Array.isArray(emailParam) ? emailParam[0] : emailParam;
   const email = emailValue ? decodeURIComponent(emailValue) : null;
 
-  // Build login URL if subdomain is valid
+  // Build resend verification URL
   const isDevelopment = process.env.NODE_ENV === "development";
   const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN;
-  const loginUrl =
-    subdomain && isValidSubdomain(subdomain)
-      ? buildSubdomainUrl(subdomain, "/auth/login", isDevelopment, appDomain)
-      : null;
-
-  // Build resend verification URL
   const resendUrl =
     subdomain && email && isValidSubdomain(subdomain)
       ? buildSubdomainUrl(
@@ -99,20 +93,9 @@ export default async function Page({ searchParams }: PageProps) {
                 <Link href={resendUrl}>Resend Verification Email</Link>
               </Button>
             )}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link href="/">Back to Homepage</Link>
-              </Button>
-              {loginUrl && (
-                <Button
-                  asChild
-                  variant="secondary"
-                  className="w-full sm:w-auto"
-                >
-                  <Link href={loginUrl}>Go to Login</Link>
-                </Button>
-              )}
-            </div>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/">Back to Homepage</Link>
+            </Button>
           </div>
         </div>
       </div>

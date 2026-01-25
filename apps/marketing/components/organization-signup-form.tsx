@@ -638,34 +638,6 @@ export function OrganizationSignUpForm({
                 </div>
               )}
 
-              {status === "pending_email" && !error && (
-                <div className="p-3 rounded-md bg-blue-50 border border-blue-200">
-                  <p className="text-sm text-blue-700 flex items-center">
-                    <span className="mr-2">📬</span>
-                    Check your inbox to confirm your email and finish setup.
-                  </p>
-                </div>
-              )}
-
-              {status === "needs_profile" && !error && (
-                <div className="p-3 rounded-md bg-amber-50 border border-amber-200">
-                  <p className="text-sm text-amber-700 flex items-center">
-                    <span className="mr-2">⏳</span>
-                    We are finalizing your organization setup. Please refresh in
-                    a few seconds.
-                  </p>
-                </div>
-              )}
-
-              {success && (
-                <div className="p-3 rounded-md bg-green-50 border border-green-200">
-                  <p className="text-sm text-green-700 flex items-center">
-                    <span className="mr-2">✓</span>
-                    Organization created successfully. Redirecting...
-                  </p>
-                </div>
-              )}
-
               <Button
                 type="submit"
                 className={cn(

@@ -20,6 +20,12 @@ export interface VerifyTenantResponse {
   error?: string;
 }
 
+export interface ResendVerificationResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
 /**
  * Search for tenants by name or subdomain
  */
@@ -247,4 +253,79 @@ export async function verifyTenant(
       error: "Internal server error",
     };
   }
+}
+
+/**
+ * Resends the Supabase signup verification email for a given address, bypassing the
+ * password requirement and tagging any failures in Sentry for later investigation.
+ * This function works in the marketing app and doesn't require a fully provisioned tenant.
+ */
+export async function resendEmailVerification(
+  email: string,
+  subdomain?: string,
+): Promise<ResendVerificationResponse> {
+  const supabase = await createClient();
+
+  // Extend reservation expiration if subdomain is provided and reservation exists
+  if (subdomain) {
+    try {
+      const newExpiresAt = new Date();
+      newExpiresAt.setHours(newExpiresAt.getHours() + 48); // Extend by 48 hours
+
+      const { error: updateError } = await supabase
+        .from("subdomain_reservations")
+        .update({ expires_at: newExpiresAt.toISOString() })
+        .eq("email", email)
+        .eq("subdomain", subdomain.trim().toLowerCase())
+        .is("confirmed_at", null);
+
+      if (updateError) {
+        Sentry.logger.warn("reservation_extension_failed", {
+          email,
+          subdomain,
+          error: updateError.message,
+        });
+        // Don't fail the resend if reservation extension fails
+      } else {
+        Sentry.logger.info("reservation_extended", {
+          email,
+          subdomain,
+          newExpiresAt: newExpiresAt.toISOString(),
+        });
+      }
+    } catch (err) {
+      // Non-critical error - log but continue with email resend
+      Sentry.logger.warn("reservation_extension_error", {
+        email,
+        subdomain,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  // Directly resend verification email without requiring password
+  const { error: resendError } = await supabase.auth.resend({
+    type: "signup",
+    email,
+  });
+
+  if (resendError) {
+    Sentry.withScope((scope) => {
+      scope.setTag("auth.flow", "resend_verification");
+      scope.setUser({ email });
+      scope.setContext("resend_verification", {
+        message: resendError.message,
+        status: resendError.status,
+        subdomain: subdomain || null,
+      });
+      scope.setLevel("warning");
+      Sentry.captureException(resendError);
+    });
+    return { success: false, message: resendError.message };
+  }
+
+  return {
+    success: true,
+    message: "Verification email resent successfully! Please check your inbox.",
+  };
 }
