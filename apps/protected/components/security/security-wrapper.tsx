@@ -12,6 +12,7 @@ import {
 import { MFASetup } from "@/components/auth/mfa-setup";
 import { AuditLogDialog } from "@/components/security/audit-log-dialog";
 import { ChangePasswordDialog } from "@/components/security/change-password-dialog";
+import { SecuritySummaryCard } from "@/components/security/security-summary";
 import { Shield, Key, Smartphone, History, Trash2 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 
@@ -25,6 +26,9 @@ export function SecurityWrapper({ lastSignIn }: SecurityWrapperProps) {
 
   return (
     <div className="space-y-6">
+      {/* Security Summary */}
+      <SecuritySummaryCard showFullDetails={true} />
+
       {/* Password Section */}
       <Card className="border-none shadow-sm">
         <CardHeader>

@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
 import { logSecurityEvent } from "@/app/actions/security/audit-log";
+import { updateUserSecuritySettings } from "@/app/actions/security/user-security-settings";
 
 export interface EnrollMFAResponse {
   success: boolean;
@@ -110,7 +111,17 @@ export async function verifyMFAEnrollment(
       userId: user.id,
     });
 
-    // Log MFA enrollment
+    const now = new Date().toISOString();
+
+    // Update user security settings state table
+    await updateUserSecuritySettings({
+      userId: user.id,
+      mfaEnabled: true,
+      mfaFactorId: factorId,
+      mfaEnrolledAt: now,
+    });
+
+    // Log MFA enrollment to audit log
     await logSecurityEvent({
       eventType: "mfa",
       eventAction: "mfa_enrolled",

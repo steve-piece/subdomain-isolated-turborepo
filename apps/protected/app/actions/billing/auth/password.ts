@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
 import { logSecurityEvent } from "@/app/actions/security/audit-log";
+import { updateUserSecuritySettings } from "@/app/actions/security/user-security-settings";
 
 export interface UpdatePasswordResponse {
   success: boolean;
@@ -56,7 +57,15 @@ export async function updatePassword(
       return { success: false, message: error.message };
     }
 
-    // Log successful password change
+    const now = new Date().toISOString();
+
+    // Update user security settings state table
+    await updateUserSecuritySettings({
+      userId: user.id,
+      passwordChangedAt: now,
+    });
+
+    // Log successful password change to audit log
     await logSecurityEvent({
       eventType: "password",
       eventAction: "password_changed",

@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
 import { logSecurityEvent } from "@/app/actions/security/audit-log";
+import { updateUserSecuritySettings } from "@/app/actions/security/user-security-settings";
 
 export interface UnenrollMFAResponse {
   success: boolean;
@@ -56,7 +57,15 @@ export async function unenrollMFA(
       userId: user.id,
     });
 
-    // Log MFA unenrollment
+    // Update user security settings state table
+    await updateUserSecuritySettings({
+      userId: user.id,
+      mfaEnabled: false,
+      mfaFactorId: null,
+      mfaEnrolledAt: null,
+    });
+
+    // Log MFA unenrollment to audit log
     await logSecurityEvent({
       eventType: "mfa",
       eventAction: "mfa_unenrolled",

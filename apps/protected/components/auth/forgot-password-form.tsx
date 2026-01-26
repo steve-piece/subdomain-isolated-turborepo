@@ -4,7 +4,7 @@
 
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { createClient } from "@workspace/supabase/client";
+import { requestPasswordReset } from "@/app/actions/billing/auth/password-reset";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -16,7 +16,6 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import Link from "next/link";
-import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
 
 interface ForgotPasswordFormProps {
   subdomain: string;
@@ -30,25 +29,14 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps): Reac
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
-      // Redirect to the current tenant's update-password route
-      const redirectTo = getRedirectUrl("/auth/update-password", subdomain);
+      const result = await requestPasswordReset(email, subdomain);
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo,
-      });
-
-      if (error) {
-        if (error.message.includes("rate") || error.message.includes("limit")) {
-          throw new Error(
-            "Too many reset requests. Please wait an hour and try again.",
-          );
-        }
-        throw error;
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       setSuccess(true);
