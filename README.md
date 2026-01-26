@@ -2,7 +2,7 @@
 
 A multi-tenant Turborepo built with Next.js 16 using seperate domains for customer accounts and marketing site. 
 
-**Demo**: https://marketing-app-template.vercel.app/
+**Demo**: https://marketing-app.com
 
 ## Features
 
