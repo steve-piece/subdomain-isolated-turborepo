@@ -43,7 +43,7 @@ export function extractSubdomainFromHostname(hostname: string): string | null {
   // For production (e.g., subdomain.protecteddomain.com)
   if (parts.length >= 3) {
     const subdomain = parts[0];
-    return subdomain && subdomain !== "www" ? subdomain : 'protecteddomain.com';
+    return subdomain && subdomain !== "www" ? subdomain : null;
   }
 
   return null;
