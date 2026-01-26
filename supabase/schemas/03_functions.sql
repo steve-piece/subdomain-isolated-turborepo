@@ -93,40 +93,6 @@ BEGIN
 END;
 $function$;
 
--- Function: create_new_organization
-CREATE OR REPLACE FUNCTION public.create_new_organization()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $function$
-begin
-  -- validate required metadata exists and user is intended owner
-  if not (
-    new.raw_user_meta_data ? 'company_name'
-    and new.raw_user_meta_data ? 'subdomain'
-    and coalesce(new.raw_user_meta_data->>'user_role', '') = 'owner'
-  ) then
-    return new;
-  end if;
-
-  -- insert a new inactive organization for this user; ignore if subdomain is already taken
-  begin
-    insert into public.organizations (company_name, subdomain, owner_id, is_active)
-    values (
-      new.raw_user_meta_data->>'company_name',
-      lower(trim(new.raw_user_meta_data->>'subdomain')),
-      new.id,
-      false
-    );
-  exception when unique_violation then
-    null;
-  end;
-
-  return new;
-end;
-$function$;
-
 -- Function: custom_claims_hook
 CREATE OR REPLACE FUNCTION public.custom_claims_hook(event jsonb)
 RETURNS jsonb
@@ -769,28 +735,6 @@ AS $function$
   LIMIT 1;
 $function$;
 
--- Function: handle_new_user_settings
-CREATE OR REPLACE FUNCTION public.handle_new_user_settings()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public', 'auth'
-AS $function$
-BEGIN
-  -- Create notification preferences
-  INSERT INTO public.user_notification_preferences (user_id)
-  VALUES (NEW.id)
-  ON CONFLICT (user_id) DO NOTHING;
-
-  -- Create security settings
-  INSERT INTO public.user_security_settings (user_id, password_changed_at)
-  VALUES (NEW.id, now())
-  ON CONFLICT (user_id) DO NOTHING;
-
-  RETURN NEW;
-END;
-$function$;
-
 -- Function: has_min_role
 CREATE OR REPLACE FUNCTION public.has_min_role(p_user_role public.user_role, p_required_role public.user_role)
 RETURNS boolean
@@ -919,25 +863,6 @@ EXCEPTION
       'error_code', 'INTERNAL_ERROR',
       'error_detail', SQLERRM
     );
-END;
-$function$;
-
--- Function: sync_user_email
-CREATE OR REPLACE FUNCTION public.sync_user_email()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO ''
-AS $function$
-BEGIN
-  IF NEW.email IS DISTINCT FROM OLD.email THEN
-    UPDATE public.user_profiles
-    SET email = COALESCE(NEW.email, email),
-        updated_at = now()
-    WHERE user_id = NEW.id;
-  END IF;
-
-  RETURN NEW;
 END;
 $function$;
 

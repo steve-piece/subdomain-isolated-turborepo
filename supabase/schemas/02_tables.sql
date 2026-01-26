@@ -35,44 +35,139 @@ BEGIN
 END;
 $function$;
 
--- Function: handle_new_org_billing_profile
-CREATE OR REPLACE FUNCTION public.handle_new_org_billing_profile()
+-- Function: handle_new_user
+-- Consolidated trigger function for all user-related table initialization
+-- Fires on: auth.users INSERT
+CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public', 'auth'
 AS $function$
 BEGIN
-  -- Create default customer billing profile
-  INSERT INTO public.customer_billing_profiles (org_id)
+  -- Create notification preferences
+  INSERT INTO public.user_notification_preferences (user_id)
   VALUES (NEW.id)
-  ON CONFLICT (org_id) DO NOTHING;
+  ON CONFLICT (user_id) DO NOTHING;
 
-  -- Create default usage metrics
-  INSERT INTO public.usage_metrics (org_id, metric_name, current_value, limit_value)
-  VALUES
-    (NEW.id, 'team_members', 1, 5),
-    (NEW.id, 'projects', 0, 10),
-    (NEW.id, 'storage_gb', 0, 5),
-    (NEW.id, 'api_calls', 0, 10000)
-  ON CONFLICT (org_id, metric_name, period_start) DO NOTHING;
+  -- Create security settings
+  INSERT INTO public.user_security_settings (user_id, password_changed_at)
+  VALUES (NEW.id, now())
+  ON CONFLICT (user_id) DO NOTHING;
 
   RETURN NEW;
 END;
 $function$;
 
--- Function: handle_new_org_settings
-CREATE OR REPLACE FUNCTION public.handle_new_org_settings()
+-- Function: create_new_organization
+-- Creates an inactive organization when a new owner signs up (if metadata present)
+CREATE OR REPLACE FUNCTION public.create_new_organization()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  -- Validate required metadata exists and user is intended owner
+  IF NOT (
+    NEW.raw_user_meta_data ? 'company_name'
+    AND NEW.raw_user_meta_data ? 'subdomain'
+    AND COALESCE(NEW.raw_user_meta_data->>'user_role', '') = 'owner'
+  ) THEN
+    RETURN NEW;
+  END IF;
+
+  -- Insert a new inactive organization for this user; ignore if subdomain is already taken
+  BEGIN
+    INSERT INTO public.organizations (company_name, subdomain, owner_id, is_active)
+    VALUES (
+      NEW.raw_user_meta_data->>'company_name',
+      lower(trim(NEW.raw_user_meta_data->>'subdomain')),
+      NEW.id,
+      false
+    );
+  EXCEPTION WHEN unique_violation THEN
+    NULL;
+  END;
+
+  RETURN NEW;
+END;
+$function$;
+
+-- Function: sync_user_email
+-- Syncs email changes from auth.users to user_profiles
+CREATE OR REPLACE FUNCTION public.sync_user_email()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''
+AS $function$
+BEGIN
+  IF NEW.email IS DISTINCT FROM OLD.email THEN
+    UPDATE public.user_profiles
+    SET email = COALESCE(NEW.email, email),
+        updated_at = now()
+    WHERE user_id = NEW.id;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
+-- Function: handle_new_organization
+-- Consolidated trigger function for all organization-related table initialization
+-- Fires on: organizations INSERT OR UPDATE OF is_active
+-- 
+-- ON INSERT (any org): Creates billing profile and usage metrics
+-- ON VERIFICATION (is_active = true): Also creates team settings and cleans up reservation
+CREATE OR REPLACE FUNCTION public.handle_new_organization()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public', 'auth'
 AS $function$
+DECLARE
+  v_is_verification BOOLEAN := false;
 BEGIN
-  -- Create team settings
-  INSERT INTO public.organization_team_settings (org_id)
-  VALUES (NEW.id)
-  ON CONFLICT (org_id) DO NOTHING;
+  -- Determine if this is a verification event (is_active becoming true)
+  IF TG_OP = 'INSERT' AND NEW.is_active = true THEN
+    v_is_verification := true;
+  ELSIF TG_OP = 'UPDATE' AND OLD.is_active = false AND NEW.is_active = true THEN
+    v_is_verification := true;
+  END IF;
+
+  -- ========================================
+  -- ALWAYS on INSERT: Create billing & usage
+  -- ========================================
+  IF TG_OP = 'INSERT' THEN
+    -- Create default customer billing profile
+    INSERT INTO public.customer_billing_profiles (org_id)
+    VALUES (NEW.id)
+    ON CONFLICT (org_id) DO NOTHING;
+
+    -- Create default usage metrics
+    INSERT INTO public.usage_metrics (org_id, metric_name, current_value, limit_value)
+    VALUES
+      (NEW.id, 'team_members', 1, 5),
+      (NEW.id, 'projects', 0, 10),
+      (NEW.id, 'storage_gb', 0, 5),
+      (NEW.id, 'api_calls', 0, 10000)
+    ON CONFLICT (org_id, metric_name, period_start) DO NOTHING;
+  END IF;
+
+  -- ========================================
+  -- ON VERIFICATION: Create team settings & cleanup
+  -- ========================================
+  IF v_is_verification THEN
+    -- Create team settings for verified organization
+    INSERT INTO public.organization_team_settings (org_id)
+    VALUES (NEW.id)
+    ON CONFLICT (org_id) DO NOTHING;
+
+    -- Delete the subdomain reservation now that org is verified
+    DELETE FROM public.subdomain_reservations
+    WHERE subdomain = NEW.subdomain;
+  END IF;
 
   RETURN NEW;
 END;
@@ -374,13 +469,9 @@ where
 
 create index IF not exists idx_organizations_subdomain on public.organizations using btree (subdomain) TABLESPACE pg_default;
 
-create trigger on_organization_billing_created
-after INSERT on organizations for EACH row
-execute FUNCTION handle_new_org_billing_profile ();
-
-create trigger on_organization_created_settings
-after INSERT on organizations for EACH row
-execute FUNCTION handle_new_org_settings ();
+create trigger on_organization_created
+after INSERT or UPDATE OF is_active on organizations for EACH row
+execute FUNCTION handle_new_organization ();
 
 create trigger trg_organizations_updated_at BEFORE
 update on organizations for EACH row
@@ -1160,6 +1251,30 @@ CREATE POLICY "Allow service role full access to reservations"
   TO service_role
   USING (true)
   WITH CHECK (true);
+
+-- ============================================================================
+-- AUTH.USERS TRIGGERS
+-- These triggers fire on the Supabase auth.users table to initialize
+-- user-related data in the public schema
+-- ============================================================================
+
+-- Trigger: Create user settings (security_settings, notification_preferences) on signup
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- Trigger: Create inactive organization for owner signups (if metadata present)
+CREATE TRIGGER on_auth_user_created_organization
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.create_new_organization();
+
+-- Trigger: Sync email changes from auth.users to user_profiles
+CREATE TRIGGER on_auth_user_email_updated
+  AFTER UPDATE OF email ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.sync_user_email();
 
 -- ============================================================================
 -- END OF TABLES
