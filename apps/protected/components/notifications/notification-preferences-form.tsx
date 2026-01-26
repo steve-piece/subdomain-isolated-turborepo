@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateNotificationPreferences } from "@actions/profile";
 import { Button } from "@workspace/ui/components/button";
@@ -13,6 +13,13 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Label } from "@workspace/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { Bell, Mail, MessageSquare, AlertCircle } from "lucide-react";
 
 interface NotificationPreferencesFormProps {
@@ -37,7 +44,8 @@ export function NotificationPreferencesForm({
   const { addToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [prefs, setPrefs] = useState({
+  // Store initial values with defaults
+  const initialValues = {
     email_account_activity: initialPreferences.email_account_activity ?? true,
     email_team_updates: initialPreferences.email_team_updates ?? true,
     email_project_activity: initialPreferences.email_project_activity ?? false,
@@ -49,7 +57,26 @@ export function NotificationPreferencesForm({
     quiet_hours_enabled: initialPreferences.quiet_hours_enabled ?? false,
     quiet_hours_start: initialPreferences.quiet_hours_start ?? "22:00",
     quiet_hours_end: initialPreferences.quiet_hours_end ?? "08:00",
-  });
+  };
+
+  const [prefs, setPrefs] = useState(initialValues);
+
+  // Sync state when initialPreferences changes (after router.refresh())
+  useEffect(() => {
+    setPrefs(initialValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    initialPreferences?.email_account_activity,
+    initialPreferences?.email_team_updates,
+    initialPreferences?.email_project_activity,
+    initialPreferences?.email_marketing,
+    initialPreferences?.inapp_push_enabled,
+    initialPreferences?.inapp_sound_enabled,
+    initialPreferences?.email_digest_frequency,
+    initialPreferences?.quiet_hours_enabled,
+    initialPreferences?.quiet_hours_start,
+    initialPreferences?.quiet_hours_end,
+  ]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -64,6 +91,7 @@ export function NotificationPreferencesForm({
           description: result.message,
           variant: "success",
         });
+        // Refresh to get updated data from server
         router.refresh();
       } else {
         addToast({
@@ -83,25 +111,28 @@ export function NotificationPreferencesForm({
     }
   }
 
-  function handleReset() {
-    setPrefs({
-      email_account_activity: true,
-      email_team_updates: true,
-      email_project_activity: false,
-      email_marketing: false,
-      inapp_push_enabled: false,
-      inapp_sound_enabled: true,
-      email_digest_frequency: "realtime",
-      quiet_hours_enabled: false,
-      quiet_hours_start: "22:00",
-      quiet_hours_end: "08:00",
-    });
+  function handleCancel() {
+    // Reset form to original values
+    setPrefs(initialValues);
   }
+
+  // Check if form has unsaved changes
+  const hasChanges =
+    prefs.email_account_activity !== initialValues.email_account_activity ||
+    prefs.email_team_updates !== initialValues.email_team_updates ||
+    prefs.email_project_activity !== initialValues.email_project_activity ||
+    prefs.email_marketing !== initialValues.email_marketing ||
+    prefs.inapp_push_enabled !== initialValues.inapp_push_enabled ||
+    prefs.inapp_sound_enabled !== initialValues.inapp_sound_enabled ||
+    prefs.email_digest_frequency !== initialValues.email_digest_frequency ||
+    prefs.quiet_hours_enabled !== initialValues.quiet_hours_enabled ||
+    prefs.quiet_hours_start !== initialValues.quiet_hours_start ||
+    prefs.quiet_hours_end !== initialValues.quiet_hours_end;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Email Notifications */}
-      <Card>
+      <Card className="border-none shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -112,7 +143,7 @@ export function NotificationPreferencesForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 pr-9 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="account-emails" className="text-base">
                 Account Activity
@@ -125,7 +156,7 @@ export function NotificationPreferencesForm({
             <input
               type="checkbox"
               id="account-emails"
-              className="h-4 w-4"
+              className="h-5 w-5 flex-shrink-0"
               checked={prefs.email_account_activity}
               onChange={(e) =>
                 setPrefs({ ...prefs, email_account_activity: e.target.checked })
@@ -133,7 +164,7 @@ export function NotificationPreferencesForm({
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 pr-9 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="team-emails" className="text-base">
                 Team Updates
@@ -146,7 +177,7 @@ export function NotificationPreferencesForm({
             <input
               type="checkbox"
               id="team-emails"
-              className="h-4 w-4"
+              className="h-5 w-5 flex-shrink-0"
               checked={prefs.email_team_updates}
               onChange={(e) =>
                 setPrefs({ ...prefs, email_team_updates: e.target.checked })
@@ -154,7 +185,7 @@ export function NotificationPreferencesForm({
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 pr-9 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="project-emails" className="text-base">
                 Project Activity
@@ -166,7 +197,7 @@ export function NotificationPreferencesForm({
             <input
               type="checkbox"
               id="project-emails"
-              className="h-4 w-4"
+              className="h-5 w-5 flex-shrink-0"
               checked={prefs.email_project_activity}
               onChange={(e) =>
                 setPrefs({ ...prefs, email_project_activity: e.target.checked })
@@ -174,7 +205,7 @@ export function NotificationPreferencesForm({
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 pr-9 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="marketing-emails" className="text-base">
                 Marketing & Updates
@@ -186,7 +217,7 @@ export function NotificationPreferencesForm({
             <input
               type="checkbox"
               id="marketing-emails"
-              className="h-4 w-4"
+              className="h-5 w-5 flex-shrink-0"
               checked={prefs.email_marketing}
               onChange={(e) =>
                 setPrefs({ ...prefs, email_marketing: e.target.checked })
@@ -197,7 +228,7 @@ export function NotificationPreferencesForm({
       </Card>
 
       {/* In-App Notifications */}
-      <Card>
+      <Card className="border-none shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
@@ -208,7 +239,7 @@ export function NotificationPreferencesForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 pr-9 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="push-notifications" className="text-base">
                 Push Notifications
@@ -220,7 +251,7 @@ export function NotificationPreferencesForm({
             <input
               type="checkbox"
               id="push-notifications"
-              className="h-4 w-4"
+              className="h-5 w-5 flex-shrink-0"
               checked={prefs.inapp_push_enabled}
               onChange={(e) =>
                 setPrefs({ ...prefs, inapp_push_enabled: e.target.checked })
@@ -228,7 +259,7 @@ export function NotificationPreferencesForm({
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 pr-9 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="sound-notifications" className="text-base">
                 Sound Alerts
@@ -240,7 +271,7 @@ export function NotificationPreferencesForm({
             <input
               type="checkbox"
               id="sound-notifications"
-              className="h-4 w-4"
+              className="h-5 w-5 flex-shrink-0"
               checked={prefs.inapp_sound_enabled}
               onChange={(e) =>
                 setPrefs({ ...prefs, inapp_sound_enabled: e.target.checked })
@@ -251,7 +282,7 @@ export function NotificationPreferencesForm({
       </Card>
 
       {/* Communication Preferences */}
-      <Card>
+      <Card className="border-none shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -264,20 +295,23 @@ export function NotificationPreferencesForm({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="frequency">Email Digest Frequency</Label>
-            <select
-              id="frequency"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            <Select
               value={prefs.email_digest_frequency}
-              onChange={(e) =>
-                setPrefs({ ...prefs, email_digest_frequency: e.target.value })
+              onValueChange={(value) =>
+                setPrefs({ ...prefs, email_digest_frequency: value })
               }
             >
-              <option value="realtime">Real-time (as they happen)</option>
-              <option value="daily">Daily digest</option>
-              <option value="weekly">Weekly digest</option>
-              <option value="never">Never</option>
-            </select>
-            <p className="text-xs text-muted-foreground">
+              <SelectTrigger id="frequency">
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
+                <SelectItem value="realtime">Real-time (as they happen)</SelectItem>
+                <SelectItem value="daily">Daily digest</SelectItem>
+                <SelectItem value="weekly">Weekly digest</SelectItem>
+                <SelectItem value="never">Never</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
               Choose how often you want to receive email summaries
             </p>
           </div>
@@ -285,7 +319,7 @@ export function NotificationPreferencesForm({
       </Card>
 
       {/* Quiet Hours */}
-      <Card>
+      <Card className="border-none shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
@@ -296,7 +330,7 @@ export function NotificationPreferencesForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 pr-9 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="quiet-hours-enabled" className="text-base">
                 Enable Quiet Hours
@@ -308,7 +342,7 @@ export function NotificationPreferencesForm({
             <input
               type="checkbox"
               id="quiet-hours-enabled"
-              className="h-4 w-4"
+              className="h-5 w-5 flex-shrink-0"
               checked={prefs.quiet_hours_enabled}
               onChange={(e) =>
                 setPrefs({ ...prefs, quiet_hours_enabled: e.target.checked })
@@ -356,12 +390,12 @@ export function NotificationPreferencesForm({
         <Button
           type="button"
           variant="outline"
-          onClick={handleReset}
-          disabled={isLoading}
+          onClick={handleCancel}
+          disabled={isLoading || !hasChanges}
         >
-          Reset to Defaults
+          Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading || !hasChanges}>
           {isLoading ? "Saving..." : "Save Preferences"}
         </Button>
       </div>

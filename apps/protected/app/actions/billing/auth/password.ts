@@ -3,6 +3,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
+import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
 export interface UpdatePasswordResponse {
   success: boolean;
@@ -54,6 +55,15 @@ export async function updatePassword(
       });
       return { success: false, message: error.message };
     }
+
+    // Log successful password change
+    await logSecurityEvent({
+      eventType: "password",
+      eventAction: "password_changed",
+      severity: "info",
+      metadata: { method: accessToken ? "recovery" : "authenticated" },
+      userId: user.id,
+    });
 
     await supabase.auth.signOut();
 

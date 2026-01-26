@@ -290,7 +290,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
         ) ?? "";
 
       return {
-        subject: `Confirm your email for ${organizationName}`,
+        subject: `${appName} - Confirm Sign Up`,
         react: React.createElement(SignupConfirmationEmail, {
           userName: fullName ?? user.email,
           organizationName,
@@ -317,7 +317,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
         }) ?? "";
 
       return {
-        subject: `Reset your password for ${organizationName}`,
+        subject: `${appName} - Reset Your Password`,
         react: React.createElement(PasswordResetEmail, {
           userName: fullName,
           organizationName,
@@ -340,7 +340,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
         }) ?? "";
 
       return {
-        subject: `You're invited to join ${organizationName}`,
+        subject: `${appName} - You're Invited to Join ${organizationName}`,
         react: React.createElement(UserInvitationEmail, {
           organizationName,
           inviterName: inviterName ?? inviterEmail ?? organizationName,
@@ -363,9 +363,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
         ) ?? email_data.token;
 
       return {
-        subject: organizationName
-          ? `Sign in to ${organizationName}`
-          : "Your magic link to sign in",
+        subject: `${appName} - Sign In`,
         react: React.createElement(MagicLinkEmail, {
           userName: fullName,
           magicLinkUrl,
@@ -385,7 +383,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
         subdomain,
       );
       return {
-        subject: "Confirm your email change",
+        subject: `${appName} - Confirm Email Change`,
         text: `Confirm your new email by visiting: ${redirect ?? email_data.token}`,
       };
     }
@@ -401,7 +399,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
         }) ?? "";
 
       return {
-        subject: `Confirm your identity for ${organizationName}`,
+        subject: `${appName} - Confirm Your Identity`,
         react: React.createElement(NotificationEmail, {
           userName: fullName,
           organizationName,
@@ -417,7 +415,7 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
 
     default:
       return {
-        subject: "Supabase Auth notification",
+        subject: `${appName} - Authentication Required`,
         text: `Your code is: ${email_data.token}`,
       };
   }

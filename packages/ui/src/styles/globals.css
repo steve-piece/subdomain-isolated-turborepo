@@ -9,7 +9,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.98 0 0);
+  --background: oklch(1.00 0 0);
   --foreground: oklch(0.28 0.04 260.33);
   --card: oklch(1.00 0 0);
   --card-foreground: oklch(0.28 0.04 260.33);
@@ -195,7 +195,7 @@
 
   /* Main content area background - subtle contrast with page background */
   .content-background {
-    @apply bg-muted/20;
+    @apply bg-slate-100;
   }
 
   /* Card container with proper contrast - consistent across app */

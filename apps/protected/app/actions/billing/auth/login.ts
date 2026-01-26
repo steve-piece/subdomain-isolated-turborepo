@@ -3,6 +3,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
+import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
 export interface LoginWithToastResponse {
   success: boolean;
@@ -19,12 +20,20 @@ export async function loginWithToast(
   password: string,
 ): Promise<LoginWithToastResponse> {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
+    // Log failed login attempt
+    await logSecurityEvent({
+      eventType: "auth",
+      eventAction: "login_failed",
+      severity: "warning",
+      metadata: { email, error: error.message },
+    });
+
     Sentry.withScope((scope) => {
       scope.setTag("auth.flow", "login_with_toast");
       scope.setUser({ email });
@@ -37,6 +46,15 @@ export async function loginWithToast(
     });
     return { success: false, message: error.message };
   }
+
+  // Log successful login
+  await logSecurityEvent({
+    eventType: "auth",
+    eventAction: "login_success",
+    severity: "info",
+    metadata: { email },
+    userId: data.user?.id,
+  });
 
   Sentry.logger.info("login_with_toast_success", {
     email,

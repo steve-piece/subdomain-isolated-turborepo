@@ -13,7 +13,7 @@ import {
 } from "@workspace/ui/components/card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Users,
   Settings,
@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
 import { PageHeader } from "@/components/shared/page-header";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
 interface AdminWrapperProps {
   subdomain: string;
@@ -34,13 +35,74 @@ export function AdminWrapper({ subdomain }: AdminWrapperProps): ReactElement {
   // ✅ Get user data from context - no API calls!
   const claims = useTenantClaims();
   const router = useRouter();
+  const [isCheckingPermissions, setIsCheckingPermissions] = useState(true);
 
   // Role check - redirect if insufficient permissions
   useEffect(() => {
+    if (!claims.user_role) {
+      // Still loading claims
+      return;
+    }
+    
+    setIsCheckingPermissions(false);
+    
     if (!["owner", "admin", "superadmin"].includes(claims.user_role)) {
       router.push("/dashboard?error=insufficient_permissions");
     }
   }, [claims.user_role, router]);
+
+  // Show skeleton while checking permissions
+  if (isCheckingPermissions || !claims.user_role) {
+    return (
+      <>
+        <PageHeader title="Admin Dashboard" />
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+          <div className="mx-auto w-full max-w-6xl space-y-6">
+            {/* Admin Overview Skeleton */}
+            <Card className="bg-gradient-to-r from-card to-card/50 shadow-lg">
+              <CardHeader>
+                <div className="space-y-2">
+                  <Skeleton className="h-7 w-64" />
+                  <Skeleton className="h-4 w-96" />
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Management Cards Skeleton */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-6 w-6 rounded-md" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-3 w-48" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Quick Actions Skeleton */}
+            <Card className="shadow-lg">
+              <CardHeader>
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-4 w-64" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   // Show loading or access denied
   if (!["owner", "admin", "superadmin"].includes(claims.user_role)) {

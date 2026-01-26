@@ -258,24 +258,24 @@ export function ProfileView({ initialData }: ProfileViewProps) {
 
       {/* Danger Zone */}
       <Card className="border-destructive/50">
-        <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium text-destructive">
+        <CardContent className="pt-6 pb-6">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-destructive mb-2">
                 Delete Account
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 Permanently delete your account and all associated data. This
                 action cannot be undone.
               </p>
             </div>
             <Button
-              variant="outline"
+              variant="destructive"
               size="sm"
-              className="text-destructive hover:bg-destructive hover:text-destructive-foreground shrink-0 ml-4"
+              className="w-fit"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              Delete Account
             </Button>
           </div>
         </CardContent>

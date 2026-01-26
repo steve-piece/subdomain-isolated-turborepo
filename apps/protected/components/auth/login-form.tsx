@@ -20,8 +20,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@workspace/supabase/client";
 import { useToast } from "@workspace/ui/components/toast";
+import { Spinner } from "@workspace/ui/components/spinner";
 import { sendMagicLink } from "@actions/billing/auth";
-import { Lock, AlertCircle } from "lucide-react";
+import { Lock, AlertCircle, Check } from "lucide-react";
 
 // Props define the tenant context needed by this component.
 // `subdomain` is passed from the route so the form knows which org is in scope.
@@ -128,7 +129,8 @@ export function LoginForm({
       });
     }
 
-    if (decodedMessage) {
+    // Only show message toast if verified is not true (to avoid duplicate toasts)
+    if (decodedMessage && verified !== "true" && reason !== "email_verified") {
       toasts.push({
         title: toastTitleParam ?? reasonToast?.title ?? "Notice",
         description: decodedMessage,
@@ -363,7 +365,7 @@ export function LoginForm({
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-0"
                   >
                     {showPassword ? (
                       <svg
@@ -426,17 +428,9 @@ export function LoginForm({
                 disabled={isLoading || showSuccess}
               >
                 {showSuccess ? (
-                  <span className="flex items-center justify-center">
-                    <span className="circle-loader load-complete">
-                      <span className="checkmark draw"></span>
-                    </span>
-                  </span>
+                  <Check className="h-4 w-4" />
                 ) : isLoading ? (
-                  <span className="flex items-center justify-center">
-                    <span className="circle-loader">
-                      <span className="checkmark"></span>
-                    </span>
-                  </span>
+                  <Spinner className="h-4 w-4" />
                 ) : (
                   <span className="flex items-center">
                     <Lock className="h-4 w-4 mr-2" />

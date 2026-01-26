@@ -7,16 +7,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { useToast } from "@workspace/ui/components/toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog";
 
 interface ProfileFormProps {
   defaultValues: {
@@ -31,32 +21,22 @@ export function ProfileForm({ defaultValues }: ProfileFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [formValues, setFormValues] = useState({
     fullName: defaultValues.fullName || "",
     bio: defaultValues.bio || "",
   });
 
   // Check if form has unsaved changes
-  const isDirty =
+  const hasChanges =
     formValues.fullName !== (defaultValues.fullName || "") ||
     formValues.bio !== (defaultValues.bio || "");
 
   function handleCancel() {
-    if (isDirty) {
-      setShowCancelDialog(true);
-    } else {
-      router.refresh();
-    }
-  }
-
-  function handleConfirmDiscard() {
-    setShowCancelDialog(false);
+    // Reset form to original values
     setFormValues({
       fullName: defaultValues.fullName || "",
       bio: defaultValues.bio || "",
     });
-    router.refresh();
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -145,36 +125,15 @@ export function ProfileForm({ defaultValues }: ProfileFormProps) {
         <Button
           variant="outline"
           type="button"
-          disabled={isLoading}
           onClick={handleCancel}
-          aria-label={
-            isDirty ? "Cancel and discard changes" : "Cancel and go back"
-          }
+          disabled={isLoading || !hasChanges}
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading || !hasChanges}>
           {isLoading ? "Saving..." : "Save Changes"}
         </Button>
       </div>
-
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes. Are you sure you want to discard them?
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep Editing</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDiscard}>
-              Discard Changes
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </form>
   );
 }

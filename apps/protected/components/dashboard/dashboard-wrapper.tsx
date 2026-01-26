@@ -37,6 +37,7 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
 interface DashboardWrapperProps {
   subdomain: string;
@@ -47,13 +48,14 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
   const claims = useTenantClaims();
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [, setIsLoadingActivities] = useState(true);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     teamMemberCount: 0,
     activeProjects: 0,
     storageUsed: 0,
     apiCalls: 0,
   });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [onboarding, setOnboarding] = useState<OnboardingProgress | null>(null);
   const [isLoadingOnboarding, setIsLoadingOnboarding] = useState(true);
 
@@ -80,6 +82,8 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
         setStats(data);
       } catch (error) {
         console.error("Failed to fetch dashboard stats:", error);
+      } finally {
+        setIsLoadingStats(false);
       }
     }
     fetchStats();
@@ -107,6 +111,120 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
     : "there";
   const userName = firstName;
 
+  // Show skeleton while loading
+  if (isLoadingStats || isLoadingActivities || isLoadingOnboarding) {
+    return (
+      <>
+        <PageHeader title="Dashboard" />
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-9 w-64" />
+              <Skeleton className="h-5 w-48" />
+            </div>
+          </div>
+
+          <div className="mx-auto w-full max-w-7xl space-y-6">
+            {/* Dashboard Stats Skeleton */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="card-container">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-3 w-32" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Quick Actions Skeleton */}
+              <Card className="card-container">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-9 rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-4 w-48" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity Skeleton */}
+              <Card className="card-container">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-9 rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-4 w-56" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-3 w-3/4" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Getting Started Skeleton */}
+            <Card className="card-container">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-9 rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-40" />
+                      <Skeleton className="h-4 w-64" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-12" />
+                    <Skeleton className="h-2 w-20 rounded-full" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 border rounded-lg">
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-3 w-3/4" />
+                      </div>
+                      <Skeleton className="h-8 w-24 rounded-md" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <PageHeader title="Dashboard" />
@@ -123,26 +241,6 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
         </div>
 
         <div className="mx-auto w-full max-w-7xl space-y-6">
-          {/* Welcome Card */}
-          <Card className="bg-gradient-to-br from-primary/5 via-primary/5 to-card border-primary/20 shadow-sm">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <Building2 className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <CardTitle className="text-2xl">
-                    {organizationName} Dashboard
-                  </CardTitle>
-                  <CardDescription className="text-base mt-1">
-                    Manage your organization, team, and projects all in one
-                    place.
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
           {/* Dashboard Stats */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card className="card-container">
@@ -390,9 +488,7 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
                       {onboarding.tasks.map((task) => (
                         <div
                           key={task.id}
-                          className={`flex items-center gap-3 p-3 border rounded-lg transition-opacity ${
-                            task.completed ? "" : "opacity-70"
-                          }`}
+                          className="flex items-center gap-3 p-3 border rounded-lg transition-opacity"
                         >
                           {task.completed ? (
                             <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />

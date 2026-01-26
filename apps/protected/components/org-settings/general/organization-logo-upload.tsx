@@ -146,7 +146,7 @@ export function OrganizationLogoUpload({
             src={logoUrl}
             alt={`${organizationName} logo`}
             fill
-            className="object-contain p-2"
+            className="object-contain p-0"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center">
@@ -157,6 +157,21 @@ export function OrganizationLogoUpload({
         )}
       </div>
       <div className="flex-1 space-y-2">
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">
+            {isDragging ? (
+              <span className="text-primary font-medium">
+                Drop file to upload
+              </span>
+            ) : (
+              "Click logo or drag & drop. SVG, PNG, JPG or WebP. Max 5MB."
+            )}
+          </p>
+          <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
+            <Info className="h-3 w-3" />
+            Logo updates in the sidebar will appear on your next login
+          </p>
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -178,21 +193,6 @@ export function OrganizationLogoUpload({
               Remove
             </Button>
           )}
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">
-            {isDragging ? (
-              <span className="text-primary font-medium">
-                Drop file to upload
-              </span>
-            ) : (
-              "Click logo or drag & drop. SVG, PNG, JPG or WebP. Max 5MB."
-            )}
-          </p>
-          <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
-            <Info className="h-3 w-3" />
-            Logo updates in the sidebar will appear on your next login
-          </p>
         </div>
         <input
           ref={fileInputRef}

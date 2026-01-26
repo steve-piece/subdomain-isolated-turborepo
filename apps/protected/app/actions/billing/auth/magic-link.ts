@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
 import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
+import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
 export interface SendMagicLinkResponse {
   success: boolean;
@@ -57,6 +58,14 @@ export async function sendMagicLink(
           subdomain,
           redirectTo: finalRedirectTo,
           hasRedirect: Boolean(redirectTo),
+        });
+
+        // Log magic link sent
+        await logSecurityEvent({
+          eventType: "auth",
+          eventAction: "magic_link_sent",
+          severity: "info",
+          metadata: { email, subdomain },
         });
 
         return {

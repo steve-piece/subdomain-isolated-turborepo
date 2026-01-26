@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
@@ -284,6 +285,9 @@ export function CommandKSearch({
                 </kbd>
               </div>
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Search and navigate to pages in the application
+            </DialogDescription>
           </DialogHeader>
 
           <div className="px-4 pb-3">

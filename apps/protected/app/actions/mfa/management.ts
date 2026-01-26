@@ -3,6 +3,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
+import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
 export interface UnenrollMFAResponse {
   success: boolean;
@@ -52,6 +53,15 @@ export async function unenrollMFA(
 
     console.log("✅ MFA unenrolled:", {
       factorId,
+      userId: user.id,
+    });
+
+    // Log MFA unenrollment
+    await logSecurityEvent({
+      eventType: "mfa",
+      eventAction: "mfa_unenrolled",
+      severity: "warning",
+      metadata: { factorId },
       userId: user.id,
     });
 

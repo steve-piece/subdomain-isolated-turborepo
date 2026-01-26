@@ -297,11 +297,9 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
 
   return (
     <>
-      <PageHeader title="Profile" />
-      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto w-full space-y-6">
-          {/* Profile Header Card */}
-          <Card className="border-none shadow-sm">
+      <div className="space-y-6">
+        {/* Profile Header Card */}
+        <Card className="border-none shadow-sm">
             <CardContent className="pt-8 pb-8">
               <div className="flex flex-col items-center text-center space-y-6">
                 {/* Profile Picture */}
@@ -456,7 +454,7 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
           </Card>
 
           {/* Organization Context */}
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardContent className="pt-6">
               <div className="grid grid-cols-3 gap-6 text-center">
                 <div className="space-y-1">
@@ -478,32 +476,6 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
               </div>
             </CardContent>
           </Card>
-
-          {/* Danger Zone */}
-          <Card className="border-destructive/50">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-destructive">
-                    Delete Account
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently delete your account and all associated data.
-                    This action cannot be undone.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive hover:text-destructive-foreground shrink-0 ml-4"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </>
   );

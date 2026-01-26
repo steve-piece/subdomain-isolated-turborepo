@@ -3,6 +3,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
+import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
 export interface EnrollMFAResponse {
   success: boolean;
@@ -106,6 +107,15 @@ export async function verifyMFAEnrollment(
 
     console.log("✅ MFA enrollment verified:", {
       factorId,
+      userId: user.id,
+    });
+
+    // Log MFA enrollment
+    await logSecurityEvent({
+      eventType: "mfa",
+      eventAction: "mfa_enrolled",
+      severity: "info",
+      metadata: { factorId, method: "totp" },
       userId: user.id,
     });
 

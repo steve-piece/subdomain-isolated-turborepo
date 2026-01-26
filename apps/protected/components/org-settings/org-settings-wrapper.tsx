@@ -118,31 +118,44 @@ export function OrgSettingsWrapper({
 
   return (
     <div className="space-y-6">
+      {/* Organization Logo */}
       <Card>
         <CardHeader>
-          <CardTitle>Organization Settings</CardTitle>
+          <CardTitle>Organization Logo</CardTitle>
           <CardDescription>
-            Manage your organization&apos;s identity and preferences
+            Upload and manage your organization&apos;s logo
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <OrganizationLogoUpload
+            organizationName={organization.company_name}
+            currentLogoUrl={organization.logo_url || null}
+          />
+        </CardContent>
       </Card>
 
-      <OrganizationLogoUpload
-        organizationName={organization.company_name}
-        currentLogoUrl={organization.logo_url || null}
-      />
-
-      <OrganizationIdentityForm
-        organizationName={organization.company_name || ""}
-        subdomain={organization.subdomain || subdomain}
-        description={organization.description || ""}
-        industry={organization.industry || ""}
-        website={organization.website || ""}
-        address={organization.address || ""}
-        companySize={organization.company_size || ""}
-        appDomain={appDomain}
-        onSubmit={updateOrganizationIdentity}
-      />
+      {/* Organization Identity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Organization Information</CardTitle>
+          <CardDescription>
+            Update your organization&apos;s details and preferences
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OrganizationIdentityForm
+            organizationName={organization.company_name || ""}
+            subdomain={organization.subdomain || subdomain}
+            description={organization.description || ""}
+            industry={organization.industry || ""}
+            website={organization.website || ""}
+            address={organization.address || ""}
+            companySize={organization.company_size || ""}
+            appDomain={appDomain}
+            onSubmit={updateOrganizationIdentity}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

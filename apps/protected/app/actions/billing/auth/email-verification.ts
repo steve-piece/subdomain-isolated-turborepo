@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
 import { type EmailOtpType } from "@supabase/supabase-js";
+import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
 export interface ResendVerificationResponse {
   success: boolean;
@@ -81,6 +82,14 @@ export async function resendEmailVerification(
     });
     return { success: false, message: resendError.message };
   }
+
+  // Log email verification resend
+  await logSecurityEvent({
+    eventType: "email",
+    eventAction: "email_verification_sent",
+    severity: "info",
+    metadata: { email, subdomain },
+  });
 
   return {
     success: true,
@@ -204,6 +213,18 @@ export async function confirmEmailAndBootstrap(
         Sentry.captureMessage("organization_activation_retry_skipped");
       });
     }
+
+    // Log successful email verification
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    await logSecurityEvent({
+      eventType: "email",
+      eventAction: "email_verified",
+      severity: "info",
+      metadata: { subdomain, type },
+      userId: user?.id,
+    });
 
     return {
       success: true,

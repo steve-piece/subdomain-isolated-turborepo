@@ -238,6 +238,12 @@ export function AppSidebar({
   const [showSearchDropdown, setShowSearchDropdown] = React.useState(false);
   const [selectedSearchIndex, setSelectedSearchIndex] = React.useState(0);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  // Track hydration state to prevent Radix ID mismatch warnings
+  const [isHydrated, setIsHydrated] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsHydrated(true);
+  }, []);
   const pathname = usePathname();
   const router = useRouter();
   const { addToast } = useToast();
@@ -578,10 +584,17 @@ export function AppSidebar({
           >
             <SidebarGroup>
               <SidebarGroupLabel asChild>
-                <CollapsibleTrigger className="flex w-full items-center justify-between">
-                  {group.title}
-                  <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                </CollapsibleTrigger>
+                {isHydrated ? (
+                  <CollapsibleTrigger className="flex w-full items-center justify-between">
+                    {group.title}
+                    <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                  </CollapsibleTrigger>
+                ) : (
+                  <span className="flex w-full items-center justify-between">
+                    {group.title}
+                    <ChevronRight className="ml-auto rotate-90" />
+                  </span>
+                )}
               </SidebarGroupLabel>
               <CollapsibleContent>
                 <SidebarGroupContent>
