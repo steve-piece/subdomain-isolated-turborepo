@@ -122,7 +122,7 @@ export function AuditLogDialog() {
                       {log.severity === "critical" ? (
                         <div className="w-2 h-2 rounded-full bg-destructive"></div>
                       ) : log.severity === "warning" ? (
-                        <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-warning-muted0"></div>
                       ) : (
                         <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
                       )}
@@ -139,7 +139,7 @@ export function AuditLogDialog() {
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                             log.severity === "critical"
                               ? "bg-destructive/10 text-destructive"
-                              : "bg-yellow-500/10 text-yellow-500"
+                              : "bg-warning-muted0/10 text-warning"
                           }`}>
                             {log.severity.toUpperCase()}
                           </span>

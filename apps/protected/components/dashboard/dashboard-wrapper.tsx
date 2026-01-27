@@ -392,14 +392,14 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
             <>
               {onboarding.allComplete ? (
                 // Show Productivity Tips when all tasks are complete
-                <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 shadow-sm">
+                <Card className="border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-sm">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50">
-                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-green-900 dark:text-green-100">
+                        <CardTitle className="text-foreground">
                           You&apos;re All Set!
                         </CardTitle>
                         <CardDescription className="mt-0.5">
@@ -411,8 +411,8 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 border border-green-200 dark:border-green-800 rounded-lg bg-white dark:bg-green-950/20">
-                        <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex items-start gap-3 p-3 border border-border rounded-lg bg-card">
+                        <Zap className="h-5 w-5 text-accent-foreground flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="text-sm font-medium text-foreground">
                             Use keyboard shortcuts
@@ -426,8 +426,8 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 p-3 border border-green-200 dark:border-green-800 rounded-lg bg-white dark:bg-green-950/20">
-                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex items-start gap-3 p-3 border border-border rounded-lg bg-card">
+                        <Users className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="text-sm font-medium text-foreground">
                             Collaborate effectively
@@ -437,8 +437,8 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 p-3 border border-green-200 dark:border-green-800 rounded-lg bg-white dark:bg-green-950/20">
-                        <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex items-start gap-3 p-3 border border-border rounded-lg bg-card">
+                        <TrendingUp className="h-5 w-5 text-accent-foreground flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="text-sm font-medium text-foreground">
                             Track your progress
@@ -491,7 +491,7 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
                           className="flex items-center gap-3 p-3 border rounded-lg transition-opacity"
                         >
                           {task.completed ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+                            <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
                           ) : (
                             <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                           )}

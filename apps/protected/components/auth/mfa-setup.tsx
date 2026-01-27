@@ -178,8 +178,8 @@ export function MFASetup(): ReactElement {
   if (mfaEnabled) {
     return (
       <div className="space-y-4">
-        <div className="p-4 rounded-md bg-green-50 border border-green-200 dark:bg-green-950 dark:border-green-800">
-          <p className="text-sm text-green-700 dark:text-green-300 flex items-center">
+        <div className="p-4 rounded-md bg-success-muted border border-success-muted dark:bg-green-950 dark:border-success-muted dark:border-success-muted">
+          <p className="text-sm text-success-foreground dark:text-success-foreground dark:text-success-foreground flex items-center">
             <span className="mr-2">✅</span>
             Your account is protected with authenticator app 2FA
           </p>
@@ -219,11 +219,11 @@ export function MFASetup(): ReactElement {
           )}
 
           {/* Recommended apps */}
-          <div className="w-full p-3 rounded-md bg-blue-50 border border-blue-200 dark:bg-blue-950 dark:border-blue-800">
-            <p className="text-xs text-blue-700 dark:text-blue-300 mb-1 font-medium">
+          <div className="w-full p-3 rounded-md bg-info-muted border border-info-muted dark:bg-info-muted dark:bg-info-muted dark:border-info-muted dark:border-info-muted">
+            <p className="text-xs text-info-foreground dark:text-info-foreground dark:text-info-foreground mb-1 font-medium">
               Recommended Authenticator Apps:
             </p>
-            <p className="text-xs text-blue-600 dark:text-blue-400">
+            <p className="text-xs text-info dark:text-info dark:text-info">
               • Google Authenticator • Authy • 1Password • Microsoft
               Authenticator
             </p>

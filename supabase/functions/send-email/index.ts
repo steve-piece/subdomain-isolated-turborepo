@@ -469,7 +469,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const sendResult = await resend.emails.send({
-      from: supportEmail,
+      from: `${appName} <${supportEmail}>`,
       to: [event.user.email],
       subject: resolvedEmail.subject,
       html,

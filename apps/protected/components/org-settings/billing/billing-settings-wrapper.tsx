@@ -167,7 +167,7 @@ export function BillingSettingsWrapper() {
               <EmptyDescription>
                 {isDevelopment ? (
                   <>
-                    <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                    <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-warning" />
                     Development mode - Payment methods are disabled for testing.
                     Connect a payment method in production to upgrade your plan.
                   </>
@@ -199,7 +199,7 @@ export function BillingSettingsWrapper() {
               <EmptyDescription>
                 {isDevelopment ? (
                   <>
-                    <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                    <AlertCircle className="inline h-3.5 w-3.5 mr-1 text-warning" />
                     Development mode - Your billing history will appear here in
                     production once you subscribe to a paid plan.
                   </>

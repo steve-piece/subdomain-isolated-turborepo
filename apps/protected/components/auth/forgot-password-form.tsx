@@ -57,8 +57,8 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps): Reac
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="p-3 rounded-md bg-green-50 border border-green-200">
-                <p className="text-sm text-green-700 flex items-center">
+              <div className="p-3 rounded-md bg-success-muted border border-success-muted">
+                <p className="text-sm text-success-foreground flex items-center">
                   <span className="mr-2">✅</span>
                   If you registered using your email and password, you will
                   receive a password reset email with a link to reset your
@@ -100,8 +100,8 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps): Reac
                   />
                 </div>
                 {error && (
-                  <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                    <p className="text-sm text-red-700 flex items-center">
+                  <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                    <p className="text-sm text-destructive-foreground flex items-center">
                       <span className="mr-2">⚠️</span>
                       {error}
                     </p>

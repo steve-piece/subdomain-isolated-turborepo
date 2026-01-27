@@ -118,7 +118,7 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps): ReactElement {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl text-green-600">Success!</CardTitle>
+          <CardTitle className="text-2xl text-success">Success!</CardTitle>
           <CardDescription>
             {type === "magiclink"
               ? "You've been logged in successfully"
@@ -127,8 +127,8 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps): ReactElement {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-3 rounded-md bg-green-50 border border-green-200">
-              <p className="text-sm text-green-700 flex items-center">
+            <div className="p-3 rounded-md bg-success-muted border border-success-muted">
+              <p className="text-sm text-success-foreground flex items-center">
                 <span className="mr-2">✅</span>
                 Redirecting you to the dashboard...
               </p>
@@ -170,15 +170,15 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps): ReactElement {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl text-red-600">
+        <CardTitle className="text-2xl text-destructive">
           Verification Failed
         </CardTitle>
         <CardDescription>Unable to verify your link</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="p-3 rounded-md bg-red-50 border border-red-200">
-            <p className="text-sm text-red-700 flex items-center">
+          <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+            <p className="text-sm text-destructive-foreground flex items-center">
               <span className="mr-2">❌</span>
               {errorMessage || "An unexpected error occurred"}
             </p>

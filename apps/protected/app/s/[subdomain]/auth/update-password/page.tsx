@@ -39,7 +39,7 @@ export default async function UpdatePasswordPage({
         <div className="w-full max-w-md">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-red-600">
+              <CardTitle className="text-2xl text-destructive">
                 Reset Link Error
               </CardTitle>
               <CardDescription>
@@ -48,8 +48,8 @@ export default async function UpdatePasswordPage({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                  <p className="text-sm text-red-700 flex items-center">
+                <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                  <p className="text-sm text-destructive-foreground flex items-center">
                     <span className="mr-2">⚠️</span>
                     {decodeURIComponent(error)}
                   </p>
@@ -108,7 +108,7 @@ export default async function UpdatePasswordPage({
             <div className="w-full max-w-md">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-2xl text-red-600">
+                  <CardTitle className="text-2xl text-destructive">
                     Verification Failed
                   </CardTitle>
                   <CardDescription>
@@ -117,8 +117,8 @@ export default async function UpdatePasswordPage({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                      <p className="text-sm text-red-700 flex items-center">
+                    <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                      <p className="text-sm text-destructive-foreground flex items-center">
                         <span className="mr-2">⚠️</span>
                         {verifyError.message}
                       </p>
@@ -142,7 +142,7 @@ export default async function UpdatePasswordPage({
             <div className="w-full max-w-md">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-2xl text-red-600">
+                  <CardTitle className="text-2xl text-destructive">
                     Verification Failed
                   </CardTitle>
                   <CardDescription>
@@ -151,8 +151,8 @@ export default async function UpdatePasswordPage({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                      <p className="text-sm text-red-700 flex items-center">
+                    <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                      <p className="text-sm text-destructive-foreground flex items-center">
                         <span className="mr-2">⚠️</span>
                         Verification failed - no user found
                       </p>
@@ -189,7 +189,7 @@ export default async function UpdatePasswordPage({
           <div className="w-full max-w-md">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-red-600">
+                <CardTitle className="text-2xl text-destructive">
                   Verification Error
                 </CardTitle>
                 <CardDescription>
@@ -198,8 +198,8 @@ export default async function UpdatePasswordPage({
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                    <p className="text-sm text-red-700 flex items-center">
+                  <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                    <p className="text-sm text-destructive-foreground flex items-center">
                       <span className="mr-2">⚠️</span>
                       {error instanceof Error
                         ? error.message

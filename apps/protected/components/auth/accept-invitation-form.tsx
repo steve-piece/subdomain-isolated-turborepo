@@ -452,8 +452,8 @@ export function AcceptInvitationForm({
   if (error && !sessionEmail) {
     return (
       <div className="space-y-4">
-        <div className="p-3 rounded-md bg-red-50 border border-red-200">
-          <p className="text-sm text-red-700 flex items-center">
+        <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+          <p className="text-sm text-destructive-foreground flex items-center">
             <span className="mr-2">❌</span>
             {error}
           </p>
@@ -474,8 +474,8 @@ export function AcceptInvitationForm({
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       {sessionEmail && (
-        <div className="p-3 rounded-md bg-blue-50 border border-blue-200 mb-4">
-          <p className="text-sm text-blue-700">
+        <div className="p-3 rounded-md bg-info-muted border border-info-muted mb-4">
+          <p className="text-sm text-info-foreground">
             Setting up password for: <strong>{sessionEmail}</strong>
           </p>
         </div>
@@ -616,7 +616,7 @@ export function AcceptInvitationForm({
       </div>
 
       {error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded-md border border-destructive-muted bg-destructive-muted p-3 text-sm text-destructive-foreground">
           <span className="mr-2">⚠️</span>
           {error}
         </div>

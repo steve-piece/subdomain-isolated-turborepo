@@ -202,8 +202,8 @@ export function OnboardingModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-900">
           <div className="absolute -top-10 left-1/2 -translate-x-1/2">
-            <div className="rounded-full bg-gradient-to-br from-violet-500 to-purple-600 p-4 shadow-xl">
-              <Sparkles className="h-8 w-8 text-white" />
+            <div className="rounded-full bg-primary p-4 shadow-xl">
+              <Sparkles className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
 
@@ -218,8 +218,8 @@ export function OnboardingModal({
 
           <div className="mt-8 space-y-3">
             <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30">
-                <Building2 className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                <Building2 className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-slate-900 dark:text-slate-100">
@@ -232,8 +232,8 @@ export function OnboardingModal({
             </div>
 
             <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30">
-                <Upload className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                <Upload className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-slate-900 dark:text-slate-100">
@@ -249,7 +249,7 @@ export function OnboardingModal({
           <div className="mt-8 flex justify-end">
             <Button
               onClick={() => setStep("details")}
-              className="bg-gradient-to-r from-violet-500 to-purple-600 px-6 text-white hover:from-violet-600 hover:to-purple-700"
+              className="bg-primary px-6 text-primary-foreground hover:bg-primary/90"
             >
               Get Started
             </Button>
@@ -340,7 +340,7 @@ export function OnboardingModal({
             <Button
               onClick={() => setStep("logo")}
               disabled={!orgName.trim() || !industry.trim() || !companySize}
-              className="bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Next
             </Button>
@@ -370,21 +370,21 @@ export function OnboardingModal({
               onDrop={handleDrop}
               className={`group relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
                 isDragging
-                  ? "border-violet-500 bg-violet-50 dark:bg-violet-950/20"
-                  : "border-slate-300 hover:border-violet-500 dark:border-slate-600 dark:hover:border-violet-400"
+                  ? "border-primary bg-primary/5 dark:bg-primary/10"
+                  : "border-slate-300 hover:border-primary dark:border-slate-600 dark:hover:border-primary"
               }`}
             >
               <Upload
                 className={`h-12 w-12 transition-colors ${
                   isDragging
-                    ? "text-violet-500"
-                    : "text-slate-400 group-hover:text-violet-500 dark:text-slate-500"
+                    ? "text-primary"
+                    : "text-slate-400 group-hover:text-primary dark:text-slate-500"
                 }`}
               />
               <p
                 className={`mt-2 text-sm font-medium ${
                   isDragging
-                    ? "text-violet-600 dark:text-violet-400"
+                    ? "text-primary"
                     : "text-slate-600 dark:text-slate-400"
                 }`}
               >
@@ -415,7 +415,7 @@ export function OnboardingModal({
               <button
                 type="button"
                 onClick={handleRemoveLogo}
-                className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110"
+                className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-white shadow-lg transition-transform hover:scale-110"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -442,7 +442,7 @@ export function OnboardingModal({
             <Button
               onClick={handleSubmit}
               disabled={isPending || !orgName.trim()}
-              className="bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isPending ? "Setting up..." : "Complete Setup"}
             </Button>

@@ -106,9 +106,9 @@ export function SecuritySummaryCard({ showFullDetails = false }: SecuritySummary
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
             <div className="flex items-center gap-3">
               {summary.mfaEnabled ? (
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : (
-                <XCircle className="h-5 w-5 text-amber-600" />
+                <XCircle className="h-5 w-5 text-warning" />
               )}
               <div>
                 <p className="text-sm font-medium">Two-Factor Authentication</p>

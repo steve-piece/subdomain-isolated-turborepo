@@ -134,8 +134,8 @@ export function ForceLogoutControls(): ReactElement | null {
         </Alert>
 
         {/* Auto-Logout Info */}
-        <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-          <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <Alert className="border-info-muted bg-info-muted dark:bg-info-muted dark:bg-info-muted dark:border-info-muted dark:border-info-muted">
+          <CheckCircle2 className="h-4 w-4 text-info dark:text-info dark:text-info" />
           <AlertTitle className="text-blue-900 dark:text-blue-100">
             Auto-Logout Active
           </AlertTitle>
@@ -155,7 +155,7 @@ export function ForceLogoutControls(): ReactElement | null {
             variant={result.type === "success" ? "default" : "destructive"}
             className={
               result.type === "success"
-                ? "border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800"
+                ? "border-success-muted bg-success-muted dark:bg-green-950 dark:border-success-muted dark:border-success-muted"
                 : ""
             }
           >

@@ -243,9 +243,9 @@ export function ManageMembersDialog({
   );
 
   const permissionColors = {
-    read: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    write: "bg-green-500/10 text-green-500 border-green-500/20",
-    admin: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    read: "bg-muted/50 text-muted-foreground border-border",
+    write: "bg-primary/10 text-primary border-primary/20",
+    admin: "bg-accent/50 text-accent-foreground border-accent/30",
   };
 
   return (
@@ -485,7 +485,7 @@ export function ManageMembersDialog({
                                   </span>
                                 )}
                                 {isMemberOwner && (
-                                  <span className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                                  <span className="text-xs text-warning bg-warning-muted/10 border border-warning-muted px-2 py-0.5 rounded-full flex-shrink-0">
                                     owner
                                   </span>
                                 )}

@@ -278,8 +278,8 @@ export function TeamMemberDialog({
                 )}
 
                 {inviteSuccess && (
-                  <div className="p-3 rounded-md bg-green-50 border border-green-200">
-                    <p className="text-sm text-green-700 flex items-center">
+                  <div className="p-3 rounded-md bg-success-muted border border-success-muted">
+                    <p className="text-sm text-success-foreground flex items-center">
                       <span className="mr-2">✅</span>
                       {inviteSuccess}
                     </p>

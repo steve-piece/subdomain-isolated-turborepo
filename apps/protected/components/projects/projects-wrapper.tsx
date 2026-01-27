@@ -45,9 +45,11 @@ export function ProjectsWrapper({
 
   return (
     <>
-      <PageHeader title="Projects">
+      <PageHeader title="Projects" />
+      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        {/* Action Bar */}
         {canCreateProjects && (
-          <div className="ml-auto">
+          <div className="flex justify-end">
             <CreateProjectDialog
               subdomain={subdomain}
               trigger={
@@ -59,8 +61,6 @@ export function ProjectsWrapper({
             />
           </div>
         )}
-      </PageHeader>
-      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
         {/* Projects Grid / Empty State */}
         <div className="flex-1 min-h-0">
           {projects.length === 0 ? (

@@ -82,7 +82,7 @@ export function RequireTierAccess({
   // Access denied - show upgrade prompt
   return (
     <div className="container max-w-4xl mx-auto p-6">
-      <Card className="border-2 border-amber-500/20 shadow-lg">
+      <Card className="border-2 border-warning-muted shadow-lg">
         <CardHeader className="text-center pb-4 space-y-4">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 shadow-lg">
             <Crown className="h-10 w-10 text-white drop-shadow-lg" />
@@ -141,7 +141,7 @@ export function RequireTierAccess({
           {/* Business+ Benefits */}
           <div className="space-y-3">
             <h3 className="font-semibold flex items-center gap-2">
-              <Crown className="h-5 w-5 text-amber-600" />
+              <Crown className="h-5 w-5 text-warning" />
               What&apos;s Included in Business+
             </h3>
             <div className="grid gap-2">
@@ -157,7 +157,7 @@ export function RequireTierAccess({
                   key={index}
                   className="flex items-start gap-3 text-sm p-2 rounded hover:bg-muted/50 transition-colors"
                 >
-                  <ArrowRight className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <ArrowRight className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
                   <span>{benefit}</span>
                 </div>
               ))}
@@ -165,7 +165,7 @@ export function RequireTierAccess({
           </div>
 
           {/* Pricing Preview */}
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg p-4 border border-warning-muted dark:border-warning-muted dark:border-warning-muted">
             <div className="flex items-baseline gap-2 mb-1">
               <span className="text-3xl font-bold">$99</span>
               <span className="text-muted-foreground">/month</span>

@@ -17,6 +17,11 @@ import {
   SidebarProvider,
 } from "@workspace/ui/components/sidebar";
 
+// Read APP_NAME from environment
+// Set APP_NAME in .env.local at project root (e.g., APP_NAME='Ghost Write Ai')
+// Restart dev server after adding/changing .env.local
+const appName = process.env.APP_NAME || "Your App";
+
 export default async function ProtectedLayout({
   children,
   params,

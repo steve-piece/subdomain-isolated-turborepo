@@ -601,7 +601,7 @@ export function RoleCapabilitiesManager({
                         key={capability.id}
                         className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
                           isPending
-                            ? "bg-amber-50 border-amber-300 dark:bg-amber-950 dark:border-amber-700"
+                            ? "bg-warning-muted border-amber-300 dark:bg-amber-950 dark:border-amber-700"
                             : isCustomized
                               ? "bg-primary/5 border-primary/20"
                               : "bg-background"
@@ -613,7 +613,7 @@ export function RoleCapabilitiesManager({
                             {isPending && (
                               <Badge
                                 variant="default"
-                                className="text-xs bg-amber-500"
+                                className="text-xs bg-warning-muted0"
                               >
                                 Pending
                               </Badge>
@@ -624,7 +624,7 @@ export function RoleCapabilitiesManager({
                               </Badge>
                             )}
                             {currentState ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              <CheckCircle2 className="h-4 w-4 text-success" />
                             ) : (
                               <XCircle className="h-4 w-4 text-muted-foreground" />
                             )}
@@ -639,11 +639,11 @@ export function RoleCapabilitiesManager({
                             <span>
                               Default:{" "}
                               {defaultState ? (
-                                <span className="text-green-600 font-medium">
+                                <span className="text-success font-medium">
                                   Granted
                                 </span>
                               ) : (
-                                <span className="text-red-600 font-medium">
+                                <span className="text-destructive font-medium">
                                   Revoked
                                 </span>
                               )}

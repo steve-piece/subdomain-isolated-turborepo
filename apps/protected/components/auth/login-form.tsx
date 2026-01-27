@@ -405,8 +405,8 @@ export function LoginForm({
 
               {/* Error banner, including link to resend verification if needed */}
               {error && (
-                <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                  <p className="text-sm text-red-700 flex items-center">
+                <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                  <p className="text-sm text-destructive-foreground flex items-center">
                     <AlertCircle className="mr-2" />
                     {error}
                     {error.includes("Email not confirmed") && (

@@ -167,7 +167,7 @@ export function OrganizationLogoUpload({
               "Click logo or drag & drop. SVG, PNG, JPG or WebP. Max 5MB."
             )}
           </p>
-          <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
+          <p className="text-xs text-warning dark:text-warning flex items-center gap-1">
             <Info className="h-3 w-3" />
             Logo updates in the sidebar will appear on your next login
           </p>
