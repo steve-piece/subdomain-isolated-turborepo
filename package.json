@@ -49,7 +49,7 @@
     "@supabase/supabase-js": "^2.92.0",
     "@vercel/analytics": "^1.6.1",
     "glob": "^11.1.0",
-    "next": "^16.1.4",
+    "next": "^16.1.5",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   }
