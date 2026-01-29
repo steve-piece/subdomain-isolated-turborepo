@@ -1,0 +1,26 @@
+{
+  "extends": "../typescript-config/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "allowJs": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "types": ["node"],
+    "paths": {
+      "@workspace/supabase/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules/**/*",
+    "dist/**/*",
+    "*.config.js",
+    "*.config.mjs",
+    "*.config.ts",
+    "**/*.config.js",
+    "**/*.config.mjs",
+    "**/*.config.ts"
+  ]
+}

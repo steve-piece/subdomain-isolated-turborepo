@@ -1,0 +1,45 @@
+{
+  "name": "shadcn-ui-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:watch": "turbo test:watch",
+    "type": "turbo check-types",
+    "clean": "turbo clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "turbo:graph": "turbo graph",
+    "turbo:daemon": "turbo daemon"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "happy-dom": "^20.3.2",
+    "prettier": "^3.6.2",
+    "supabase": "^2.45.5",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "vitest-dom": "^0.1.1"
+  },
+  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "overrides": {
+      "qs": ">=6.14.1",
+      "tmp": ">=0.2.4",
+      "glob": ">=10.5.0",
+      "tar": ">=7.5.4"
+    }
+  }
+}

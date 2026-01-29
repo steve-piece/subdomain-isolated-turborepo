@@ -1,0 +1,22 @@
+{
+  "extends": "@workspace/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "@actions/*": ["./app/actions/*"]
+    },
+    "types": [
+      "vitest/globals",
+      "vitest-dom/extend-expect",
+      "@testing-library/jest-dom"
+    ]
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

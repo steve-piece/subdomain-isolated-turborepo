@@ -1,0 +1,6 @@
+
+[functions.send-email]
+enabled = true
+verify_jwt = false
+import_map = "./functions/send-email/deno.json"
+entrypoint = "./functions/send-email/index.ts"

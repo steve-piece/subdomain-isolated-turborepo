@@ -1,0 +1,12 @@
+# Ignore TypeScript compiler artifacts generated for Supabase functions
+**/*.tsbuildinfo
+node_modules
+
+# Supabase CLI temporary files
+.temp/
+
+# TypeScript build artifacts
+functions/**/*.js
+functions/**/*.d.ts
+functions/**/*.d.ts.map
+functions/**/*.js.map

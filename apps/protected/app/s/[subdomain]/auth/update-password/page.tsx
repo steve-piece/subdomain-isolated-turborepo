@@ -1,0 +1,235 @@
+// apps/protected/app/s/[subdomain]/auth/update-password/page.tsx
+import { unstable_noStore as noStore } from "next/cache";
+import { createClient } from "@workspace/supabase/server";
+import { UpdatePasswordForm } from "@/components/auth/update-password-form";
+import type { EmailOtpType } from "@supabase/supabase-js";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import { Button } from "@workspace/ui/components/button";
+import Link from "next/link";
+
+import type { ReactElement } from "react";
+
+interface UpdatePasswordPageProps {
+  params: Promise<{ subdomain: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function UpdatePasswordPage({
+  params,
+  searchParams,
+}: UpdatePasswordPageProps): Promise<ReactElement> {
+  noStore();
+  const { subdomain } = await params;
+  const searchParamsData = await searchParams;
+
+  const token_hash = searchParamsData.token_hash as string;
+  const type = searchParamsData.type as string;
+  const error = searchParamsData.error as string;
+
+  // Handle direct error from URL parameters
+  if (error) {
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl text-destructive">
+                Reset Link Error
+              </CardTitle>
+              <CardDescription>
+                There was a problem with your password reset link
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                  <p className="text-sm text-destructive-foreground flex items-center">
+                    <span className="mr-2">⚠️</span>
+                    {decodeURIComponent(error)}
+                  </p>
+                </div>
+                <div className="text-center space-y-2">
+                  <Link href="/auth/forgot-password">
+                    <Button className="w-full">Request New Reset Link</Button>
+                  </Link>
+                  <div className="text-sm">
+                    <Link
+                      href="/auth/login"
+                      className="underline underline-offset-4"
+                    >
+                      ← Back to Login
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // For password recovery, render form and let client handle PASSWORD_RECOVERY event
+  // Do NOT verify OTP server-side as it consumes the single-use token
+  if (token_hash && type === "recovery") {
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-md">
+          <UpdatePasswordForm
+            className="flex flex-col gap-6"
+            subdomain={subdomain}
+            isResetFlow={true}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // For other OTP types (email confirmation, etc.), verify server-side
+  if (token_hash && type) {
+    try {
+      const supabase = await createClient();
+
+      // Verify OTP server-side to establish tenant-scoped session
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash,
+        type: type as EmailOtpType,
+      });
+
+      if (verifyError) {
+        return (
+          <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+            <div className="w-full max-w-md">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl text-destructive">
+                    Verification Failed
+                  </CardTitle>
+                  <CardDescription>
+                    Your verification link is invalid or expired
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                      <p className="text-sm text-destructive-foreground flex items-center">
+                        <span className="mr-2">⚠️</span>
+                        {verifyError.message}
+                      </p>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <Link href="/auth/login">
+                        <Button className="w-full">Back to Login</Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+      }
+
+      if (!data.user) {
+        return (
+          <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+            <div className="w-full max-w-md">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl text-destructive">
+                    Verification Failed
+                  </CardTitle>
+                  <CardDescription>
+                    Unable to verify your identity
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                      <p className="text-sm text-destructive-foreground flex items-center">
+                        <span className="mr-2">⚠️</span>
+                        Verification failed - no user found
+                      </p>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <Link href="/auth/login">
+                        <Button className="w-full">Back to Login</Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+      }
+
+      // Server-side verification successful, render form with tenant context
+      return (
+        <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+          <div className="w-full max-w-md">
+            <UpdatePasswordForm
+              className="flex flex-col gap-6"
+              subdomain={subdomain}
+              isResetFlow={false}
+              userEmail={data.user.email}
+            />
+          </div>
+        </div>
+      );
+    } catch (error) {
+      return (
+        <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+          <div className="w-full max-w-md">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-destructive">
+                  Verification Error
+                </CardTitle>
+                <CardDescription>
+                  An error occurred while processing your link
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-3 rounded-md bg-destructive-muted border border-destructive-muted">
+                    <p className="text-sm text-destructive-foreground flex items-center">
+                      <span className="mr-2">⚠️</span>
+                      {error instanceof Error
+                        ? error.message
+                        : "Unknown error occurred"}
+                    </p>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <Link href="/auth/login">
+                      <Button className="w-full">Back to Login</Button>
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // No reset tokens - render form for authenticated users
+  return (
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-md">
+        <UpdatePasswordForm
+          className="flex flex-col gap-6"
+          subdomain={subdomain}
+          isResetFlow={false}
+        />
+      </div>
+    </div>
+  );
+}

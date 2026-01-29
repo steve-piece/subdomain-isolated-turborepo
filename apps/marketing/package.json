@@ -1,0 +1,52 @@
+{
+  "name": "marketing",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3002",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@opentelemetry/instrumentation": "^0.208.0",
+    "@sentry/nextjs": "^10.36.0",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.92.0",
+    "@vercel/analytics": "^1.6.1",
+    "@workspace/supabase": "workspace:*",
+    "@workspace/ui": "workspace:*",
+    "import-in-the-middle": "^2.0.5",
+    "lucide-react": "^0.562.0",
+    "next": "^16.1.4",
+    "next-themes": "^0.4.6",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "require-in-the-middle": "^8.0.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20.19.30",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "@workspace/eslint-config": "workspace:^",
+    "@workspace/typescript-config": "workspace:*",
+    "happy-dom": "^20.3.2",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "vitest-dom": "^0.1.1"
+  }
+}
