@@ -134,12 +134,12 @@ export function ForceLogoutControls(): ReactElement | null {
         </Alert>
 
         {/* Auto-Logout Info */}
-        <Alert className="border-info-muted bg-info-muted dark:bg-info-muted dark:border-info-muted">
-          <CheckCircle2 className="h-4 w-4 text-info dark:text-info" />
-          <AlertTitle className="text-blue-900 dark:text-blue-100">
+        <Alert variant="info">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle>
             Auto-Logout Active
           </AlertTitle>
-          <AlertDescription className="text-blue-800 dark:text-blue-200">
+          <AlertDescription>
             Users are automatically logged out when:
             <ul className="list-disc list-inside space-y-1 text-sm mt-2">
               <li>Their role or permissions are changed</li>
@@ -152,12 +152,7 @@ export function ForceLogoutControls(): ReactElement | null {
         {/* Result Message */}
         {result && (
           <Alert
-            variant={result.type === "success" ? "default" : "destructive"}
-            className={
-              result.type === "success"
-                ? "border-success-muted bg-success-muted dark:bg-green-950 dark:border-success-muted"
-                : ""
-            }
+            variant={result.type === "success" ? "success" : "destructive"}
           >
             {result.type === "success" ? (
               <CheckCircle2 className="h-4 w-4" />

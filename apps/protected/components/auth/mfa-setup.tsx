@@ -178,8 +178,8 @@ export function MFASetup(): ReactElement {
   if (mfaEnabled) {
     return (
       <div className="space-y-4">
-        <div className="p-4 rounded-md bg-success-muted border border-success-muted dark:bg-green-950 dark:border-success-muted">
-          <p className="text-sm text-success-foreground dark:text-success-foreground flex items-center">
+        <div className="p-4 rounded-md bg-success-muted border border-success">
+          <p className="text-sm text-success-foreground flex items-center">
             <span className="mr-2">✅</span>
             Your account is protected with authenticator app 2FA
           </p>
@@ -201,18 +201,18 @@ export function MFASetup(): ReactElement {
       <div className="space-y-4">
         {/* QR Code */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="p-4 bg-white rounded-lg border-2 border-slate-200">
+          <div className="p-4 bg-background rounded-lg border-2 border-border">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={qrCodeUri} alt="MFA QR Code" className="w-48 h-48" />
           </div>
 
           {/* Manual entry option */}
           {secret && (
-            <div className="w-full p-3 rounded-md bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-700">
-              <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+            <div className="w-full p-3 rounded-md bg-muted border border-border">
+              <p className="text-xs text-muted-foreground mb-2">
                 Can&apos;t scan? Enter this code manually:
               </p>
-              <code className="text-sm font-mono bg-white dark:bg-slate-800 px-2 py-1 rounded border select-all">
+              <code className="text-sm font-mono bg-background px-2 py-1 rounded border select-all">
                 {secret}
               </code>
             </div>

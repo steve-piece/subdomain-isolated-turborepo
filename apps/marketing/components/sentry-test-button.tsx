@@ -71,7 +71,7 @@ export function SentryTestButton() {
         <button
           onClick={testServerSideError}
           disabled={isLoading}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/80 disabled:opacity-50 transition-colors"
         >
           {isLoading ? "Testing..." : "Test Server Error"}
         </button>

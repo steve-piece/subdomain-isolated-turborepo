@@ -601,7 +601,7 @@ export function RoleCapabilitiesManager({
                         key={capability.id}
                         className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
                           isPending
-                            ? "bg-warning-muted border-amber-300 dark:bg-amber-950 dark:border-amber-700"
+                            ? "bg-warning-muted border-warning"
                             : isCustomized
                               ? "bg-primary/5 border-primary/20"
                               : "bg-background"

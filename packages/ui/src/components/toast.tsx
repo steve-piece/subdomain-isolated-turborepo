@@ -235,27 +235,27 @@ const variantStyles: Record<
 > = {
   success: {
     icon: CheckCircle2,
-    accent: "before:bg-emerald-500/30",
-    border: "border-emerald-500/20",
-    iconAccent: "text-emerald-500",
+    accent: "before:bg-success-muted",
+    border: "border-success/20",
+    iconAccent: "text-success",
   },
   error: {
     icon: XCircle,
-    accent: "before:bg-rose-500/30",
-    border: "border-rose-500/20",
-    iconAccent: "text-rose-500",
+    accent: "before:bg-destructive-muted",
+    border: "border-destructive/20",
+    iconAccent: "text-destructive",
   },
   warning: {
     icon: AlertTriangle,
-    accent: "before:bg-amber-500/30",
-    border: "border-amber-500/25",
-    iconAccent: "text-amber-500",
+    accent: "before:bg-warning-muted",
+    border: "border-warning/20",
+    iconAccent: "text-warning",
   },
   info: {
     icon: Info,
-    accent: "before:bg-sky-500/30",
-    border: "border-sky-500/20",
-    iconAccent: "text-sky-500",
+    accent: "before:bg-info-muted",
+    border: "border-info/20",
+    iconAccent: "text-info",
   },
 };
 
@@ -293,7 +293,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
     <div className="pointer-events-auto" role={role} aria-live="assertive">
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border bg-white/90 p-4 shadow-2xl shadow-black/10 backdrop-blur transition-all duration-200 dark:border-white/10 dark:bg-slate-900/90",
+          "relative overflow-hidden rounded-2xl border bg-card/95 p-4 shadow-2xl backdrop-blur transition-all duration-200",
           "before:absolute before:-left-12 before:top-1/2 before:h-32 before:w-32 before:-translate-y-1/2 before:rounded-full before:blur-3xl before:content-['']",
           accent,
           border,
@@ -305,16 +305,16 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         >
           <span
             className={cn(
-              "mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-white/60 text-lg dark:bg-white/5",
+              "mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-lg",
               iconAccent,
             )}
           >
             <Icon className="h-5 w-5" aria-hidden="true" />
           </span>
-          <div className="flex-1 text-sm text-slate-900 dark:text-slate-100">
+          <div className="flex-1 text-sm text-foreground">
             <p className="font-semibold tracking-tight">{toast.title}</p>
             {toast.description ? (
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {toast.description}
               </p>
             ) : null}
@@ -325,7 +325,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
                   toast.action?.onClick();
                   onRemove();
                 }}
-                className="mt-3 inline-flex items-center gap-1 rounded-full border border-transparent bg-slate-900 px-3 py-1 text-xs font-medium text-white transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                className="mt-3 inline-flex items-center gap-1 rounded-full border border-transparent bg-foreground px-3 py-1 text-xs font-medium text-background transition hover:bg-foreground/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {toast.action.label}
               </button>
@@ -335,7 +335,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
             <button
               type="button"
               onClick={handleRemove}
-              className="mt-1 ml-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/5 text-slate-600 transition hover:bg-black/10 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-100"
+              className="mt-1 ml-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Close notification"
             >
               <span className="sr-only">Close</span>
@@ -358,9 +358,9 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         </div>
 
         {toast.duration > 0 ? (
-          <div className="pointer-events-none absolute inset-x-4 bottom-3 h-1 overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
+          <div className="pointer-events-none absolute inset-x-4 bottom-3 h-1 overflow-hidden rounded-full bg-foreground/5">
             <span
-              className="block h-full rounded-full bg-slate-900/70 transition-[width] ease-linear dark:bg-white/70"
+              className="block h-full rounded-full bg-foreground/70 transition-[width] ease-linear"
               style={{
                 width: showBar ? "0%" : "100%",
                 transitionDuration: `${toast.duration}ms`,

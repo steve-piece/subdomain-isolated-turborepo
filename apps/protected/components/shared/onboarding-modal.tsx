@@ -200,7 +200,7 @@ export function OnboardingModal({
   if (step === "welcome") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-900">
+        <div className="relative w-full max-w-lg rounded-2xl bg-card p-8 shadow-2xl">
           <div className="absolute -top-10 left-1/2 -translate-x-1/2">
             <div className="rounded-full bg-primary p-4 shadow-xl">
               <Sparkles className="h-8 w-8 text-primary-foreground" />
@@ -208,38 +208,38 @@ export function OnboardingModal({
           </div>
 
           <div className="mt-8 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
               Welcome to {process.env.APP_NAME || "Your App"}!
             </h2>
-            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+            <p className="mt-3 text-sm text-muted-foreground">
               Let&apos;s set up your organization profile in just a few steps.
             </p>
           </div>
 
           <div className="mt-8 space-y-3">
-            <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+            <div className="flex items-center gap-3 rounded-lg border border-border p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <Building2 className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
-                <p className="font-medium text-slate-900 dark:text-slate-100">
+                <p className="font-medium text-foreground">
                   Organization Details
                 </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Tell us about your organization
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+            <div className="flex items-center gap-3 rounded-lg border border-border p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <Upload className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
-                <p className="font-medium text-slate-900 dark:text-slate-100">
+                <p className="font-medium text-foreground">
                   Upload Logo
                 </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Add your brand identity
                 </p>
               </div>
@@ -262,11 +262,11 @@ export function OnboardingModal({
   if (step === "details") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-900">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+        <div className="relative w-full max-w-lg rounded-2xl bg-card p-8 shadow-2xl">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
             Organization Details
           </h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Help us get to know your organization better
           </p>
 
@@ -293,7 +293,7 @@ export function OnboardingModal({
                 placeholder="Tell us about your organization..."
                 maxLength={1000}
               />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 {description.length}/1000 characters
               </p>
             </div>
@@ -352,11 +352,11 @@ export function OnboardingModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-900">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+      <div className="relative w-full max-w-lg rounded-2xl bg-card p-8 shadow-2xl">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Upload Your Logo
         </h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           Add a logo to personalize your workspace (optional)
         </p>
 
@@ -370,27 +370,27 @@ export function OnboardingModal({
               onDrop={handleDrop}
               className={`group relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
                 isDragging
-                  ? "border-primary bg-primary/5 dark:bg-primary/10"
-                  : "border-slate-300 hover:border-primary dark:border-slate-600 dark:hover:border-primary"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary"
               }`}
             >
               <Upload
                 className={`h-12 w-12 transition-colors ${
                   isDragging
                     ? "text-primary"
-                    : "text-slate-400 group-hover:text-primary dark:text-slate-500"
+                    : "text-muted-foreground group-hover:text-primary"
                 }`}
               />
               <p
                 className={`mt-2 text-sm font-medium ${
                   isDragging
                     ? "text-primary"
-                    : "text-slate-600 dark:text-slate-400"
+                    : "text-muted-foreground"
                 }`}
               >
                 {isDragging ? "Drop to upload" : "Click or drag to upload"}
               </p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 SVG, PNG, JPG or WebP (max. 5MB)
               </p>
               <input
@@ -404,7 +404,7 @@ export function OnboardingModal({
             </div>
           ) : (
             <div className="relative">
-              <div className="flex h-48 items-center justify-center rounded-lg border-2 border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+              <div className="flex h-48 items-center justify-center rounded-lg border-2 border-border bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={logoPreview}

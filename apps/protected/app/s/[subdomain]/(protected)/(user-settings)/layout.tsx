@@ -119,7 +119,7 @@ export default function UserSettingsLayout({
                     className={cn(
                       "absolute inset-x-0 -bottom-px h-0.5 transition-all duration-200",
                       isActive
-                        ? "bg-blue-600 h-[2px]"
+                        ? "bg-primary h-[2px]"
                         : "bg-transparent group-hover:bg-border"
                     )}
                   />

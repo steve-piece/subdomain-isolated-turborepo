@@ -387,13 +387,13 @@ export function OrganizationSignUpForm({
                     "text-sm",
                     touchedFields.organizationName &&
                       fieldErrors.organizationName
-                      ? "border-red-500"
+                      ? "border-destructive"
                       : "",
                   )}
                 />
                 {touchedFields.organizationName &&
                   fieldErrors.organizationName && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-destructive mt-1">
                       {fieldErrors.organizationName}
                     </p>
                   )}
@@ -412,25 +412,25 @@ export function OrganizationSignUpForm({
                     onChange={handleSubdomainChange}
                     className={cn(
                       "rounded-r-none min-w-0 w-[110px] h-[36px] text-sm",
-                      subdomainValidation === "valid" && "border-green-500",
-                      subdomainValidation === "invalid" && "border-red-500",
+                      subdomainValidation === "valid" && "border-success",
+                      subdomainValidation === "invalid" && "border-destructive",
                     )}
                   />
                   <span className="bg-muted pl-[10px] pr-[20px] py-2 border border-l-0 rounded-r-[25px] text-sm text-muted-foreground whitespace-nowrap shrink-0 h-[36px] flex items-center mr-0">
                     .{process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com"}
                   </span>
                   {subdomainValidation === "valid" && (
-                    <span className="ml-2 text-green-500">✓</span>
+                    <span className="ml-2 text-success">✓</span>
                   )}
                   {subdomainValidation === "invalid" && (
-                    <span className="ml-2 text-red-500">✗</span>
+                    <span className="ml-2 text-destructive">✗</span>
                   )}
                 </div>
                 <p
                   className={cn(
                     "text-xs",
-                    subdomainValidation === "valid" && "text-green-600",
-                    subdomainValidation === "invalid" && "text-red-600",
+                    subdomainValidation === "valid" && "text-success-foreground",
+                    subdomainValidation === "invalid" && "text-destructive-foreground",
                     !subdomainValidation && "text-muted-foreground",
                   )}
                 >
@@ -456,12 +456,12 @@ export function OrganizationSignUpForm({
                   className={cn(
                     "text-sm",
                     touchedFields.userName && fieldErrors.userName
-                      ? "border-red-500"
+                      ? "border-destructive"
                       : "",
                   )}
                 />
                 {touchedFields.userName && fieldErrors.userName && (
-                  <p className="text-sm text-red-500 mt-1">
+                  <p className="text-sm text-destructive mt-1">
                     {fieldErrors.userName}
                   </p>
                 )}
@@ -481,12 +481,12 @@ export function OrganizationSignUpForm({
                   className={cn(
                     "text-sm",
                     touchedFields.email && fieldErrors.email
-                      ? "border-red-500"
+                      ? "border-destructive"
                       : "",
                   )}
                 />
                 {touchedFields.email && fieldErrors.email && (
-                  <p className="text-sm text-red-500 mt-1">
+                  <p className="text-sm text-destructive mt-1">
                     {fieldErrors.email}
                   </p>
                 )}
@@ -506,7 +506,7 @@ export function OrganizationSignUpForm({
                     className={cn(
                       "pr-10 text-sm",
                       touchedFields.password && fieldErrors.password
-                        ? "border-red-500"
+                        ? "border-destructive"
                         : "",
                     )}
                   />
@@ -554,7 +554,7 @@ export function OrganizationSignUpForm({
                   </button>
                 </div>
                 {touchedFields.password && fieldErrors.password && (
-                  <p className="text-sm text-red-500 mt-1">
+                  <p className="text-sm text-destructive mt-1">
                     {fieldErrors.password}
                   </p>
                 )}
@@ -576,7 +576,7 @@ export function OrganizationSignUpForm({
                     className={cn(
                       "pr-10 text-sm",
                       touchedFields.repeatPassword && fieldErrors.repeatPassword
-                        ? "border-red-500"
+                        ? "border-destructive"
                         : "",
                     )}
                   />
@@ -626,15 +626,15 @@ export function OrganizationSignUpForm({
                   </button>
                 </div>
                 {touchedFields.repeatPassword && fieldErrors.repeatPassword && (
-                  <p className="text-sm text-red-500 mt-1">
+                  <p className="text-sm text-destructive mt-1">
                     {fieldErrors.repeatPassword}
                   </p>
                 )}
               </div>
 
               {error && (
-                <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                  <p className="text-sm text-red-700">{error}</p>
+                <div className="p-3 rounded-md bg-destructive-muted border border-destructive">
+                  <p className="text-sm text-destructive-foreground">{error}</p>
                 </div>
               )}
 
@@ -642,7 +642,7 @@ export function OrganizationSignUpForm({
                 type="submit"
                 className={cn(
                   "w-full transition-all text-base h-10",
-                  success && "bg-green-600 hover:bg-green-700",
+                  success && "bg-success hover:bg-success/90",
                 )}
                 aria-label="Create organization"
                 disabled={

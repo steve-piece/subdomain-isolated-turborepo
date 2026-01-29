@@ -118,14 +118,14 @@ export function ResendVerificationForm(): ReactElement {
                 </div>
 
                 {error && (
-                  <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                    <p className="text-sm text-red-700">{error}</p>
+                  <div className="p-3 rounded-md bg-destructive-muted border border-destructive">
+                    <p className="text-sm text-destructive-foreground">{error}</p>
                   </div>
                 )}
 
                 {success && (
-                  <div className="p-3 rounded-md bg-green-50 border border-green-200">
-                    <p className="text-sm text-green-700 flex items-center">
+                  <div className="p-3 rounded-md bg-success-muted border border-success">
+                    <p className="text-sm text-success-foreground flex items-center">
                       <span className="mr-2">✓</span>
                       {success}
                     </p>

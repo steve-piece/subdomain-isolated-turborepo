@@ -88,7 +88,7 @@ export default function OrgSettingsLayout({
       <PageHeader title="Organization Settings" />
 
       {/* Navigation Tabs - Sticky */}
-      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="-mb-px flex space-x-1" aria-label="Organization settings tabs">
             {orgSettingsTabs.map((tab) => {
@@ -130,7 +130,7 @@ export default function OrgSettingsLayout({
                     className={cn(
                       "absolute inset-x-0 -bottom-px h-0.5 transition-all duration-200",
                       isActive
-                        ? "bg-blue-600 h-[2px]"
+                        ? "bg-primary h-[2px]"
                         : "bg-transparent group-hover:bg-border"
                     )}
                   />
