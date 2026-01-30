@@ -30,22 +30,28 @@ packages/
 
 ## Tech Stack
 
-- [Next.js 15](https://nextjs.org/) with App Router
+- [Next.js 16](https://nextjs.org/) with App Router
 - [React 19](https://react.dev/)
 - [Tailwind CSS 4](https://tailwindcss.com/) for styling
 - shadcn-style components (Radix + CVA) via `@workspace/ui`
 - [Radix UI](https://www.radix-ui.com/) for accessible components
 - [Lucide React](https://lucide.dev/) for icons
 - [TypeScript](https://www.typescriptlang.org/) for type safety
-- [Supabase UI](https://supabase.com/ui/docs/getting-started/introduction) for authentication components
+- [Supabase](https://supabase.com/) for authentication, database, and backend
+- [Stripe](https://stripe.com/) for billing and subscription management (optional)
+- [Sentry](https://sentry.io/) for error tracking (optional)
 
 ### Dependency Alignment
 
-- Next.js `^15.4.7`, React/ReactDOM `^19.1.1`
-- Supabase `@supabase/supabase-js ^2.57.4`, `@supabase/ssr ^0.7.0`
-- Tailwind `^4.1.11` (+ `@tailwindcss/postcss ^4.1.11`)
+- Next.js `^16.1.4`, React/ReactDOM `^19.2.3`
+- Supabase `@supabase/supabase-js ^2.92.0`, `@supabase/ssr ^0.8.0`
+- Tailwind `^4.1.18` (+ `@tailwindcss/postcss ^4.1.18`)
+- Stripe `^20.0.0`, `@stripe/stripe-js ^8.6.4`
+- Sentry `@sentry/nextjs ^10.36.0`
 - ESLint `^9.32.0`, TS-ESLint `^8.39.0`, Next ESLint plugin `^15.4.5`
-- Prettier `^3.6.2`, TypeScript `^5.9.x`
+- Prettier `^3.6.2`, TypeScript `^5.9.3`
+- Lucide React `^0.562.0`, Radix UI `^1.x-^2.x`
+- Resend `^6.1.1` (for transactional emails)
 
 ## 🚀 Quick Start
 
