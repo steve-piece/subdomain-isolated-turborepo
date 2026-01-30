@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { Github } from "lucide-react";
 import { ThemeToggle } from "@workspace/ui/components/theme-toggle";
 import { Button } from "@workspace/ui/components/button";
+
+const GITHUB_REPO_URL = "https://github.com/steve-piece/subdomain-isolated-turborepo";
 
 export function Header({ appName }: { appName: string }) {
   return (
@@ -13,6 +16,16 @@ export function Header({ appName }: { appName: string }) {
         </span>
       </Link>
       <nav className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" asChild>
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View on GitHub"
+          >
+            <Github className="h-5 w-5" />
+          </a>
+        </Button>
         <ThemeToggle />
         <Button variant="ghost" asChild>
           <Link href="/login">Sign In</Link>
