@@ -1,5 +1,15 @@
 # Subdomain-Isolated Turborepo (B2B SaaS Template)
 
+
+![Next.js](https://img.shields.io/badge/Next.js-16.1.5-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react&logoColor=000000)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white)
+![Node](https://img.shields.io/badge/Node-%3E%3D20-339933?logo=nodedotjs&logoColor=white)
+![Turborepo](https://img.shields.io/badge/Turborepo-2.5.6-EF4444?logo=turborepo&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
+![Resend](https://img.shields.io/badge/Resend-0A0A0A?logo=resend&logoColor=white)
+![Stripe](https://img.shields.io/badge/Stripe-635BFF?logo=stripe&logoColor=white)
+
 An open-source **multi-tenant** starter built for B2B products that want a fast, modern stack and a clean separation between:
 
 - a public **marketing site** (SEO + acquisition), and
@@ -52,7 +62,7 @@ Demo: [marketing-app.com](https://marketing-app.com)
 ## Tech stack (actual versions used here)
 
 - **Monorepo**: Turborepo (`turbo`)
-- **Framework**: Next.js `^16.1.4` (App Router)
+- **Framework**: Next.js `^16.1.5` (App Router)
 - **UI**: React/ReactDOM `^19.2.3`, Tailwind CSS `^4.1.18`, shadcn-style components via `@workspace/ui`
 - **Backend**: Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
 - **Email**: Resend (`resend`) + Supabase Edge Functions
