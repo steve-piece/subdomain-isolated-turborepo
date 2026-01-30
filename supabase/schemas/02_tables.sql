@@ -285,6 +285,7 @@ CREATE OR REPLACE FUNCTION public.update_pending_invitations_updated_at()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path TO ''
 AS $function$
 BEGIN
   NEW.updated_at = NOW();
@@ -311,6 +312,7 @@ CREATE OR REPLACE FUNCTION public.sync_team_size_from_tier(p_org_id uuid)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path TO ''
 AS $function$
 DECLARE
   v_tier_id UUID;
@@ -371,6 +373,7 @@ CREATE OR REPLACE FUNCTION public.trigger_sync_team_size_on_subscription_change(
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path TO ''
 AS $function$
 BEGIN
   -- Sync when subscription is created, tier changes, or status changes to active

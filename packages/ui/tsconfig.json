@@ -7,7 +7,7 @@
     "declaration": false,
     "declarationMap": false,
     "emitDeclarationOnly": false,
-    "types": ["react", "react-dom"],
+    "types": ["react", "react-dom", "node"],
     "paths": {
       "@workspace/ui/*": ["./src/*"]
     }

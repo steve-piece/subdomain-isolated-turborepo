@@ -1,7 +1,8 @@
 // apps/protected/app/s/[subdomain]/auth/reauthenticate/page.tsx
 import type { ReactElement } from "react";
 import { ReauthenticateForm } from "@/components/auth/reauthenticate-form";
-import RequireTenantAuth from "@/components/shared/require-tenant-auth";
+import { createClient } from "@workspace/supabase/server";
+import { redirect } from "next/navigation";
 
 interface ReauthenticatePageProps {
   params: Promise<{ subdomain: string }>;
@@ -18,15 +19,18 @@ export default async function ReauthenticatePage({
   const actionParam = query.action;
   const action = Array.isArray(actionParam) ? actionParam[0] : actionParam;
 
+  // Tight tenant gating (server-side) for this auth route
+  const supabase = await createClient();
+  const { data: claims, error } = await supabase.auth.getClaims();
+  if (error || !claims) redirect("/auth/login?reason=no_session");
+  if (claims.claims.subdomain !== subdomain)
+    redirect("/auth/login?error=unauthorized");
+
   return (
-    <RequireTenantAuth subdomain={subdomain}>
-      {() => (
-        <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-          <div className="w-full max-w-md">
-            <ReauthenticateForm subdomain={subdomain} pendingAction={action} />
-          </div>
-        </div>
-      )}
-    </RequireTenantAuth>
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-md">
+        <ReauthenticateForm subdomain={subdomain} pendingAction={action} />
+      </div>
+    </div>
   );
 }

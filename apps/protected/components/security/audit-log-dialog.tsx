@@ -19,10 +19,10 @@ type AuditLog = {
   id: string;
   event_type: string;
   event_action: string;
-  event_metadata: any;
+  event_metadata: Record<string, unknown> | null;
   ip_address: string;
   user_agent: string;
-  location_data: any;
+  location_data: Record<string, unknown> | null;
   severity: "info" | "warning" | "critical";
   created_at: string;
 };
@@ -112,7 +112,7 @@ export function AuditLogDialog() {
           <div className="flex flex-col flex-1">
             <ScrollArea className="flex-1 pr-4">
               <div className="space-y-1">
-                {logs.map((log, index) => (
+                {logs.map((log) => (
                   <div
                     key={log.id}
                     className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border/50 last:border-b-0"

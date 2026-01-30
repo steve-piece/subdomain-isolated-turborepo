@@ -43,6 +43,9 @@ export function OrganizationSignUpForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  
+  // Bot prevention: honeypot field (bots auto-fill, humans ignore)
+  const [website, setWebsite] = useState("");
 
   // UI toggles
   const [showPassword, setShowPassword] = useState(false);
@@ -85,9 +88,6 @@ export function OrganizationSignUpForm({
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<
-    null | "pending_email" | "creating_org" | "needs_profile" | "error"
-  >(null);
   const router = useRouter();
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -242,6 +242,17 @@ export function OrganizationSignUpForm({
 
     const supabase = createClient();
 
+    // Bot prevention: reject if honeypot field is filled
+    if (website) {
+      Sentry.logger.warn("signup_honeypot_triggered", {
+        email: email,
+        subdomain: subdomain,
+      });
+      setError("Invalid submission. Please try again.");
+      setIsLoading(false);
+      return;
+    }
+
     // Basic client checks
     if (password !== repeatPassword) {
       setError("Passwords do not match");
@@ -331,7 +342,6 @@ export function OrganizationSignUpForm({
       const hasSession = Boolean(sessionRes?.session);
 
       if (!hasSession) {
-        setStatus("pending_email");
         setSuccess(true);
         await new Promise((resolve) => setTimeout(resolve, 1200));
         router.push(
@@ -339,8 +349,6 @@ export function OrganizationSignUpForm({
         );
         return;
       }
-
-      setStatus(null);
 
       // Show success state briefly before redirect
       setSuccess(true);
@@ -351,7 +359,6 @@ export function OrganizationSignUpForm({
       );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
-      setStatus("error");
     } finally {
       setIsLoading(false);
       setIsValidating(false);
@@ -369,6 +376,23 @@ export function OrganizationSignUpForm({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>
+            {/* Honeypot field - hidden from humans, bots will auto-fill */}
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              style={{
+                position: "absolute",
+                left: "-9999px",
+                width: "1px",
+                height: "1px",
+                opacity: 0,
+              }}
+              aria-hidden="true"
+            />
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="organization-name">Organization Name</Label>

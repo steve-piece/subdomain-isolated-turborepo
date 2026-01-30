@@ -1,9 +1,6 @@
 import Link from "next/link";
 
 export function HowItWorks() {
-  const appDomain =
-    process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com";
-
   return (
     <div className="py-12 text-left">
       <h2 className="text-2xl font-bold text-center mb-8">Get started</h2>

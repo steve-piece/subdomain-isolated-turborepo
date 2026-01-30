@@ -21,7 +21,6 @@ import { useToast } from "@workspace/ui/components/toast";
 import { Pencil, Check, X, Camera, Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@workspace/ui/components/card";
 import Image from "next/image";
-import { PageHeader } from "@/components/shared/page-header";
 
 interface ProfileWrapperProps {
   subdomain: string;

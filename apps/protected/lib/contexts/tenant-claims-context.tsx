@@ -8,7 +8,6 @@ import { createContext, useContext, type ReactElement } from "react";
  *
  * Contains ONLY identity, organization context, and authorization data.
  * All other user preferences and settings should be fetched via database
- * queries using the helper functions in supabase/migrations/20250101000001_helper_functions.sql
  *
  * Rationale:
  * - JWTs are immutable until refresh (~1 hour)

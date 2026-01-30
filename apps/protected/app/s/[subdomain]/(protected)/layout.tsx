@@ -17,11 +17,6 @@ import {
   SidebarProvider,
 } from "@workspace/ui/components/sidebar";
 
-// Read APP_NAME from environment
-// Set APP_NAME in .env.local at project root (e.g., APP_NAME='Ghost Write Ai')
-// Restart dev server after adding/changing .env.local
-const appName = process.env.APP_NAME || "Your App";
-
 export default async function ProtectedLayout({
   children,
   params,
@@ -141,25 +136,16 @@ export default async function ProtectedLayout({
   // Get organization logo from JWT
   const organizationLogoUrl = claims.claims.organization_logo_url;
 
-  // Get user's full name and avatar from database (not in minimal JWT)
-  let userFullName: string | null = null;
-  let userAvatarUrl: string | null = null;
-  try {
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("full_name, profile_picture_url")
-      .eq("user_id", user.id)
-      .single();
-    userFullName = profile?.full_name || null;
-    userAvatarUrl = profile?.profile_picture_url || null;
-  } catch (error) {
-    Sentry.captureException(error, {
-      tags: {
-        context: "user_profile_fetch",
-        user_id: user.id,
-      },
-    });
-  }
+  // Read lightweight identity fields from JWT claims to avoid extra DB roundtrips
+  const userFullName =
+    (claims.claims.full_name as string | undefined) ||
+    ((user.user_metadata as Record<string, unknown> | null)?.full_name as
+      | string
+      | undefined) ||
+    null;
+
+  const userAvatarUrl =
+    (claims.claims.profile_picture_url as string | undefined) || null;
 
   // Check if organization needs onboarding
   let needsOnboarding = false;

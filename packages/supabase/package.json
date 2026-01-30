@@ -36,10 +36,6 @@
     "./admin": {
       "types": "./src/admin.ts",
       "default": "./src/admin.ts"
-    },
-    "./types": {
-      "types": "./src/types.ts",
-      "default": "./src/types.ts"
     }
   }
 }

@@ -114,14 +114,17 @@ export async function getMFAFactors(): Promise<GetMFAFactorsResponse> {
     }
 
     // Map TOTP factors (authenticator apps) - FREE
+    // Ensure we only return plain serializable data
+    const factors = data.totp.map((factor) => ({
+      id: String(factor.id),
+      friendlyName: String(factor.friendly_name || "Authenticator App"),
+      factorType: String(factor.factor_type),
+      status: String(factor.status),
+    }));
+
     return {
       success: true,
-      factors: data.totp.map((factor) => ({
-        id: factor.id,
-        friendlyName: factor.friendly_name || "Authenticator App",
-        factorType: factor.factor_type,
-        status: factor.status,
-      })),
+      factors,
     };
   } catch (error) {
     Sentry.captureException(error);

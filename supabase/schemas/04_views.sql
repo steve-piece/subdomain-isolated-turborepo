@@ -22,3 +22,4 @@ CREATE OR REPLACE VIEW public.tenants_public as
         subdomain,
         logo_url
     FROM organizations;
+

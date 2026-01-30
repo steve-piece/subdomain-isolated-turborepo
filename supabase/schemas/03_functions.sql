@@ -107,6 +107,8 @@ DECLARE
   user_org_id text;
   user_company_name text;
   org_logo_url text;
+  user_full_name text;
+  user_profile_picture_url text;
   user_capabilities text[];
   v_user_id uuid;
 BEGIN
@@ -123,12 +125,16 @@ BEGIN
   SELECT
     up.role::text,
     up.org_id::text,
+    up.full_name,
+    up.profile_picture_url,
     o.subdomain,
     o.company_name,
     o.logo_url
   INTO
     user_role,
     user_org_id,
+    user_full_name,
+    user_profile_picture_url,
     user_subdomain,
     user_company_name,
     org_logo_url
@@ -164,6 +170,14 @@ BEGIN
 
   IF org_logo_url IS NOT NULL THEN
     claims := jsonb_set(claims, '{organization_logo_url}', to_jsonb(org_logo_url));
+  END IF;
+
+  IF user_full_name IS NOT NULL THEN
+    claims := jsonb_set(claims, '{full_name}', to_jsonb(user_full_name));
+  END IF;
+
+  IF user_profile_picture_url IS NOT NULL THEN
+    claims := jsonb_set(claims, '{profile_picture_url}', to_jsonb(user_profile_picture_url));
   END IF;
 
   IF user_capabilities IS NOT NULL AND array_length(user_capabilities, 1) > 0 THEN
@@ -536,6 +550,7 @@ RETURNS integer
 LANGUAGE sql
 IMMUTABLE
 PARALLEL SAFE
+SET search_path TO ''
 AS $function$
   SELECT CASE p_role
     WHEN 'view-only' THEN 0
@@ -740,6 +755,7 @@ CREATE OR REPLACE FUNCTION public.has_min_role(p_user_role public.user_role, p_r
 RETURNS boolean
 LANGUAGE sql
 IMMUTABLE PARALLEL SAFE
+SET search_path TO ''
 AS $function$
   SELECT public.get_role_rank(p_user_role) >= public.get_role_rank(p_required_role);
 $function$;

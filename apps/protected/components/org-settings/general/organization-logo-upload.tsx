@@ -146,6 +146,7 @@ export function OrganizationLogoUpload({
             src={logoUrl}
             alt={`${organizationName} logo`}
             fill
+            sizes="96px"
             className="object-contain p-0"
           />
         ) : (

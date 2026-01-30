@@ -23,7 +23,6 @@ import { getOnboardingProgress } from "@/app/actions/dashboard/get-onboarding-pr
 import type { OnboardingProgress } from "@/app/actions/dashboard/get-onboarding-progress";
 import { useState, useEffect } from "react";
 import {
-  Building2,
   Users,
   ClipboardList,
   HardDrive,

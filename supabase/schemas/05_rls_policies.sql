@@ -17,10 +17,10 @@ CREATE POLICY "service_all_capabilities" ON public.capabilities FOR ALL TO servi
 -- CUSTOMER_BILLING_PROFILES
 -- ============================================================================
 DROP POLICY IF EXISTS "manage_customer_billing_profiles" ON public.customer_billing_profiles;
-CREATE POLICY "manage_customer_billing_profiles" ON public.customer_billing_profiles FOR ALL TO authenticated USING (user_org_access(auth.uid(), org_id, ARRAY['owner'::user_role, 'admin'::user_role])) WITH CHECK (user_org_access(auth.uid(), org_id, ARRAY['owner'::user_role, 'admin'::user_role]));
+CREATE POLICY "manage_customer_billing_profiles" ON public.customer_billing_profiles FOR ALL TO authenticated USING (user_org_access((select auth.uid()), org_id, ARRAY['owner'::user_role, 'admin'::user_role])) WITH CHECK (user_org_access((select auth.uid()), org_id, ARRAY['owner'::user_role, 'admin'::user_role]));
 
 DROP POLICY IF EXISTS "select_customer_billing_profiles" ON public.customer_billing_profiles;
-CREATE POLICY "select_customer_billing_profiles" ON public.customer_billing_profiles FOR SELECT TO authenticated USING (user_org_access(auth.uid(), org_id));
+CREATE POLICY "select_customer_billing_profiles" ON public.customer_billing_profiles FOR SELECT TO authenticated USING (user_org_access((select auth.uid()), org_id));
 
 DROP POLICY IF EXISTS "service_all_customer_billing_profiles" ON public.customer_billing_profiles;
 CREATE POLICY "service_all_customer_billing_profiles" ON public.customer_billing_profiles FOR ALL TO service_role USING (true) WITH CHECK (true);
@@ -38,7 +38,7 @@ CREATE POLICY "service_all_feature_limits" ON public.feature_limits FOR ALL TO s
 -- INVOICES
 -- ============================================================================
 DROP POLICY IF EXISTS "select_invoices" ON public.invoices;
-CREATE POLICY "select_invoices" ON public.invoices FOR SELECT TO authenticated USING (user_org_access(auth.uid(), org_id, ARRAY['owner'::user_role, 'admin'::user_role]));
+CREATE POLICY "select_invoices" ON public.invoices FOR SELECT TO authenticated USING (user_org_access((select auth.uid()), org_id, ARRAY['owner'::user_role, 'admin'::user_role]));
 
 DROP POLICY IF EXISTS "service_all_invoices" ON public.invoices;
 CREATE POLICY "service_all_invoices" ON public.invoices FOR ALL TO service_role USING (true) WITH CHECK (true);
@@ -59,10 +59,10 @@ CREATE POLICY "service_all_org_role_capabilities" ON public.org_role_capabilitie
 -- ORGANIZATION_TEAM_SETTINGS
 -- ============================================================================
 DROP POLICY IF EXISTS "manage_org_team_settings" ON public.organization_team_settings;
-CREATE POLICY "manage_org_team_settings" ON public.organization_team_settings FOR ALL TO authenticated USING (user_org_access(auth.uid(), org_id, ARRAY['owner'::user_role, 'superadmin'::user_role, 'admin'::user_role])) WITH CHECK (user_org_access(auth.uid(), org_id, ARRAY['owner'::user_role, 'superadmin'::user_role, 'admin'::user_role]));
+CREATE POLICY "manage_org_team_settings" ON public.organization_team_settings FOR ALL TO authenticated USING (user_org_access((select auth.uid()), org_id, ARRAY['owner'::user_role, 'superadmin'::user_role, 'admin'::user_role])) WITH CHECK (user_org_access((select auth.uid()), org_id, ARRAY['owner'::user_role, 'superadmin'::user_role, 'admin'::user_role]));
 
 DROP POLICY IF EXISTS "select_org_team_settings" ON public.organization_team_settings;
-CREATE POLICY "select_org_team_settings" ON public.organization_team_settings FOR SELECT TO authenticated USING (user_org_access(auth.uid(), org_id));
+CREATE POLICY "select_org_team_settings" ON public.organization_team_settings FOR SELECT TO authenticated USING (user_org_access((select auth.uid()), org_id));
 
 DROP POLICY IF EXISTS "service_all_team_settings" ON public.organization_team_settings;
 CREATE POLICY "service_all_team_settings" ON public.organization_team_settings FOR ALL TO service_role USING (true) WITH CHECK (true);
@@ -89,7 +89,7 @@ CREATE POLICY "update_organizations" ON public.organizations FOR UPDATE TO authe
 -- PAYMENT_METHODS
 -- ============================================================================
 DROP POLICY IF EXISTS "select_payment_methods" ON public.payment_methods;
-CREATE POLICY "select_payment_methods" ON public.payment_methods FOR SELECT TO authenticated USING (user_org_access(auth.uid(), org_id, ARRAY['owner'::user_role, 'admin'::user_role]));
+CREATE POLICY "select_payment_methods" ON public.payment_methods FOR SELECT TO authenticated USING (user_org_access((select auth.uid()), org_id, ARRAY['owner'::user_role, 'admin'::user_role]));
 
 DROP POLICY IF EXISTS "service_all_payment_methods" ON public.payment_methods;
 CREATE POLICY "service_all_payment_methods" ON public.payment_methods FOR ALL TO service_role USING (true) WITH CHECK (true);
@@ -102,17 +102,17 @@ ALTER TABLE public.pending_invitations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admins can manage pending invitations" ON public.pending_invitations;
 CREATE POLICY "Admins can manage pending invitations" ON public.pending_invitations FOR UPDATE TO public USING ((org_id IN ( SELECT user_profiles.org_id
    FROM user_profiles
-  WHERE ((user_profiles.user_id = auth.uid()) AND (user_profiles.role = ANY (ARRAY['owner'::user_role, 'admin'::user_role, 'superadmin'::user_role]))))));
+  WHERE ((user_profiles.user_id = (select auth.uid())) AND (user_profiles.role = ANY (ARRAY['owner'::user_role, 'admin'::user_role, 'superadmin'::user_role]))))));
 
 DROP POLICY IF EXISTS "Users can create invitations" ON public.pending_invitations;
 CREATE POLICY "Users can create invitations" ON public.pending_invitations FOR INSERT TO public WITH CHECK ((org_id IN ( SELECT user_profiles.org_id
    FROM user_profiles
-  WHERE (user_profiles.user_id = auth.uid())))));
+  WHERE (user_profiles.user_id = (select auth.uid())))));
 
 DROP POLICY IF EXISTS "Users can view org pending invitations" ON public.pending_invitations;
 CREATE POLICY "Users can view org pending invitations" ON public.pending_invitations FOR SELECT TO public USING ((org_id IN ( SELECT user_profiles.org_id
    FROM user_profiles
-  WHERE ((user_profiles.user_id = auth.uid()) AND (user_profiles.role = ANY (ARRAY['owner'::user_role, 'admin'::user_role, 'superadmin'::user_role]))))));
+  WHERE ((user_profiles.user_id = (select auth.uid())) AND (user_profiles.role = ANY (ARRAY['owner'::user_role, 'admin'::user_role, 'superadmin'::user_role]))))));
 
 -- ============================================================================
 -- PROJECT_PERMISSIONS
@@ -171,10 +171,10 @@ CREATE POLICY "update_projects" ON public.projects FOR UPDATE TO authenticated U
 -- SECURITY_AUDIT_LOG
 -- ============================================================================
 DROP POLICY IF EXISTS "insert_audit_log" ON public.security_audit_log;
-CREATE POLICY "insert_audit_log" ON public.security_audit_log FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "insert_audit_log" ON public.security_audit_log FOR INSERT TO authenticated WITH CHECK ((user_id = (select auth.uid())));
 
 DROP POLICY IF EXISTS "select_own_audit_log" ON public.security_audit_log;
-CREATE POLICY "select_own_audit_log" ON public.security_audit_log FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR ((org_id IS NOT NULL) AND user_org_capability(auth.uid(), org_id, 'security.view_org_audit'::text))));
+CREATE POLICY "select_own_audit_log" ON public.security_audit_log FOR SELECT TO authenticated USING (((user_id = (select auth.uid())) OR ((org_id IS NOT NULL) AND user_org_capability((select auth.uid()), org_id, 'security.view_org_audit'::text))));
 
 DROP POLICY IF EXISTS "service_all_audit_log" ON public.security_audit_log;
 CREATE POLICY "service_all_audit_log" ON public.security_audit_log FOR ALL TO service_role USING (true) WITH CHECK (true);
@@ -244,7 +244,7 @@ CREATE POLICY "service_all_usage_counters" ON public.usage_counters FOR ALL TO s
 -- USAGE_METRICS
 -- ============================================================================
 DROP POLICY IF EXISTS "select_usage_metrics" ON public.usage_metrics;
-CREATE POLICY "select_usage_metrics" ON public.usage_metrics FOR SELECT TO authenticated USING (user_org_access(auth.uid(), org_id));
+CREATE POLICY "select_usage_metrics" ON public.usage_metrics FOR SELECT TO authenticated USING (user_org_access((select auth.uid()), org_id));
 
 DROP POLICY IF EXISTS "service_all_usage_metrics" ON public.usage_metrics;
 CREATE POLICY "service_all_usage_metrics" ON public.usage_metrics FOR ALL TO service_role USING (true) WITH CHECK (true);
@@ -253,16 +253,16 @@ CREATE POLICY "service_all_usage_metrics" ON public.usage_metrics FOR ALL TO ser
 -- USER_NOTIFICATION_PREFERENCES
 -- ============================================================================
 DROP POLICY IF EXISTS "insert_own_notification_prefs" ON public.user_notification_preferences;
-CREATE POLICY "insert_own_notification_prefs" ON public.user_notification_preferences FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY "insert_own_notification_prefs" ON public.user_notification_preferences FOR INSERT TO authenticated WITH CHECK ((user_id = (select auth.uid())));
 
 DROP POLICY IF EXISTS "select_own_notification_prefs" ON public.user_notification_preferences;
-CREATE POLICY "select_own_notification_prefs" ON public.user_notification_preferences FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+CREATE POLICY "select_own_notification_prefs" ON public.user_notification_preferences FOR SELECT TO authenticated USING ((user_id = (select auth.uid())));
 
 DROP POLICY IF EXISTS "service_all_notification_prefs" ON public.user_notification_preferences;
 CREATE POLICY "service_all_notification_prefs" ON public.user_notification_preferences FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "update_own_notification_prefs" ON public.user_notification_preferences;
-CREATE POLICY "update_own_notification_prefs" ON public.user_notification_preferences FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY "update_own_notification_prefs" ON public.user_notification_preferences FOR UPDATE TO authenticated USING ((user_id = (select auth.uid()))) WITH CHECK ((user_id = (select auth.uid())));
 
 -- ============================================================================
 -- USER_PROFILES
@@ -286,13 +286,13 @@ CREATE POLICY "update_user_profiles" ON public.user_profiles FOR UPDATE TO authe
 -- USER_SECURITY_SETTINGS
 -- ============================================================================
 DROP POLICY IF EXISTS "insert_own_security_settings" ON public.user_security_settings;
-CREATE POLICY "insert_own_security_settings" ON public.user_security_settings FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY "insert_own_security_settings" ON public.user_security_settings FOR INSERT TO authenticated WITH CHECK ((user_id = (select auth.uid())));
 
 DROP POLICY IF EXISTS "select_own_security_settings" ON public.user_security_settings;
-CREATE POLICY "select_own_security_settings" ON public.user_security_settings FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+CREATE POLICY "select_own_security_settings" ON public.user_security_settings FOR SELECT TO authenticated USING ((user_id = (select auth.uid())));
 
 DROP POLICY IF EXISTS "service_all_security_settings" ON public.user_security_settings;
 CREATE POLICY "service_all_security_settings" ON public.user_security_settings FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "update_own_security_settings" ON public.user_security_settings;
-CREATE POLICY "update_own_security_settings" ON public.user_security_settings FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY "update_own_security_settings" ON public.user_security_settings FOR UPDATE TO authenticated USING ((user_id = (select auth.uid()))) WITH CHECK ((user_id = (select auth.uid())));

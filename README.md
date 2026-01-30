@@ -1,305 +1,147 @@
-# Subdomain-Isolated Turborepo
+# Subdomain-Isolated Turborepo (B2B SaaS Template)
 
-A multi-tenant Turborepo built with Next.js 16 using seperate domains for customer accounts and marketing site. 
+An open-source **multi-tenant** starter built for B2B products that want a fast, modern stack and a clean separation between:
 
-**Demo**: https://marketing-app.com
+- a public **marketing site** (SEO + acquisition), and
+- a **tenant-protected app** served from customer subdomains (security + isolation).
 
-## Features
+If you’re building “Notion/Figma-style workspaces” for companies—with auth, onboarding, RBAC, org settings, subscriptions, and transactional email—this template is the scaffolding.
 
-- ✅ Custom subdomain routing with Next.js middleware
-- ✅ Tenant‑specific content and pages
-- ✅ Shared UI components via workspace package
-- ✅ Marketing site for tenant discovery
-- ✅ Protected tenant applications
-- ✅ Local development with subdomains
-- ✅ TypeScript support across all packages
-- ✅ ESLint configuration shared across packages
-- ✅ Optional Cursor rules for consistent code standards and guardrails
+Demo: [marketing-app.com](https://marketing-app.com)
 
-## Turborepo Layout
+## What this template is for
 
-```
+- **B2B SaaS founders** who want to ship a multi-tenant MVP without reinventing auth + RBAC + tenant routing.
+- **Teams** that want a production-minded baseline: domain separation, RLS, clean URLs, and tier-gated features.
+- **Agencies** building client portals/workspaces with tenant branding and organization settings.
+
+## What you get (high level)
+
+- **Turborepo monorepo** with two Next.js apps + shared packages.
+- **Next.js 16 + React 19.2** (App Router) + TypeScript.
+- **Domain isolation** between marketing and protected apps:
+  - marketing stays SEO-friendly and cookie-simple
+  - protected app is hardened and tenant-aware
+  - helps avoid cross-app cookie/session headaches in production
+- **Subdomain → tenant routing** with internal rewrites (users stay on clean URLs):
+  - requests to `tenant.protecteddomain.com/foo` rewrite internally to `/s/[subdomain]/foo`
+  - protected app redirects non-subdomain traffic back to the marketing site
+  - subdomain existence is validated server-side (tenant or active reservation)
+- **Supabase-first backend**:
+  - RLS-enabled schema and policies
+  - org/tenant mapping, memberships, projects, invitations, etc.
+  - SQL schema files included for quick setup
+  - auth **custom claims hook** that enriches Supabase JWTs with tenant context (subdomain/org/role/capabilities + selected branding fields), then rotates/refetches JWTs via SSR session refresh
+- **RBAC with capabilities**:
+  - roles (`owner`, `superadmin`, `admin`, `member`, `view-only`)
+  - capability-driven checks for UI + server actions
+  - **custom per-tenant/per-org capability overrides** available when the org’s subscription tier allows it (Business+)
+- **Transactional email plumbing**:
+  - Supabase Edge Function email hooks and templates
+  - Resend integration for sending auth and notification emails
+  - a client hook to call email edge functions from the app
+- **Tenant branding + org settings**:
+  - organization profile settings (including branding)
+  - onboarding flow supports uploading an organization logo
+- **Billing scaffolding (optional)**:
+  - Stripe integration (including webhook route)
+  - tier-aware entitlements/limits, upgrade flows, “requires tier” UI gates
+- **Observability (optional)**: Sentry is wired in for Next.js.
+- **Tests**: Vitest setup in the apps.
+
+## Tech stack (actual versions used here)
+
+- **Monorepo**: Turborepo (`turbo`)
+- **Framework**: Next.js `^16.1.4` (App Router)
+- **UI**: React/ReactDOM `^19.2.3`, Tailwind CSS `^4.1.18`, shadcn-style components via `@workspace/ui`
+- **Backend**: Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
+- **Email**: Resend (`resend`) + Supabase Edge Functions
+- **Billing (optional)**: Stripe (`stripe`, `@stripe/stripe-js`)
+- **Monitoring (optional)**: Sentry (`@sentry/nextjs`)
+
+## What’s inside (repo layout)
+
+```text
 apps/
-  marketing/        # Public marketing site and tenant discovery
-  protected/        # Tenant app with subdomain routing middleware
+  marketing/        # Public marketing site + tenant discovery + signup
+  protected/        # Tenant app (subdomain routing + authenticated workspace)
 packages/
-  ui/              # Shared UI components and utilities
-  eslint-config/   # Shared ESLint configurations
-  typescript-config/ # Shared TypeScript configurations
+  ui/               # Shared UI + utilities (including subdomain helpers + email helper)
+  supabase/          # Shared Supabase client helpers
+  eslint-config/     # Shared ESLint config
+  typescript-config/ # Shared TS config
+supabase/
+  schemas/           # Ordered SQL schema files (tables, functions, RLS, seed, etc.)
+  functions/         # Edge functions (email hooks + custom email)
+docs/                # Setup + architecture + DB + deployment guides
 ```
 
-## Tech Stack
+## Quick start (local dev)
 
-- [Next.js 16](https://nextjs.org/) with App Router
-- [React 19](https://react.dev/)
-- [Tailwind CSS 4](https://tailwindcss.com/) for styling
-- shadcn-style components (Radix + CVA) via `@workspace/ui`
-- [Radix UI](https://www.radix-ui.com/) for accessible components
-- [Lucide React](https://lucide.dev/) for icons
-- [TypeScript](https://www.typescriptlang.org/) for type safety
-- [Supabase](https://supabase.com/) for authentication, database, and backend
-- [Stripe](https://stripe.com/) for billing and subscription management (optional)
-- [Sentry](https://sentry.io/) for error tracking (optional)
+### Prereqs
 
-### Dependency Alignment
+- Node.js **20+**
+- pnpm
+- Supabase project
+- Resend API key (for transactional email)
 
-- Next.js `^16.1.4`, React/ReactDOM `^19.2.3`
-- Supabase `@supabase/supabase-js ^2.92.0`, `@supabase/ssr ^0.8.0`
-- Tailwind `^4.1.18` (+ `@tailwindcss/postcss ^4.1.18`)
-- Stripe `^20.0.0`, `@stripe/stripe-js ^8.6.4`
-- Sentry `@sentry/nextjs ^10.36.0`
-- ESLint `^9.32.0`, TS-ESLint `^8.39.0`, Next ESLint plugin `^15.4.5`
-- Prettier `^3.6.2`, TypeScript `^5.9.3`
-- Lucide React `^0.562.0`, Radix UI `^1.x-^2.x`
-- Resend `^6.1.1` (for transactional emails)
-
-## 🚀 Quick Start
-
-### New to this template?
-
-Start here: **[Getting Started Guide](./docs/GETTING_STARTED.md)** - Complete setup instructions (15-30 min)
-
-**Already configured?** Jump to [Local Development](#local-development) below
-
-### Prerequisites
-
-- ✅ Node.js 20 or later
-- ✅ pnpm (recommended package manager)
-- ✅ Supabase account (for authentication & database)
-- ✅ Resend account (for transactional emails)
-- ✅ Two domain names (or use localhost for testing)
-- ✅ Vercel account (for deployment - optional)
-
-### Local Development
+### Run it
 
 ```bash
-# Clone and install dependencies
-git clone <your-repo-url>
-cd subdomain-isolated-turborepo
 pnpm install
-
-# RECOMMENDED: Replace placeholder values across the codebase
-# Search & replace (match case, whole word):
-# - "Your App" → Your actual app name
-# - "marketingdomain.com" → Your marketing domain
-# - "protecteddomain.com" → Your protected domain
-
-# Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with your Supabase & Resend credentials
-
-# Start development servers
 pnpm dev
 ```
 
-**Access Your Applications:**
+### Local URLs
 
-- 🏠 **Marketing Site**: http://localhost:3002
-- 🔒 **Protected App**: http://localhost:3003
-- 🏢 **Tenant Subdomains**: http://[company].localhost:3003
+- **Marketing**: `http://localhost:3002`
+- **Protected app**: `http://localhost:3003`
+- **Tenant subdomain**: `http://[company].localhost:3003`
 
-**First Time Setup?** Follow the [Getting Started Guide](./docs/GETTING_STARTED.md) to configure Supabase, Resend, and deploy edge functions.
+If you haven’t set up Supabase + migrations + edge functions yet, jump straight to the Getting Started guide below.
 
-**Note**: See [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) for complete production deployment instructions.
+## Documentation
 
-## 📚 Documentation
+Start here:
 
-### Core Guides
+- **[Getting Started](./docs/GETTING_STARTED.md)**: end-to-end setup (Supabase, migrations, auth, email, local dev, deployment) — designed to get you running in ~15–30 minutes
 
-| Guide                                               | Description                                                |
-| --------------------------------------------------- | ---------------------------------------------------------- |
-| **[🚀 Getting Started](./docs/GETTING_STARTED.md)** | Complete setup guide (database, email, auth, deployment)   |
-| **[🏗️ Architecture](./docs/ARCHITECTURE.md)**       | How the platform works (multi-tenant, RBAC, auth patterns) |
-| **[🗄️ Database](./docs/DATABASE.md)**               | Complete database schema reference                         |
-| **[🚀 Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md)**  | Production deployment guide (Vercel, DNS, GitHub import)   |
-| **[💳 Stripe](./docs/STRIPE.md)**                   | Billing and subscription setup (optional)                  |
-| **[🤝 Contributing](./CONTRIBUTING.md)**            | How to contribute to this project                          |
+More:
 
-### Settings & RBAC System
+- **[Architecture](./docs/ARCHITECTURE.md)**: multi-tenant routing, domain separation, RBAC patterns
+- **[Database](./docs/DATABASE.md)**: schema + RLS reference
+- **[Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md)**: production setup (domains/DNS, env vars, edge functions)
+- **[Stripe](./docs/STRIPE.md)**: optional billing setup
+- **[SETUP.md](./SETUP.md)**: additional setup notes
+- **[Contributing](./CONTRIBUTING.md)**: how to contribute
 
-Production-ready Role-Based Access Control with 5 role levels and 41+ granular capabilities:
+## Database + migrations (Supabase)
 
-- **Built-in Permissions** - User and organization management out of the box
-- **Security Features** - 2FA ready, session management, audit logging included
+The repo includes **SQL schema files** under `supabase/schemas/` intended to be applied to a Supabase Postgres database to get the baseline multi-tenant system running quickly (tables, functions, RLS policies, views, and seed data).
 
-## 🏗️ Built on Supabase UI Components
+## Email (auth + notifications)
 
-This project leverages the **Supabase UI component library** - a flexible, open-source, React-based UI component library built on shadcn/ui, designed to simplify Supabase-powered projects with pre-built Auth, Storage, and Realtime features.
+Transactional email is handled through **Supabase Edge Functions** in `supabase/functions/`, with Resend used as the delivery provider. This template includes an auth email hook function (see `supabase/functions/send-email`) with templates for common auth flows.
 
-### Authentication Foundation
+## Server Actions (CRUD)
 
-```bash
-npx shadcn@latest add https://supabase.com/ui/r/password-based-auth-nextjs.json
-```
+Database reads/writes are implemented primarily with **Next.js Server Actions** (e.g. `apps/protected/app/actions/*` and `apps/marketing/app/actions.ts`) using `@workspace/supabase/server`, so CRUD runs server-side with RLS enforced by Supabase.
 
-**Key Features:**
+## RBAC + tiers (how it’s intended to work)
 
-- 🔐 **Pre-built Auth Components**: Login, signup, password reset forms
-- 🎨 **Consistent Design**: Built on shadcn/ui design system
-- 🔧 **Extensible**: Modify and extend components as needed
-- 🏗️ **Composable**: Modular structure for easy integration
-- 🚀 **Production Ready**: Scaffolding for complex auth flows
+- **Capabilities-first**: permissions are evaluated as capability keys (not just roles).
+- **Server-safe**: server actions can check capabilities in addition to RLS.
+- **Tier-gated customization**: when the org’s subscription tier allows it, capabilities can be customized per org (Business+).
 
-## 🗄️ Database Structure
+## Scripts
 
-The project includes a complete multi-tenant database schema in `supabase/schemas/`:
+- `pnpm dev`: run all apps in dev mode
+- `pnpm build`: build all apps/packages
+- `pnpm lint`: lint across the monorepo
+- `pnpm test`: run tests across the monorepo
+- `pnpm type`: typecheck across the monorepo
 
-**Core Tables:** (all RLS enabled)
+## License
 
-- `organizations`, `tenants`, `user_profiles` - Multi-tenant org structure
-- `subscriptions`, `subscription_tiers`, `feature_limits` - Billing & usage
-- `projects`, `project_permissions` - Project management with granular access
-- `capabilities`, `role_capabilities`, `org_role_capabilities` - RBAC system
-
-**Key Features:**
-
-- 🏢 **Organizations**: Company/group management
-- 🌐 **Tenants**: Subdomain to organization mapping
-- 👤 **User Profiles**: Extended user data with tenant relationships
-- 🔐 **Role-Based Access**: `owner` → `superadmin` → `admin` → `member` → `view-only`
-- 🛡️ **Row Level Security**: Comprehensive RLS policies for tenant isolation
-
-See [Database Schema Reference](./docs/DATABASE.md) for complete details.
-
-## Multi-Tenant Architecture
-
-This application demonstrates a **subdomain‑based multi‑tenant architecture** with strict domain separation and **clean URL routing**:
-
-- **Marketing Site**: `https://yourdomain.com` - Landing page, signup, and tenant discovery
-- **Tenant Apps**: `https://[company].yourdomain.app` - Individual workspace applications
-- Each tenant gets their own subdomain with clean URLs
-- Middleware handles transparent routing between subdomains and internal structure
-- Complete data isolation via Row Level Security (RLS) policies
-
-See [Architecture Guide](./docs/ARCHITECTURE.md) for complete details on how the platform works.
-
-## 🎨 Settings & RBAC System
-
-### Overview
-
-The application features a comprehensive settings management system integrated with a powerful Role-Based Access Control (RBAC) framework that enables fine-grained permission management across organizations.
-
-### Key Features
-
-- **Multi-Tenant Architecture**: Subdomain-based tenant isolation
-- **Role-Based Access Control**: 5 role levels with 41 granular capabilities
-- **Custom Permissions**: Business+ tier organizations can customize role capabilities
-- **Security Features**: 2FA, session management, audit logging
-- **Settings Management**: User and organization settings with proper permissions
-- **Navigation Filtering**: Automatic UI filtering based on user capabilities
-
-### Quick Start
-
-1. **Apply Database Migrations**: Run the schema files in `supabase/schemas/`
-2. **Check User Permissions**: Use the RBAC utilities for permission checking
-3. **Implement UI Components**: Use `RequireCapability` and `useCapability` for conditional rendering
-4. **Customize Roles**: Business+ tier organizations can customize role capabilities
-
-See [Architecture Guide](./docs/ARCHITECTURE.md) for detailed implementation patterns.
-
-## Available Scripts
-
-- `pnpm dev` - Start all development servers
-- `pnpm build` - Build all packages and apps
-- `pnpm lint` - Run linting across all packages
-- `pnpm format` - Format code with Prettier
-
-## Code Standards & Cursor Rules (Optional)
-
-This repo ships optional Cursor rules to standardize architecture and guardrails for AI/codegen.
-
-### How to Use in Cursor
-
-1. Open the repo in Cursor
-2. Ensure `.mdc` files are present under `rules/`
-3. Cursor will auto-apply global and scoped rules based on `appliesTo` globs
-4. When adding new features, co-locate `actions.ts` and wrapper components and follow the rules prompts
-
-### Wrapper-First Component Structure
-
-Target structure for feature pages:
-
-- `apps/marketing/components/auth/login/login-wrapper.tsx` (compose page)
-- `apps/marketing/components/auth/login/login-form.tsx`
-- `apps/marketing/components/auth/login/login-cta.tsx`
-- `apps/marketing/components/auth/login/actions.ts`
-- Thin `apps/marketing/app/login/page.tsx` imports `login-wrapper`
-
-**Guidelines:**
-
-- Keep page files minimal; move logic/UI into wrapper components
-- Use clean URLs in links/navigation; never `/s/<subdomain>` in UI
-- Server actions must validate claims and tenant subdomain
-
-## 📁 Repository Structure
-
-```
-📦 subdomain-isolated-turborepo/
-├── 📄 README.md                   # This documentation
-├── 📄 CONTRIBUTING.md             # Contribution guidelines
-├── 📁 docs/                       # Documentation
-│   ├── GETTING_STARTED.md         # Complete setup guide
-│   ├── ARCHITECTURE.md            # Platform architecture
-│   ├── DATABASE.md                # Database schema reference
-│   ├── VERCEL_DEPLOYMENT.md       # Production deployment
-│   └── STRIPE.md                  # Billing setup
-├── 📁 supabase/
-│   └── 📁 schemas/                # Database schema files
-│       ├── 00_extensions.sql
-│       ├── 01_enums.sql
-│       ├── 02_tables.sql
-│       ├── 03_functions.sql
-│       ├── 04_views.sql
-│       ├── 05_rls_policies.sql
-│       └── seed_data.sql
-├── 📁 .cursor/rules/               # Optional Cursor rules (.mdc)
-├── 📁 apps/
-│   ├── 📁 marketing/              # Landing page & tenant discovery
-│   └── 📁 protected/              # Multi-tenant workspaces
-└── 📁 packages/
-    ├── 📁 ui/                     # Shared component library
-    ├── 📁 eslint-config/          # Linting configuration
-    └── 📁 typescript-config/      # TypeScript configuration
-```
-
----
-
-## 🎯 Ready to Build?
-
-### For New Users
-
-1. **[🚀 Getting Started](./docs/GETTING_STARTED.md)** - Complete setup guide
-2. **[🏗️ Architecture](./docs/ARCHITECTURE.md)** - Understand how it works
-3. **[🚀 Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md)** - Deploy to production
-
-### For Developers
-
-- **🏗️ Patterns** → Review `.cursor/rules/` for coding standards
-- **🗄️ Database** → [Database Schema Reference](./docs/DATABASE.md)
-- **💳 Billing** → [Stripe Setup](./docs/STRIPE.md) (optional)
-- **🤝 Contribute** → [Contributing Guide](./CONTRIBUTING.md)
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
-
-- 📝 Documentation improvements
-- 🐛 Bug reports and fixes
-- ✨ Feature suggestions
-- 💻 Code contributions
-
----
-
-## 🆘 Support
-
-- **📖 Docs**: See [Getting Started](./docs/GETTING_STARTED.md) for setup and troubleshooting
-- **🐛 Issues**: Report bugs at [GitHub Issues](https://github.com/your-repo/issues)
-- **💬 Discussions**: Ask questions at [GitHub Discussions](https://github.com/your-repo/discussions)
-
----
-
-## 📄 License
-
-**[MIT License](./LICENSE)**
+[MIT](./LICENSE)

@@ -13,7 +13,7 @@ import { MFASetup } from "@/components/auth/mfa-setup";
 import { AuditLogDialog } from "@/components/security/audit-log-dialog";
 import { ChangePasswordDialog } from "@/components/security/change-password-dialog";
 import { SecuritySummaryCard } from "@/components/security/security-summary";
-import { Shield, Key, Smartphone, History, Trash2 } from "lucide-react";
+import { Key, Smartphone, History, Trash2 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 
 interface SecurityWrapperProps {

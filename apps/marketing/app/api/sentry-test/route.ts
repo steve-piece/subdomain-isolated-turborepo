@@ -34,7 +34,7 @@ export async function GET() {
           Sentry.captureMessage("Sentry test route accessed", "info");
         });
       }
-    } catch (loggerError) {
+    } catch {
       // If logger fails, use console.log (will be captured by consoleLoggingIntegration)
       console.log("Sentry test route accessed", {
         timestamp: new Date().toISOString(),
