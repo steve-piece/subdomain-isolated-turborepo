@@ -17,7 +17,7 @@
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9.32.0",
-    "next": "^16.1.4",
+    "next": "^16.1.5",
     "typescript": "^5.9.3"
   },
   "exports": {
