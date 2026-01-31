@@ -5,7 +5,7 @@ import type { ReactElement } from "react";
 import { useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { verifyReauthentication } from "@actions/billing/auth";
+import { verifyReauthentication } from "@/app/actions/auth";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,

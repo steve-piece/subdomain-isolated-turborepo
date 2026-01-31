@@ -21,7 +21,7 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@workspace/supabase/client";
 import { useToast } from "@workspace/ui/components/toast";
 import { Spinner } from "@workspace/ui/components/spinner";
-import { sendMagicLink } from "@actions/billing/auth";
+import { sendMagicLink } from "@/app/actions/auth";
 import { Lock, AlertCircle, Check } from "lucide-react";
 
 // Props define the tenant context needed by this component.
@@ -195,28 +195,42 @@ export function LoginForm({
     setError(null);
 
     try {
-      // Pre-validate that the user belongs to this organization/subdomain
-      const { data: userProfile } = await supabase
-        .from("user_profiles")
-        .select("user_id, organizations!inner(subdomain)")
-        .eq("email", email)
-        .eq("organizations.subdomain", subdomain)
-        .maybeSingle();
+      // Clear any stale session before attempting fresh login
+      // This prevents "Invalid Refresh Token" errors from interfering
+      await supabase.auth.signOut();
 
-      if (!userProfile) {
-        // Don't reveal whether the user exists in a different org
-        throw new Error("Invalid login credentials");
-      }
-
+      // Authenticate first, then validate subdomain from JWT claims
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      // Validate that the user belongs to this organization/subdomain via JWT claims
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.access_token) {
+        // Decode JWT to get custom claims (subdomain is added by custom_claims_hook)
+        const tokenParts = session.access_token.split(".");
+        if (tokenParts.length === 3 && tokenParts[1]) {
+          try {
+            const payload = JSON.parse(atob(tokenParts[1]));
+            const userSubdomain = payload.subdomain;
+
+            if (userSubdomain && userSubdomain !== subdomain) {
+              // User exists but belongs to a different organization
+              await supabase.auth.signOut();
+              throw new Error("Invalid login credentials");
+            }
+          } catch (decodeError) {
+            // If JWT decoding fails, let middleware handle validation
+            // But re-throw if it's our "Invalid login credentials" error
+            if (decodeError instanceof Error && decodeError.message === "Invalid login credentials") {
+              throw decodeError;
+            }
+          }
+        }
+      }
 
       const emailConfirmed =
         session?.user?.email_confirmed_at ||

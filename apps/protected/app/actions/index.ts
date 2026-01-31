@@ -17,7 +17,7 @@
  */
 
 // Re-export everything for convenience
-export * from "./billing/auth";
+export * from "./auth";
 export * from "./invitations";
 export * from "./mfa";
 export * from "./onboarding";

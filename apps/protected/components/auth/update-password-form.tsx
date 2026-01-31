@@ -52,6 +52,10 @@ export function UpdatePasswordForm({
           const type = params.get("type");
 
           if (tokenHash && type === "recovery") {
+            // Clear any stale session before OTP verification to prevent
+            // "Invalid Refresh Token" errors from interfering
+            await supabase.auth.signOut();
+
             const { data, error: verifyError } = await supabase.auth.verifyOtp({
               token_hash: tokenHash,
               type: "recovery",

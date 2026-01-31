@@ -4,7 +4,7 @@
 
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { requestPasswordReset } from "@/app/actions/billing/auth/password-reset";
+import { requestPasswordReset } from "@/app/actions/auth/password-reset";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,

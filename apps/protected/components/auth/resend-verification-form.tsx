@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { resendEmailVerification } from "@actions/billing/auth";
+import { resendEmailVerification } from "@/app/actions/auth";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,

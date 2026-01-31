@@ -3,6 +3,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@workspace/supabase/server";
+import { createAdminClient } from "@workspace/supabase/admin";
 import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
 import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
@@ -21,10 +22,12 @@ export async function sendMagicLink(
   redirectTo?: string,
 ): Promise<SendMagicLinkResponse> {
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
   // Validate that the user belongs to this organization/subdomain
+  // Use admin client to bypass RLS since user is not authenticated
   if (subdomain) {
-    const { data: userProfile } = await supabase
+    const { data: userProfile } = await adminClient
       .from("user_profiles")
       .select("user_id, organizations!inner(subdomain)")
       .eq("email", email)

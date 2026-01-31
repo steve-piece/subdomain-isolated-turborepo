@@ -15,7 +15,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { useToast } from "@workspace/ui/components/toast";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { updatePassword } from "@/app/actions/billing/auth/password";
+import { updatePassword } from "@/app/actions/auth/password";
 
 export function ChangePasswordDialog() {
   const [open, setOpen] = useState(false);
