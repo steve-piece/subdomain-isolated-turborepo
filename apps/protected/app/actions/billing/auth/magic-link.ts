@@ -2,7 +2,6 @@
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@workspace/supabase/server";
 import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
 import { logSecurityEvent } from "@/app/actions/security/audit-log";
@@ -25,22 +24,7 @@ export async function sendMagicLink(
 
   // Validate that the user belongs to this organization/subdomain
   if (subdomain) {
-    // Create admin client to bypass RLS for validation (user is not authenticated)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
-
-    if (!supabaseUrl || !supabaseSecretKey) {
-      throw new Error("Supabase configuration missing");
-    }
-
-    const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseSecretKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-
-    const { data: userProfile } = await supabaseAdmin
+    const { data: userProfile } = await supabase
       .from("user_profiles")
       .select("user_id, organizations!inner(subdomain)")
       .eq("email", email)

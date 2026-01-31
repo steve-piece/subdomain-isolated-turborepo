@@ -2,8 +2,8 @@
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@workspace/supabase/server";
+import { createAdminClient } from "@workspace/supabase/admin";
 import { logSecurityEvent } from "@/app/actions/security/audit-log";
 import { getRedirectUrl } from "@/lib/utils/get-redirect-url";
 
@@ -26,24 +26,11 @@ export async function requestPasswordReset(
 ): Promise<RequestPasswordResetResponse> {
   try {
     const supabase = await createClient();
-
-    // Create admin client to bypass RLS for validation (user is not authenticated)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
-
-    if (!supabaseUrl || !supabaseSecretKey) {
-      throw new Error("Supabase configuration missing");
-    }
-
-    const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseSecretKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
+    const adminClient = createAdminClient();
 
     // Validate that the user belongs to this organization/subdomain
-    const { data: userProfile } = await supabaseAdmin
+    // Use admin client to bypass RLS since user is not authenticated
+    const { data: userProfile } = await adminClient
       .from("user_profiles")
       .select("user_id, organizations!inner(subdomain)")
       .eq("email", email)
