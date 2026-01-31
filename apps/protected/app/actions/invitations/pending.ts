@@ -29,21 +29,6 @@ export interface InvitationActionResponse {
   message: string;
 }
 
-interface PendingInvitationDbRow {
-  id: string;
-  email: string;
-  proposed_role: string;
-  invited_by: string;
-  status: "pending" | "approved" | "rejected" | "expired";
-  expires_at: string;
-  created_at: string;
-  inviter:
-    | {
-        full_name: string | null;
-      }[]
-    | null;
-}
-
 /**
  * Get all pending invitations for an organization
  */
@@ -65,7 +50,9 @@ export async function getPendingInvitations(
     }
 
     // Fetch pending invitations with inviter info
-    const { data, error } = await supabase
+    // We need to manually fetch inviter names since PostgREST can't follow
+    // the relationship from auth.users to user_profiles in a single query
+    const { data: invitationsData, error } = await supabase
       .from("pending_invitations")
       .select(
         `
@@ -75,8 +62,7 @@ export async function getPendingInvitations(
         invited_by,
         status,
         expires_at,
-        created_at,
-        inviter:invited_by(full_name)
+        created_at
       `,
       )
       .eq("org_id", orgId)
@@ -90,8 +76,19 @@ export async function getPendingInvitations(
       return { success: false, message: error.message };
     }
 
-    const invitations: PendingInvitation[] = (data || []).map(
-      (inv: PendingInvitationDbRow) => ({
+    // Fetch inviter names separately
+    const inviterIds = [...new Set(invitationsData?.map((inv) => inv.invited_by) || [])];
+    const { data: profiles } = await supabase
+      .from("user_profiles")
+      .select("user_id, full_name")
+      .in("user_id", inviterIds);
+
+    const inviterMap = new Map(
+      profiles?.map((p) => [p.user_id, p.full_name]) || []
+    );
+
+    const invitations: PendingInvitation[] = (invitationsData || []).map(
+      (inv) => ({
         id: inv.id,
         email: inv.email,
         proposed_role: inv.proposed_role,
@@ -99,7 +96,7 @@ export async function getPendingInvitations(
         status: inv.status,
         expires_at: inv.expires_at,
         created_at: inv.created_at,
-        inviter_name: inv.inviter?.[0]?.full_name || "Unknown",
+        inviter_name: inviterMap.get(inv.invited_by) || "Unknown",
       }),
     );
 

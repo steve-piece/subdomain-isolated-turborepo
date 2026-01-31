@@ -184,9 +184,10 @@ export function LoginForm({
 
   // Handles the submit event for the login form.
   // 1) Prevent default form navigation
-  // 2) Attempt Supabase email/password sign-in
-  // 3) On success, navigate to a clean URL (middleware handles internal rewrite)
-  // 4) On error, show a readable message to the user
+  // 2) Validate user belongs to this subdomain/organization
+  // 3) Attempt Supabase email/password sign-in
+  // 4) On success, navigate to a clean URL (middleware handles internal rewrite)
+  // 5) On error, show a readable message to the user
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
@@ -194,6 +195,19 @@ export function LoginForm({
     setError(null);
 
     try {
+      // Pre-validate that the user belongs to this organization/subdomain
+      const { data: userProfile } = await supabase
+        .from("user_profiles")
+        .select("user_id, organizations!inner(subdomain)")
+        .eq("email", email)
+        .eq("organizations.subdomain", subdomain)
+        .maybeSingle();
+
+      if (!userProfile) {
+        // Don't reveal whether the user exists in a different org
+        throw new Error("Invalid login credentials");
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,

@@ -1116,8 +1116,14 @@ BEGIN
   SELECT email INTO v_email FROM auth.users WHERE id = p_user_id;
   
   -- Create organization (is_active = true by default for confirmed signups)
+  -- Handle case where org already exists (e.g., double verification click)
   INSERT INTO organizations (company_name, subdomain, owner_id, is_active)
   VALUES (v_reservation.organization_name, v_reservation.subdomain, p_user_id, true)
+  ON CONFLICT (subdomain) DO UPDATE
+  SET company_name = EXCLUDED.company_name,
+      owner_id = EXCLUDED.owner_id,
+      is_active = EXCLUDED.is_active,
+      updated_at = now()
   RETURNING id INTO v_org_id;
   
   -- Create user profile

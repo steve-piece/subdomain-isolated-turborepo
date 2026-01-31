@@ -13,6 +13,7 @@ export interface RequestPasswordResetResponse {
 
 /**
  * Requests a password reset email for the given email address.
+ * Validates that the user belongs to the organization for the given subdomain.
  * Logs the password reset request to the security audit log.
  * 
  * @param email - The email address to send the reset link to
@@ -24,6 +25,23 @@ export async function requestPasswordReset(
 ): Promise<RequestPasswordResetResponse> {
   try {
     const supabase = await createClient();
+
+    // Validate that the user belongs to this organization/subdomain
+    const { data: userProfile } = await supabase
+      .from("user_profiles")
+      .select("user_id, organizations!inner(subdomain)")
+      .eq("email", email)
+      .eq("organizations.subdomain", subdomain)
+      .maybeSingle();
+
+    if (!userProfile) {
+      // Don't reveal whether the user exists - return generic success message
+      // This prevents email enumeration attacks
+      return {
+        success: true,
+        message: "If an account exists with this email, you will receive a password reset link.",
+      };
+    }
 
     // Redirect to the current tenant's update-password route
     const redirectTo = getRedirectUrl("/auth/update-password", subdomain);

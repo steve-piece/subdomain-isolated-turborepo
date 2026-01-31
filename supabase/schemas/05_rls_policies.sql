@@ -170,8 +170,14 @@ CREATE POLICY "update_projects" ON public.projects FOR UPDATE TO authenticated U
 -- ============================================================================
 -- SECURITY_AUDIT_LOG
 -- ============================================================================
+-- Drop old policy name if exists
 DROP POLICY IF EXISTS "insert_audit_log" ON public.security_audit_log;
-CREATE POLICY "insert_audit_log" ON public.security_audit_log FOR INSERT TO authenticated WITH CHECK ((user_id = (select auth.uid())));
+
+DROP POLICY IF EXISTS "insert_audit_log_authenticated" ON public.security_audit_log;
+CREATE POLICY "insert_audit_log_authenticated" ON public.security_audit_log FOR INSERT TO authenticated WITH CHECK ((user_id = (select auth.uid())));
+
+DROP POLICY IF EXISTS "insert_audit_log_anon" ON public.security_audit_log;
+CREATE POLICY "insert_audit_log_anon" ON public.security_audit_log FOR INSERT TO anon WITH CHECK (user_id IS NULL);
 
 DROP POLICY IF EXISTS "select_own_audit_log" ON public.security_audit_log;
 CREATE POLICY "select_own_audit_log" ON public.security_audit_log FOR SELECT TO authenticated USING (((user_id = (select auth.uid())) OR ((org_id IS NOT NULL) AND user_org_capability((select auth.uid()), org_id, 'security.view_org_audit'::text))));

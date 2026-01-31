@@ -97,14 +97,19 @@ export async function createProject(
     }
 
     // Grant creator admin permission
+    // Note: The database trigger handle_new_project() also creates this permission,
+    // but we add ignoreDuplicates to handle race conditions gracefully
     const { error: permError } = await supabase
       .from("project_permissions")
-      .insert({
-        project_id: project.id,
-        user_id: user.id,
-        permission_level: "admin" as const,
-        granted_by: user.id,
-      });
+      .insert(
+        {
+          project_id: project.id,
+          user_id: user.id,
+          permission_level: "admin" as const,
+          granted_by: user.id,
+        },
+        { ignoreDuplicates: true }
+      );
 
     if (permError) {
       Sentry.captureException(permError);

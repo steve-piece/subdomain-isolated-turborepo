@@ -13,6 +13,7 @@ export interface SendMagicLinkResponse {
 
 /**
  * Send passwordless magic link to user's email
+ * Validates that the user belongs to the organization for the given subdomain
  */
 export async function sendMagicLink(
   email: string,
@@ -20,6 +21,24 @@ export async function sendMagicLink(
   redirectTo?: string,
 ): Promise<SendMagicLinkResponse> {
   const supabase = await createClient();
+
+  // Validate that the user belongs to this organization/subdomain
+  if (subdomain) {
+    const { data: userProfile } = await supabase
+      .from("user_profiles")
+      .select("user_id, organizations!inner(subdomain)")
+      .eq("email", email)
+      .eq("organizations.subdomain", subdomain)
+      .maybeSingle();
+
+    if (!userProfile) {
+      // Don't reveal whether the user exists - return generic message
+      return {
+        success: true,
+        message: "Magic link sent. Please check your inbox.",
+      };
+    }
+  }
 
   // Generate redirect URL if not provided
   const finalRedirectTo =

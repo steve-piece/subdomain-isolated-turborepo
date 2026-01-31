@@ -14,12 +14,41 @@ export interface LoginWithToastResponse {
 /**
  * Signs a user in with email and password, returning a lightweight result that allows
  * UI components to surface toast messages or trigger redirects without throwing.
+ * Validates that the user belongs to the organization for the given subdomain.
  */
 export async function loginWithToast(
   email: string,
   password: string,
+  subdomain?: string,
 ): Promise<LoginWithToastResponse> {
   const supabase = await createClient();
+
+  // Pre-validate that the user belongs to this organization/subdomain before attempting login
+  if (subdomain) {
+    const { data: userProfile } = await supabase
+      .from("user_profiles")
+      .select("user_id, organizations!inner(subdomain)")
+      .eq("email", email)
+      .eq("organizations.subdomain", subdomain)
+      .maybeSingle();
+
+    if (!userProfile) {
+      // Don't reveal whether the user exists in a different org
+      // Return the same error as invalid credentials
+      await logSecurityEvent({
+        eventType: "auth",
+        eventAction: "login_failed",
+        severity: "warning",
+        metadata: { email, reason: "wrong_subdomain" },
+      });
+
+      return { 
+        success: false, 
+        message: "Invalid login credentials" 
+      };
+    }
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,

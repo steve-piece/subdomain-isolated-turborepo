@@ -329,7 +329,7 @@ export async function getProjectMembers(
     // Get project to check owner
     const { data: project } = await supabase
       .from("projects")
-      .select("created_by")
+      .select("owner_id")
       .eq("id", projectId)
       .single();
 
@@ -342,7 +342,7 @@ export async function getProjectMembers(
           full_name: profile?.full_name || null,
           email: profile?.email || "Unknown",
           permission: perm.permission_level as "read" | "write" | "admin",
-          is_owner: project?.created_by === perm.user_id,
+          is_owner: project?.owner_id === perm.user_id,
           granted_at: perm.granted_at,
           granted_by: perm.granted_by,
         };
