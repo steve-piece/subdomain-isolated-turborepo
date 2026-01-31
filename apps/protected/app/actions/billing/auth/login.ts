@@ -2,6 +2,7 @@
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@workspace/supabase/server";
 import { logSecurityEvent } from "@/app/actions/security/audit-log";
 
@@ -25,7 +26,22 @@ export async function loginWithToast(
 
   // Pre-validate that the user belongs to this organization/subdomain before attempting login
   if (subdomain) {
-    const { data: userProfile } = await supabase
+    // Create admin client to bypass RLS for validation (user is not authenticated)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+    if (!supabaseUrl || !supabaseSecretKey) {
+      throw new Error("Supabase configuration missing");
+    }
+
+    const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseSecretKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+
+    const { data: userProfile } = await supabaseAdmin
       .from("user_profiles")
       .select("user_id, organizations!inner(subdomain)")
       .eq("email", email)
