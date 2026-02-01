@@ -18,6 +18,7 @@ export function Header({ appName }: { appName: string }) {
           width={28}
           height={28}
           priority
+          style={{ borderRadius: 50 }}
           className="size-7"
         />
         <span className="font-bold text-xl" suppressHydrationWarning>
