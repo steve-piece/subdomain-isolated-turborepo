@@ -36,10 +36,10 @@ const marketingDomain = Deno.env.get("NEXT_PUBLIC_MARKETING_DOMAIN");
 
 const configuredAppName = "";
 const appName =
-  configuredAppName || Deno.env.get("APP_NAME")?.trim() || "our platform";
+  configuredAppName || Deno.env.get("NEXT_PUBLIC_APP_NAME")?.trim() || "our platform";
 
 const supportEmail =
-  Deno.env.get("SENDER_EMAIL") ??
+  Deno.env.get("NEXT_PUBLIC_SENDER_EMAIL") ??
   Deno.env.get("NEXT_PUBLIC_SUPPORT_EMAI") ??
   "support@emaildomain.com";
 

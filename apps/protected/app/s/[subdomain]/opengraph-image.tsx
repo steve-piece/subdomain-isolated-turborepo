@@ -13,7 +13,7 @@ export const contentType = "image/png";
  * Static OpenGraph image for social media sharing
  */
 export default async function OgImage() {
-  const appName = process.env.APP_NAME || "Your App";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
 
   return new ImageResponse(
     (

@@ -10,7 +10,7 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"],
       "env": [
-        "APP_NAME",
+        "NEXT_PUBLIC_APP_NAME",
         "NEXT_PUBLIC_APP_DOMAIN",
         "NEXT_PUBLIC_MARKETING_DOMAIN",
         "SUPABASE_SECRET_KEY",
@@ -31,8 +31,8 @@
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY",
         "RESEND_API_KEY",
-        "EMAIL_DOMAIN",
-        "SENDER_EMAIL",
+        "NEXT_PUBLIC_EMAIL_DOMAIN",
+        "NEXT_PUBLIC_SENDER_EMAIL",
         "NEXT_PUBLIC_SUPPORT_EMAIL",
         "RESEND_ENABLE_INVITATION_EMAILS",
         "RESEND_ENABLE_WELCOME_EMAILS",
@@ -45,7 +45,7 @@
         "SENTRY_PROJECT",
         "SENTRY_AUTH_TOKEN",
         "CHECKLY_API_KEY ",
-        "APP_ENV"
+        "NEXT_PUBLIC_APP_ENV"
       ]
     },
     "lint": {

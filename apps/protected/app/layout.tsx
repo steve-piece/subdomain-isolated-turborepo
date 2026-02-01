@@ -8,7 +8,7 @@ import * as Sentry from "@sentry/nextjs";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 export function generateMetadata(): Metadata {
-  const appName = process.env.APP_NAME || "Your App";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
   const description = "Manage your workspace with powerful tools";
   const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "localhost:3003";
   const siteUrl = `https://${appDomain}`;

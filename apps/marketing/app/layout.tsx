@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 
 export function generateMetadata(): Metadata {
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || process.env.APP_NAME || "Your App";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || process.env.NEXT_PUBLIC_APP_NAME || "Your App";
   const description = "Transform your workflow with AI-powered tools";
   const marketingDomain =
     process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "localhost:3002";
@@ -74,10 +74,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Read APP_NAME from environment (use NEXT_PUBLIC_ prefix for client components)
+  // Read NEXT_PUBLIC_APP_NAME from environment (use NEXT_PUBLIC_ prefix for client components)
   // Set NEXT_PUBLIC_APP_NAME in .env.local at project root (e.g., NEXT_PUBLIC_APP_NAME='Ghost Write Ai')
   // Restart dev server after adding/changing .env.local
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || process.env.APP_NAME || "Your App";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || process.env.NEXT_PUBLIC_APP_NAME || "Your App";
 
   return (
     <html lang="en" suppressHydrationWarning>

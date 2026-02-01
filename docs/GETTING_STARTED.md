@@ -110,7 +110,6 @@ NEXT_PUBLIC_APP_DOMAIN='localhost:3003'  # or 'protecteddomain.app' for producti
 
 # Display name
 NEXT_PUBLIC_APP_NAME='Your App'
-APP_NAME='Your App'
 ```
 
 #### Supabase Configuration
@@ -141,8 +140,8 @@ Get your API key from [Resend Dashboard](https://resend.com/api-keys):
 RESEND_API_KEY='re_...'
 
 # Email configuration
-SENDER_EMAIL='noreply@yourdomain.com'
-EMAIL_DOMAIN='yourdomain.com'
+NEXT_PUBLIC_SENDER_EMAIL='noreply@yourdomain.com'
+NEXT_PUBLIC_EMAIL_DOMAIN='yourdomain.com'
 NEXT_PUBLIC_SUPPORT_EMAIL='support@yourdomain.com'
 
 # Email toggles (optional)
@@ -294,9 +293,9 @@ SEND_EMAIL_HOOK_SECRET=your-random-secret-string
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_APP_DOMAIN=localhost:3003  # or your production domain
 NEXT_PUBLIC_MARKETING_DOMAIN=localhost:3002  # or your production domain
-APP_NAME=Your App
-SENDER_EMAIL=noreply@yourdomain.com
-EMAIL_DOMAIN=yourdomain.com
+NEXT_PUBLIC_APP_NAME='Your App'
+NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
+NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
 NEXT_PUBLIC_SUPPORT_EMAIL=support@yourdomain.com
 ```
 

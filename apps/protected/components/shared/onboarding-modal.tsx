@@ -209,7 +209,7 @@ export function OnboardingModal({
 
           <div className="mt-8 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              Welcome to {process.env.APP_NAME || "Your App"}!
+              Welcome to {process.env.NEXT_PUBLIC_APP_NAME || "Your App"}!
             </h2>
             <p className="mt-3 text-sm text-muted-foreground">
               Let&apos;s set up your organization profile in just a few steps.

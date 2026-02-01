@@ -126,10 +126,9 @@ Add the following environment variables in Vercel project settings:
 
 ```bash
 # App Identity
-NEXT_PUBLIC_MARKETING_DOMAIN=yourdomain.com
-NEXT_PUBLIC_APP_DOMAIN=yourdomain.app
-NEXT_PUBLIC_APP_NAME=Your App
-APP_NAME=Your App
+NEXT_PUBLIC_MARKETING_DOMAIN='marketingdomain.com'
+NEXT_PUBLIC_APP_DOMAIN='protecteddomain.com'
+NEXT_PUBLIC_APP_NAME='Your App'
 
 # Supabase (Production)
 NEXT_PUBLIC_SUPABASE_URL=https://your-prod-project.supabase.co
@@ -138,8 +137,8 @@ SUPABASE_SECRET_KEY=eyJhbG...
 
 # Resend (Production)
 RESEND_API_KEY=re_...
-SENDER_EMAIL=noreply@yourdomain.com
-EMAIL_DOMAIN=yourdomain.com
+NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
+NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
 NEXT_PUBLIC_SUPPORT_EMAIL=support@yourdomain.com
 RESEND_ENABLE_INVITATION_EMAILS=true
 RESEND_ENABLE_WELCOME_EMAILS=true
@@ -156,7 +155,7 @@ SENTRY_PROJECT=marketing-app
 SENTRY_AUTH_TOKEN=...
 
 # Environment tracking
-APP_ENV=production
+NEXT_PUBLIC_APP_ENV=production
 NEXT_PUBLIC_APP_ENV=production
 ```
 
@@ -336,9 +335,9 @@ SEND_EMAIL_HOOK_SECRET=your-webhook-secret
 NEXT_PUBLIC_SUPABASE_URL=https://your-prod-project.supabase.co
 NEXT_PUBLIC_APP_DOMAIN=yourdomain.app
 NEXT_PUBLIC_MARKETING_DOMAIN=yourdomain.com
-APP_NAME=Your App
-SENDER_EMAIL=noreply@yourdomain.com
-EMAIL_DOMAIN=yourdomain.com
+NEAPP_NAME=Your App
+NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
+NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
 NEXT_PUBLIC_SUPPORT_EMAIL=support@yourdomain.com
 RESEND_ENABLE_INVITATION_EMAILS=true
 RESEND_ENABLE_WELCOME_EMAILS=true

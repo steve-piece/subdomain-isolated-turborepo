@@ -25,7 +25,7 @@ export async function generateMetadata({
   const { data: claims } = await supabase.auth.getClaims();
 
   const companyName = claims?.claims.company_name || subdomain;
-  const appName = process.env.APP_NAME || "Your App";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
 
   return {
     title: `${companyName} Admin | ${appName}`,
