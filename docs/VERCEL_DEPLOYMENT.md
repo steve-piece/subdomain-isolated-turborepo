@@ -86,7 +86,24 @@ Vercel handles wildcard routing automatically once configured.
 
 The marketing app is your public-facing site for user acquisition and tenant discovery.
 
-### Step 1: Import from GitHub
+### Option A: Use Deploy Button (Recommended)
+
+The easiest way to deploy is using the **Deploy with Vercel** button in the [README](../README.md):
+
+1. Click the **Deploy with Vercel** button
+2. This will:
+   - Clone the repository to your GitHub account
+   - Create a new Vercel project for the Marketing App
+   - Pre-configure the root directory (`apps/marketing`)
+   - Prompt you for required environment variables
+3. Fill in the environment variables (see below)
+4. Click **Deploy**
+
+After deployment, continue to [Deploy Protected App](#deploy-protected-app) to set up the second project.
+
+### Option B: Manual Import
+
+If you've already cloned the repository or prefer manual setup:
 
 1. Log in to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Click **Add New** → **Project**
@@ -178,10 +195,12 @@ NEXT_PUBLIC_APP_ENV=production
 
 The protected app serves multi-tenant workspaces with subdomain routing.
 
-### Step 1: Import from GitHub
+> **Important**: This must be deployed as a **separate Vercel project** from the same repository. You cannot use a second deploy button — Vercel deploy buttons always try to create a new repository.
+
+### Step 1: Import from GitHub (Same Repository)
 
 1. In [Vercel Dashboard](https://vercel.com/dashboard), click **Add New** → **Project**
-2. Select the **same GitHub repository**
+2. Select the **same GitHub repository** that was cloned when you deployed the Marketing App
 3. Click **Import**
 
 ### Step 2: Configure Build Settings
