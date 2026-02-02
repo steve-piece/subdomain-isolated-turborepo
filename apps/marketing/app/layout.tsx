@@ -32,18 +32,18 @@ export function generateMetadata(): Metadata {
       type: "website",
       images: [
         {
-          url: "/web-app-manifest-512x512.png",
-          width: 512,
-          height: 512,
+          url: "/logo_horizontal.png",
+          width: 540,
+          height: 400,
           alt: `${appName} Logo`,
         },
       ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: appName,
       description,
-      images: ["/web-app-manifest-512x512.png"],
+      images: ["/logo_horizontal.png"],
     },
     icons: {
       icon: [
