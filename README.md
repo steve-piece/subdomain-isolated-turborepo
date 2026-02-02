@@ -1,23 +1,27 @@
-# Subdomain-Isolated Turborepo (B2B SaaS Template)
+<h1 align="center">Enterprise B2B SaaS Template</h1>
 
-![Next.js](https://img.shields.io/badge/Next.js-16.1.5-000000?logo=nextdotjs&logoColor=white)
-![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react&logoColor=000000)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white)
-![Node](https://img.shields.io/badge/Node-%3E%3D20-339933?logo=nodedotjs&logoColor=white)
-![Turborepo](https://img.shields.io/badge/Turborepo-2.5.6-EF4444?logo=turborepo&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
-![Resend](https://img.shields.io/badge/Resend-0A0A0A?logo=resend&logoColor=white)
-![Stripe](https://img.shields.io/badge/Stripe-635BFF?logo=stripe&logoColor=white)
+<p align="center"><span style="font-weight: bold;">Ship Faster. Build Smarter.</span> A
+production-ready multi-tenant B2B SaaS starter that handles the hard parts—domain isolation, tenant routing, RBAC, and billing—so you can focus on what makes your product unique. Live demo available at <a srcc="https://marketing-app.com">marketing-app.com</a>.
+</p>
 
-> **Ship faster. Build smarter.** A production-ready multi-tenant B2B SaaS starter that handles the hard parts—domain isolation, tenant routing, RBAC, and billing—so you can focus on what makes your product unique.
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16.1.5-000000?logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react&logoColor=000000" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Node-%3E%3D20-339933?logo=nodedotjs&logoColor=white" alt="Node" />
+  <img src="https://img.shields.io/badge/Turborepo-2.5.6-EF4444?logo=turborepo&logoColor=white" alt="Turborepo" />
+  <img src="https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Resend-0A0A0A?logo=resend&logoColor=white" alt="Resend" />
+  <img src="https://img.shields.io/badge/Stripe-635BFF?logo=stripe&logoColor=white" alt="Stripe" />
+</p>
 
-**🎯 Perfect for:** B2B SaaS founders, teams building client portals, and anyone creating "Notion/Figma-style workspaces" with proper tenant isolation.
+<p align="center">
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_ENV%2CNEXT_PUBLIC_APP_NAME%2CNEXT_PUBLIC_EMAIL_DOMAIN%2CNEXT_PUBLIC_SENDER_EMAIL%2CRESEND_API_KEY%2CNEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY%2CSUPABASE_SECRET_KEY&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App+identity+and+database+variables.+Additional+variables+required+for+Resend%2C+Stripe%2C+and+monitoring+integrations.+&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+B2B+SaaS+Template&demo-description=Includes+subdomain+isolation+per+tenant%2C+seperate+domains+for+marketing+and+protected+apps%2C+RBAC%2C+and+built+with+Turborepo+monorepo.+Includes+integrations+with+Stripe%2C+Supabase%2C+Resend%2C+and+Sentry.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6%2Coac_5lUsiANun1DEzgLg0NZx5Es3%2Coac_KfIFnjXqCl4YJCHnt1bDTBI1&skippable-integrations=1&teamSlug=steven-lights-projects">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel" />
+  </a>
+</p>
 
-**🚀 See it live:** [marketing-app.com](https://marketing-app.com)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_ENV%2CNEXT_PUBLIC_APP_NAME%2CNEXT_PUBLIC_EMAIL_DOMAIN%2CNEXT_PUBLIC_SENDER_EMAIL%2CRESEND_API_KEY%2CNEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY%2CSUPABASE_SECRET_KEY&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App+identity+and+database+variables.+Additional+variables+required+for+Resend%2C+Stripe%2C+and+monitoring+integrations.+&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+b2b+SaaS+Template&demo-description=Includes+subdomain+isolation+per+tenant%2C+seperate+domains+for+marketing+and+protected+apps%2C+RBAC%2C+and+built+with+Turborepo+monorepo.+Includes+integrations+with+Stripe%2C+Supabase%2C+Resend%2C+and+Sentry.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6%2Coac_5lUsiANun1DEzgLg0NZx5Es3%2Coac_KfIFnjXqCl4YJCHnt1bDTBI1&skippable-integrations=1&teamSlug=steven-lights-projects)
-
-## ✨ Why this template?
+## Why this template?
 
 Building a multi-tenant B2B SaaS from scratch? You'll spend weeks (or months) on:
 - ✅ Tenant isolation & subdomain routing
@@ -29,7 +33,7 @@ Building a multi-tenant B2B SaaS from scratch? You'll spend weeks (or months) on
 
 **This template gives you all of that, production-ready.** Start building features, not infrastructure.
 
-## 🎁 What's included
+## What's included
 
 ### 🏗️ Architecture
 
