@@ -2,16 +2,16 @@
 
 <p align="center"><strong>Ship Faster. Build Smarter.</strong> A production-ready multi-tenant B2B SaaS starter that handles the hard parts—domain isolation, tenant routing, RBAC, and billing—so you can focus on what makes your product unique. Live demo available at <a href="https://marketing-app.com">marketing-app.com</a>.</p>
 
-<table align="center">
+<table>
 <tr>
-<td align="center" width="50%" border="0px">
+<td align="center" valign="top" width="300">
 <h3>📦 Marketing App</h3>
-<p><em>Public-facing site</em></p>
+<p><em>Public-facing site for<br/>organization signup & SEO</em></p>
 <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&root-directory=apps%2Fmarketing&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_ENV%2CNEXT_PUBLIC_APP_NAME%2CNEXT_PUBLIC_EMAIL_DOMAIN%2CNEXT_PUBLIC_SENDER_EMAIL%2CRESEND_API_KEY%2CNEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY%2CSUPABASE_SECRET_KEY&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App+identity+and+database+variables.+Additional+variables+required+for+Resend%2C+Stripe%2C+and+monitoring+integrations.+&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template-marketing&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+B2B+SaaS+Template+-+Marketing+App&demo-description=Includes+subdomain+isolation+per+tenant%2C+seperate+domains+for+marketing+and+protected+apps%2C+RBAC%2C+and+built+with+Turborepo+monorepo.+Includes+integrations+with+Stripe%2C+Supabase%2C+Resend%2C+and+Sentry.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6%2Coac_5lUsiANun1DEzgLg0NZx5Es3%2Coac_KfIFnjXqCl4YJCHnt1bDTBI1&skippable-integrations=1&teamSlug=steven-lights-projects"><img src="https://vercel.com/button" alt="Deploy Marketing" /></a>
 </td>
-<td align="center" width="50%" border="0px">
+<td align="center" valign="top" width="300">
 <h3>🔐 Protected App</h3>
-<p><em>Multi-tenant workspace with RBAC</em></p>
+<p><em>Multi-tenant workspace with<br/>subdomain routing & RBAC</em></p>
 <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&root-directory=apps%2Fprotected&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_ENV%2CNEXT_PUBLIC_APP_NAME%2CNEXT_PUBLIC_EMAIL_DOMAIN%2CNEXT_PUBLIC_SENDER_EMAIL%2CRESEND_API_KEY%2CNEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY%2CSUPABASE_SECRET_KEY%2CSTRIPE_SECRET_KEY%2CNEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY%2CSTRIPE_WEBHOOK_SECRET%2CSTRIPE_FREE_MONTHLY_PRICE_ID%2CSTRIPE_FREE_YEARLY_PRICE_ID%2CSTRIPE_PRO_MONTHLY_PRICE_ID%2CSTRIPE_PRO_YEARLY_PRICE_ID%2CSTRIPE_BUSINESS_MONTHLY_PRICE_ID%2CSTRIPE_BUSINESS_YEARLY_PRICE_ID%2CSTRIPE_ENTERPRISE_MONTHLY_PRICE_ID%2CSTRIPE_ENTERPRISE_YEARLY_PRICE_ID&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App+identity%2C+database%2C+and+billing+variables.+Includes+Stripe+integration+for+subscription+management.+&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template-protected&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+B2B+SaaS+Template+-+Protected+App&demo-description=Multi-tenant+workspace+application+with+subdomain+routing%2C+RBAC%2C+and+Stripe+billing.+Deploy+this+after+the+marketing+app.+&demo-url=app.marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6%2Coac_5lUsiANun1DEzgLg0NZx5Es3%2Coac_KfIFnjXqCl4YJCHnt1bDTBI1&skippable-integrations=1&teamSlug=steven-lights-projects"><img src="https://vercel.com/button" alt="Deploy Protected" /></a>
 </td>
 </tr>
