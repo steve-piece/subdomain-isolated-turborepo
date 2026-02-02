@@ -2,17 +2,47 @@
 
 <p align="left"><strong>Ship Faster. Build Smarter.</strong> A production-ready multi-tenant B2B SaaS starter that handles the hard parts—domain isolation, tenant routing, RBAC, and billing—so you can focus on what makes your product unique.</br> Live demo available at <a href="https://marketing-app.com">marketing-app.com</a>.</p>
 
-**⚠️ IMPORTANT! PLEASE COMPLETE THESE STEPS FRIST**:
+## Quick Start
 
-**1.** **Click the button below** — This clones the repo to your GitHub and deploys the **Marketing App**
+### Step 1: Set Up Supabase (Required First)
 
-**2. Deploy Protected App manually** — In [Vercel Dashboard](https://vercel.com/new), import the **same cloned repo** and set Root Directory to `apps/protected`
+Before deploying, you need a Supabase project with the database schema:
 
+1. **Create a Supabase project** at [supabase.com](https://supabase.com)
+2. **Run the migrations** in order from `supabase/schemas/` (see [Getting Started Guide](./docs/GETTING_STARTED.md#database-setup))
+3. **Copy your credentials** from Settings → API:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` (anon key)
+   - `SUPABASE_SECRET_KEY` (service role key)
 
-Both apps share the same repository but deploy as separate Vercel projects. See the [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) for complete setup.
+### Step 2: Deploy to Vercel
 
+**Click the button below** — This clones the repo and deploys the **Marketing App**. You'll be prompted for the Supabase credentials from Step 1.
 
-<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&root-directory=apps%2Fmarketing&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_ENV%2CNEXT_PUBLIC_APP_NAME%2CNEXT_PUBLIC_EMAIL_DOMAIN%2CNEXT_PUBLIC_SENDER_EMAIL%2CRESEND_API_KEY%2CNEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY%2CSUPABASE_SECRET_KEY&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App+identity+and+database+variables.+Additional+variables+required+for+Resend%2C+Stripe%2C+and+monitoring+integrations.+&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template-marketing&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+B2B+SaaS+Template+-+Marketing+App&demo-description=Includes+subdomain+isolation+per+tenant%2C+seperate+domains+for+marketing+and+protected+apps%2C+RBAC%2C+and+built+with+Turborepo+monorepo.+Includes+integrations+with+Stripe%2C+Supabase%2C+Resend%2C+and+Sentry.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6%2Coac_5lUsiANun1DEzgLg0NZx5Es3%2Coac_KfIFnjXqCl4YJCHnt1bDTBI1&skippable-integrations=1&teamSlug=steven-lights-projects"><img src="https://vercel.com/button" alt="Deploy Marketing" /></a>
+<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&root-directory=apps%2Fmarketing&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_ENV%2CNEXT_PUBLIC_APP_NAME%2CNEXT_PUBLIC_EMAIL_DOMAIN%2CNEXT_PUBLIC_SENDER_EMAIL%2CRESEND_API_KEY%2CNEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY%2CSUPABASE_SECRET_KEY&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App+identity+and+database+variables.+See+.env.example+for+descriptions.&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template-marketing&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+B2B+SaaS+Template+-+Marketing+App&demo-description=Multi-tenant+B2B+SaaS+with+subdomain+isolation%2C+RBAC%2C+and+Turborepo+monorepo.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_5lUsiANun1DEzgLg0NZx5Es3&skippable-integrations=1"><img src="https://vercel.com/button" alt="Deploy Marketing" /></a>
+
+### Step 3: Deploy Protected App
+
+1. In [Vercel Dashboard](https://vercel.com/new), click **Add New** → **Project**
+2. Import the **same cloned repo** from Step 2
+3. Set **Root Directory** to `apps/protected`
+4. Copy the same environment variables from the Marketing App
+5. Click **Deploy**
+
+### Step 4: Configure Custom Domain (Required for Protected App)
+
+> **⚠️ Critical**: The protected app **requires a custom domain with wildcard DNS**. Vercel's auto-generated URLs (e.g., `your-app.vercel.app`) won't work because tenant subdomains like `acme.your-app.vercel.app` cannot be configured.
+
+1. In Vercel, go to Protected App → **Settings** → **Domains**
+2. Add your domain: `protecteddomain.com`
+3. Add wildcard: `*.protecteddomain.com`
+4. **Easiest setup**: Point your domain's nameservers to Vercel at your registrar:
+   - `ns1.vercel-dns.com`
+   - `ns2.vercel-dns.com`
+   
+   Vercel will automatically configure all DNS records including wildcard support.
+
+See [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) for complete setup including Stripe webhooks.
 
 
 ## Why This Template?

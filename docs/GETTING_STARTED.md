@@ -582,11 +582,13 @@ Congratulations! Your multi-tenant SaaS platform is now running locally. 🎉
 
 ### Production Deployment
 
-1. Set up production Supabase project
-2. Configure production domains
-3. Deploy to Vercel — see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
-4. Configure Stripe webhooks for production
-5. Set up monitoring (Sentry, Checkly)
+> **Important**: Complete Supabase setup BEFORE deploying to Vercel. The deploy process will prompt for your Supabase credentials.
+
+1. **Set up Supabase** — Create project, run migrations, copy credentials
+2. **Deploy to Vercel** — Use the deploy button in [README.md](../README.md) or see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
+3. **Configure domains** — Set up custom domains for both apps
+4. **Configure Stripe** — Set up webhooks for production (see [STRIPE.md](./STRIPE.md))
+5. **Set up monitoring** — Sentry (auto-configured via deploy button), Checkly (optional)
 
 ---
 

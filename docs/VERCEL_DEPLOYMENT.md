@@ -197,6 +197,8 @@ The protected app serves multi-tenant workspaces with subdomain routing.
 
 > **Important**: This must be deployed as a **separate Vercel project** from the same repository. You cannot use a second deploy button — Vercel deploy buttons always try to create a new repository.
 
+> **⚠️ Custom Domain Required**: The protected app **will not work** with Vercel's auto-generated URLs (e.g., `your-app.vercel.app`). You **must** configure a custom domain with wildcard DNS (e.g., `*.protecteddomain.com`) because tenant subdomains like `acme.your-app.vercel.app` cannot be created on Vercel's shared domain. See [Step 5](#step-5-add-custom-domain-with-wildcard) below.
+
 ### Step 1: Import from GitHub (Same Repository)
 
 1. In [Vercel Dashboard](https://vercel.com/dashboard), click **Add New** → **Project**
@@ -257,15 +259,37 @@ STRIPE_ENTERPRISE_YEARLY_PRICE_ID=price_...
 2. Wait for build to complete
 3. Vercel will provide a deployment URL
 
-### Step 5: Add Custom Domain with Wildcard
+### Step 5: Add Custom Domain with Wildcard (Required)
+
+> **⚠️ This step is required** — The app will not function without a custom domain because tenant subdomains cannot be created on Vercel's `*.vercel.app` domain.
 
 1. Go to **Settings** → **Domains**
 2. Add your protected domain: `protecteddomain.com`
 3. Add wildcard domain: `*.protecteddomain.com`
-4. Configure DNS records (see below)
-5. Wait for SSL certificate provisioning
+4. Configure DNS (choose one option):
 
-⚠️ **Important**: Both `protecteddomain.com` and `*.protecteddomain.com` must be added.
+#### Option A: Use Vercel Nameservers (Recommended)
+
+The simplest approach — Vercel automatically manages all DNS records including wildcard:
+
+1. At your domain registrar, change nameservers to:
+   - `ns1.vercel-dns.com`
+   - `ns2.vercel-dns.com`
+2. Wait for nameserver propagation (up to 48 hours, usually faster)
+3. Vercel automatically creates all required DNS records
+
+#### Option B: Manual DNS Records
+
+If you need to keep your existing nameservers (e.g., for email MX records):
+
+| Type | Name | Value |
+|:-----|:-----|:------|
+| A | @ | `76.76.21.21` |
+| CNAME | * | `cname.vercel-dns.com` |
+
+5. Wait for SSL certificate provisioning (~5-10 minutes after DNS propagates)
+
+Both `protecteddomain.com` AND `*.protecteddomain.com` must be added for subdomain routing to work.
 
 ---
 
@@ -458,27 +482,37 @@ Update all 8 Stripe price ID environment variables in Vercel with your productio
 
 ## DNS & SSL Configuration
 
-Configure DNS records to point your domains to Vercel.
+Configure DNS to point your domains to Vercel.
 
-### Marketing App DNS
+### Recommended: Use Vercel Nameservers
 
-Add these DNS records for `marketingdomain.com`:
+The simplest setup is to use Vercel as your DNS provider. At your domain registrar, change nameservers to:
+
+```
+ns1.vercel-dns.com
+ns2.vercel-dns.com
+```
+
+**Benefits:**
+- Vercel automatically configures all required DNS records
+- Wildcard subdomains work automatically
+- SSL certificates are provisioned instantly
+- No manual DNS record management
+
+> **Note**: If you need to keep existing nameservers (e.g., for email MX records managed elsewhere), use the manual DNS option below.
+
+### Alternative: Manual DNS Records
+
+If you can't use Vercel nameservers, add these records at your registrar:
+
+#### Marketing App DNS
 
 | Type | Name | Value | TTL |
 |:-----|:-----|:------|:----|
 | A | @ | `76.76.21.21` | 3600 |
 | CNAME | www | `cname.vercel-dns.com` | 3600 |
 
-**Or** if using CNAME for apex:
-
-| Type | Name | Value | TTL |
-|:-----|:-----|:------|:----|
-| CNAME | @ | `cname.vercel-dns.com` | 3600 |
-| CNAME | www | `cname.vercel-dns.com` | 3600 |
-
-### Protected App DNS (with Wildcard)
-
-Add these DNS records for `protecteddomain.com`:
+#### Protected App DNS (with Wildcard)
 
 | Type | Name | Value | TTL |
 |:-----|:-----|:------|:----|
