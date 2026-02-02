@@ -59,14 +59,20 @@ export async function proxy(request: NextRequest) {
   // If no subdomain, redirect to marketing site
   if (!subdomain) {
     const isDevelopment = process.env.NODE_ENV === "development";
+    const marketingDomain = process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "localhost:3002";
     const marketingUrl = isDevelopment
       ? "http://localhost:3002"
-      : `https://${process.env.NEXT_PUBLIC_MARKETING_DOMAIN}`;
+      : `https://${marketingDomain}`;
     Sentry.logger.info("protected_middleware_marketing_redirect", {
       marketingUrl,
     });
 
-    return NextResponse.redirect(new URL(marketingUrl));
+    try {
+      return NextResponse.redirect(new URL(marketingUrl));
+    } catch {
+      // Fallback if URL is invalid
+      return NextResponse.redirect(new URL("https://localhost:3002"));
+    }
   }
 
   // Pass through without session update to keep middleware Edge-compatible

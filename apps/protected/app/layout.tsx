@@ -11,7 +11,17 @@ export function generateMetadata(): Metadata {
   const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
   const description = "Manage your workspace with powerful tools";
   const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "localhost:3003";
-  const siteUrl = `https://${appDomain}`;
+  
+  // Ensure valid URL for metadataBase (handles missing/invalid env vars during build)
+  let siteUrl: string;
+  let metadataBaseUrl: URL;
+  try {
+    metadataBaseUrl = new URL(`https://${appDomain}`);
+    siteUrl = metadataBaseUrl.toString();
+  } catch {
+    metadataBaseUrl = new URL("https://localhost:3003");
+    siteUrl = "https://localhost:3003";
+  }
 
   return {
     title: {
@@ -19,7 +29,7 @@ export function generateMetadata(): Metadata {
       template: `%s | ${appName}`,
     },
     description,
-    metadataBase: new URL(siteUrl),
+    metadataBase: metadataBaseUrl,
     openGraph: {
       title: appName,
       description,

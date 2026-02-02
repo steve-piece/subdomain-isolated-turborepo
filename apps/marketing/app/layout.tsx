@@ -10,11 +10,21 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 
 export function generateMetadata(): Metadata {
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || process.env.NEXT_PUBLIC_APP_NAME || "Your App";
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Your App";
   const description = "Transform your workflow with AI-powered tools";
   const marketingDomain =
     process.env.NEXT_PUBLIC_MARKETING_DOMAIN || "localhost:3002";
-  const siteUrl = `https://${marketingDomain}`;
+  
+  // Ensure valid URL for metadataBase (handles missing/invalid env vars during build)
+  let siteUrl: string;
+  let metadataBaseUrl: URL;
+  try {
+    metadataBaseUrl = new URL(`https://${marketingDomain}`);
+    siteUrl = metadataBaseUrl.toString();
+  } catch {
+    metadataBaseUrl = new URL("https://localhost:3002");
+    siteUrl = "https://localhost:3002";
+  }
 
   return {
     title: {
@@ -22,7 +32,7 @@ export function generateMetadata(): Metadata {
       template: `%s | ${appName}`,
     },
     description,
-    metadataBase: new URL(siteUrl),
+    metadataBase: metadataBaseUrl,
     openGraph: {
       title: appName,
       description,
