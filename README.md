@@ -2,7 +2,7 @@
 
 <p align="center"><strong>Ship Faster. Build Smarter.</strong> A production-ready multi-tenant B2B SaaS starter that handles the hard parts—domain isolation, tenant routing, RBAC, and billing—so you can focus on what makes your product unique. Live demo available at <a href="https://marketing-app.com">marketing-app.com</a>.</p>
 
-<table>
+<table align="center">
 <tr>
 <td align="center" valign="top" width="300">
 <h3>📦 Marketing App</h3>
