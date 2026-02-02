@@ -15,7 +15,7 @@
 
 **🚀 See it live:** [marketing-app.com](https://marketing-app.com)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&env=NEXT_PUBLIC_MARKETING_DOMAIN,NEXT_PUBLIC_APP_DOMAIN,NEXT_PUBLIC_APP_ENV,NEXT_PUBLIC_APP_NAME,NEXT_PUBLIC_EMAIL_DOMAIN,NEXT_PUBLIC_SENDER_EMAIL,RESEND_API_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,SUPABASE_SECRET_KEY&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App%20identity%20and%20database%20variables.%20Additional%20variables%20required%20for%20Resend%2C%20Stripe%2C%20and%20monitoring%20integrations.%20&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template&repository-name=subdomain-isolated-turborepo&demo-title=Demo%20App&demo-description=Fully%20functional%20demo%20for%20subdomain%20islolated%20turborepo%20template.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Ffavicon.svg)
 
 ## ✨ Why this template?
 

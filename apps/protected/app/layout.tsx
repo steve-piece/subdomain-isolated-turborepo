@@ -45,12 +45,12 @@ export function generateMetadata(): Metadata {
     icons: {
       icon: [
         { url: "/favicon.ico", sizes: "any" },
-        { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
       ],
       apple: "/apple-touch-icon.png",
     },
     manifest: "/site.webmanifest",
     other: {
+      "apple-mobile-web-app-title": appName,
       ...Sentry.getTraceData(),
     },
   };
