@@ -30,8 +30,8 @@ Before deploying, ensure you have:
 - ✅ **Supabase Production Project** - Separate from development
 - ✅ **Resend Account** - With verified domain
 - ✅ **Domain Names** - Two domains configured:
-  - Marketing domain (e.g., `yourdomain.com`)
-  - Protected domain (e.g., `yourdomain.app` or `app.yourdomain.com`)
+  - Marketing domain (e.g., `marketingdomain.com`)
+  - Protected domain (e.g., `protecteddomain.com` or `app.marketingdomain.com`)
 
 ### Optional (for full features)
 
@@ -57,12 +57,12 @@ You'll need two separate domains or subdomains for the two applications.
 ### Recommended Domain Structure
 
 **Option 1: Separate TLDs (Recommended)**
-- Marketing: `yourdomain.com`
-- Protected: `yourdomain.app` (with wildcard `*.yourdomain.app`)
+- Marketing: `marketingdomain.com`
+- Protected: `protecteddomain.com` (with wildcard `*.protecteddomain.com`)
 
 **Option 2: Subdomain Approach**
-- Marketing: `yourdomain.com`
-- Protected: `app.yourdomain.com` (with wildcard `*.app.yourdomain.com`)
+- Marketing: `marketingdomain.com`
+- Protected: `app.marketingdomain.com` (with wildcard `*.app.marketingdomain.com`)
 
 ### Why Two Domains?
 
@@ -74,9 +74,9 @@ You'll need two separate domains or subdomains for the two applications.
 ### Wildcard DNS Requirements
 
 The protected app requires **wildcard subdomain** support:
-- `acme.yourdomain.app` → Protected app
-- `startup.yourdomain.app` → Protected app
-- `company.yourdomain.app` → Protected app
+- `acme.protecteddomain.com` → Protected app
+- `startup.protecteddomain.com` → Protected app
+- `company.protecteddomain.com` → Protected app
 
 Vercel handles wildcard routing automatically once configured.
 
@@ -137,9 +137,9 @@ SUPABASE_SECRET_KEY=eyJhbG...
 
 # Resend (Production)
 RESEND_API_KEY=re_...
-NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
-NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
-NEXT_PUBLIC_SUPPORT_EMAIL=support@yourdomain.com
+NEXT_PUBLIC_SENDER_EMAIL=noreply@marketingdomain.com
+NEXT_PUBLIC_EMAIL_DOMAIN=marketingdomain.com
+NEXT_PUBLIC_SUPPORT_EMAIL=support@marketingdomain.com
 RESEND_ENABLE_INVITATION_EMAILS=true
 RESEND_ENABLE_WELCOME_EMAILS=true
 RESEND_VERIFY_EMAILS=true
@@ -168,7 +168,7 @@ NEXT_PUBLIC_APP_ENV=production
 ### Step 5: Add Custom Domain
 
 1. Go to **Settings** → **Domains**
-2. Add your marketing domain: `yourdomain.com`
+2. Add your marketing domain: `marketingdomain.com`
 3. Configure DNS records (see [DNS Configuration](#dns--ssl-configuration))
 4. Wait for SSL certificate provisioning (~5 minutes)
 
@@ -241,12 +241,12 @@ STRIPE_ENTERPRISE_YEARLY_PRICE_ID=price_...
 ### Step 5: Add Custom Domain with Wildcard
 
 1. Go to **Settings** → **Domains**
-2. Add your protected domain: `yourdomain.app`
-3. Add wildcard domain: `*.yourdomain.app`
+2. Add your protected domain: `protecteddomain.com`
+3. Add wildcard domain: `*.protecteddomain.com`
 4. Configure DNS records (see below)
 5. Wait for SSL certificate provisioning
 
-⚠️ **Important**: Both `yourdomain.app` and `*.yourdomain.app` must be added.
+⚠️ **Important**: Both `protecteddomain.com` and `*.protecteddomain.com` must be added.
 
 ---
 
@@ -286,11 +286,11 @@ seed_data.sql          → Seed data (subscription tiers)
 #### Set Redirect URLs
 
 1. Go to **Authentication** → **URL Configuration**
-2. Set **Site URL**: `https://yourdomain.app`
+2. Set **Site URL**: `https://protecteddomain.com`
 3. Add **Redirect URLs**:
-   - `https://yourdomain.com/auth/callback`
-   - `https://yourdomain.app/auth/callback`
-   - `https://*.yourdomain.app/auth/callback` (wildcard)
+   - `https://marketingdomain.com/auth/callback`
+   - `https://protecteddomain.com/auth/callback`
+   - `https://*.protecteddomain.com/auth/callback` (wildcard)
 
 #### Enable Custom Access Token Hook
 
@@ -333,12 +333,12 @@ RESEND_API_KEY=re_...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbG...  # Service role key
 SEND_EMAIL_HOOK_SECRET=your-webhook-secret
 NEXT_PUBLIC_SUPABASE_URL=https://your-prod-project.supabase.co
-NEXT_PUBLIC_APP_DOMAIN=yourdomain.app
-NEXT_PUBLIC_MARKETING_DOMAIN=yourdomain.com
+NEXT_PUBLIC_APP_DOMAIN=protecteddomain.com
+NEXT_PUBLIC_MARKETING_DOMAIN=marketingdomain.com
 NEAPP_NAME=Your App
-NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
-NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
-NEXT_PUBLIC_SUPPORT_EMAIL=support@yourdomain.com
+NEXT_PUBLIC_SENDER_EMAIL=noreply@marketingdomain.com
+NEXT_PUBLIC_EMAIL_DOMAIN=marketingdomain.com
+NEXT_PUBLIC_SUPPORT_EMAIL=support@marketingdomain.com
 RESEND_ENABLE_INVITATION_EMAILS=true
 RESEND_ENABLE_WELCOME_EMAILS=true
 RESEND_VERIFY_EMAILS=true
@@ -408,7 +408,7 @@ See [STRIPE.md](./STRIPE.md) for detailed setup instructions.
 
 1. Go to **Developers** → **Webhooks**
 2. Click **Add endpoint**
-3. Endpoint URL: `https://yourdomain.app/api/webhooks/stripe`
+3. Endpoint URL: `https://protecteddomain.com/api/webhooks/stripe`
 4. Select events:
    - `customer.subscription.created`
    - `customer.subscription.updated`
@@ -443,30 +443,30 @@ Configure DNS records to point your domains to Vercel.
 
 ### Marketing App DNS
 
-Add these DNS records for `yourdomain.com`:
+Add these DNS records for `marketingdomain.com`:
 
 | Type | Name | Value | TTL |
-|------|------|-------|-----|
+|:-----|:-----|:------|:----|
 | A | @ | `76.76.21.21` | 3600 |
 | CNAME | www | `cname.vercel-dns.com` | 3600 |
 
 **Or** if using CNAME for apex:
 
 | Type | Name | Value | TTL |
-|------|------|-------|-----|
+|:-----|:-----|:------|:----|
 | CNAME | @ | `cname.vercel-dns.com` | 3600 |
 | CNAME | www | `cname.vercel-dns.com` | 3600 |
 
 ### Protected App DNS (with Wildcard)
 
-Add these DNS records for `yourdomain.app`:
+Add these DNS records for `protecteddomain.com`:
 
 | Type | Name | Value | TTL |
-|------|------|-------|-----|
+|:-----|:-----|:------|:----|
 | A | @ | `76.76.21.21` | 3600 |
 | CNAME | * | `cname.vercel-dns.com` | 3600 |
 
-The wildcard `*` CNAME enables subdomain routing (e.g., `acme.yourdomain.app`).
+The wildcard `*` CNAME enables subdomain routing (e.g., `acme.protecteddomain.com`).
 
 ### SSL Certificate Provisioning
 
@@ -487,7 +487,7 @@ Verify everything works correctly.
 
 ### Step 1: Test Marketing Site
 
-1. Visit `https://yourdomain.com`
+1. Visit `https://marketingdomain.com`
 2. Verify landing page loads
 3. Check that signup form appears
 4. Verify links work
@@ -498,11 +498,11 @@ Verify everything works correctly.
 2. Create a test organization with subdomain `test`
 3. Check email for verification link
 4. Click verification link
-5. Should redirect to `https://test.yourdomain.app`
+5. Should redirect to `https://test.protecteddomain.com`
 
 ### Step 3: Test Protected App
 
-1. Verify redirect to `https://test.yourdomain.app/dashboard`
+1. Verify redirect to `https://test.protecteddomain.com/dashboard`
 2. Check that dashboard loads
 3. Navigate to Settings → verify all pages load
 4. Test team invitations
@@ -512,7 +512,7 @@ Verify everything works correctly.
 
 1. Create another organization with subdomain `demo`
 2. Log in as different user
-3. Verify cannot access `test.yourdomain.app` with `demo` user's session
+3. Verify cannot access `test.protecteddomain.com` with `demo` user's session
 4. Verify RLS policies are working
 
 ### Step 5: Test Billing (if configured)
@@ -569,8 +569,8 @@ Both apps are already configured for Sentry. Set the auth token to enable source
 
 1. Go to [Checkly Dashboard](https://app.checklyhq.com)
 2. Create checks for:
-   - Marketing site: `https://yourdomain.com`
-   - Protected app: `https://test.yourdomain.app` (use test org)
+   - Marketing site: `https://marketingdomain.com`
+   - Protected app: `https://test.protecteddomain.com` (use test org)
 3. Set check frequency (e.g., 5 minutes)
 4. Configure alerts (email, Slack, etc.)
 
@@ -615,7 +615,7 @@ Enable Vercel Analytics for both projects:
 
 **Solutions**:
 - Wait 24-48 hours for DNS propagation
-- Use `nslookup yourdomain.com` to check DNS
+- Use `nslookup marketingdomain.com` to check DNS
 - Verify DNS records are correct
 - Check Vercel domain status (green checkmark)
 - Clear browser DNS cache: `chrome://net-internals/#dns`
@@ -633,13 +633,13 @@ Enable Vercel Analytics for both projects:
 
 #### Wildcard Subdomain Not Working
 
-**Symptom**: `acme.yourdomain.app` returns 404
+**Symptom**: `acme.protecteddomain.com` returns 404
 
 **Solutions**:
-- Verify `*.yourdomain.app` is added in Vercel domains
+- Verify `*.protecteddomain.com` is added in Vercel domains
 - Check wildcard CNAME record exists in DNS
 - Wait for DNS propagation
-- Test with `dig *.yourdomain.app` to verify DNS
+- Test with `dig *.protecteddomain.com` to verify DNS
 - Clear browser cache
 
 #### Auth Callback Errors
@@ -648,8 +648,8 @@ Enable Vercel Analytics for both projects:
 
 **Solutions**:
 - Verify redirect URLs in Supabase Auth settings
-- Add wildcard redirect: `https://*.yourdomain.app/auth/callback`
-- Check site URL is correct: `https://yourdomain.app`
+- Add wildcard redirect: `https://*.protecteddomain.com/auth/callback`
+- Check site URL is correct: `https://protecteddomain.com`
 - Clear browser cookies and retry
 - Check Supabase Auth logs
 
@@ -658,7 +658,7 @@ Enable Vercel Analytics for both projects:
 **Symptom**: Subscriptions not syncing to database
 
 **Solutions**:
-- Verify webhook URL: `https://yourdomain.app/api/webhooks/stripe`
+- Verify webhook URL: `https://protecteddomain.com/api/webhooks/stripe`
 - Check webhook secret is set in Vercel env vars
 - View webhook logs in Stripe Dashboard
 - Test webhook delivery: Stripe Dashboard → Webhooks → Test
@@ -727,13 +727,15 @@ After successful deployment:
 
 ## Additional Resources
 
-- **[Getting Started](./GETTING_STARTED.md)** - Local development setup
-- **[Architecture](./ARCHITECTURE.md)** - Platform architecture overview
-- **[Database](./DATABASE.md)** - Database schema reference
-- **[Stripe Setup](./STRIPE.md)** - Billing integration guide
-- **[Vercel Documentation](https://vercel.com/docs)** - Official Vercel docs
-- **[Supabase Documentation](https://supabase.com/docs)** - Official Supabase docs
+| Resource | Link |
+|:---------|:-----|
+| Getting Started | [Local development setup](./GETTING_STARTED.md) |
+| Architecture | [Platform architecture overview](./ARCHITECTURE.md) |
+| Database | [Schema reference](./DATABASE.md) |
+| Stripe Setup | [Billing integration guide](./STRIPE.md) |
+| Vercel Docs | [vercel.com/docs](https://vercel.com/docs) |
+| Supabase Docs | [supabase.com/docs](https://supabase.com/docs) |
 
 ---
 
-**Need Help?** Check [GitHub Discussions](https://github.com/your-repo/discussions) or contact support.
+**Need Help?** Check the [troubleshooting guide](./GETTING_STARTED.md#troubleshooting).

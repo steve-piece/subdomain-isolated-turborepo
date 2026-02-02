@@ -47,8 +47,8 @@ Before you begin, ensure you have the following:
 - **Vercel Account** - [Sign up](https://vercel.com) (free tier available)
   - For deployment (see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md))
 - **Two Domain Names**
-  - Marketing domain (e.g., `yourdomain.com`)
-  - Protected/app domain (e.g., `yourdomain.app`)
+  - Marketing domain (e.g., `marketingdomain.com`)
+  - Protected/app domain (e.g., `protecteddomain.com`)
   - For local development, you can use `localhost`
 
 ---
@@ -72,18 +72,16 @@ This will install all dependencies for both apps and packages.
 
 ### 3. Replace Placeholder Values
 
-Search and replace the following placeholders across your codebase (match case, whole word enabled):
+Search and replace these placeholders across your codebase (match case, whole word):
 
 | Placeholder | Replace With | Description |
-|-------------|--------------|-------------|
+|:------------|:-------------|:------------|
 | `Your App` | Your actual app name | Display name shown across all apps |
 | `marketingdomain.com` | Your marketing domain | Public website domain |
 | `protecteddomain.com` | Your protected domain | Multi-tenant app domain |
 | `emaildomain.com` | Your email domain | Domain for sending emails |
 
-**Recommended Tools**:
-- VS Code: Use Find & Replace (`Cmd+Shift+H` or `Ctrl+Shift+H`)
-- Command line: `grep -r "Your App" .` to find occurrences
+> 💡 **Tip**: In VS Code, use `Cmd+Shift+H` (Mac) or `Ctrl+Shift+H` (Windows) for Find & Replace.
 
 ---
 
@@ -140,9 +138,9 @@ Get your API key from [Resend Dashboard](https://resend.com/api-keys):
 RESEND_API_KEY='re_...'
 
 # Email configuration
-NEXT_PUBLIC_SENDER_EMAIL='noreply@yourdomain.com'
-NEXT_PUBLIC_EMAIL_DOMAIN='yourdomain.com'
-NEXT_PUBLIC_SUPPORT_EMAIL='support@yourdomain.com'
+NEXT_PUBLIC_SENDER_EMAIL='noreply@marketingdomain.com'
+NEXT_PUBLIC_EMAIL_DOMAIN='marketingdomain.com'
+NEXT_PUBLIC_SUPPORT_EMAIL='support@marketingdomain.com'
 
 # Email toggles (optional)
 RESEND_ENABLE_INVITATION_EMAILS='true'
@@ -253,7 +251,7 @@ You should see four tiers: Free, Pro, Business, Enterprise.
 
 1. Go to [Resend Dashboard](https://resend.com/domains)
 2. Click **Add Domain**
-3. Enter your domain (e.g., `yourdomain.com`)
+3. Enter your domain (e.g., `marketingdomain.com`)
 4. Add the DNS records provided by Resend
 5. Wait for verification (usually a few minutes)
 
@@ -294,9 +292,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_APP_DOMAIN=localhost:3003  # or your production domain
 NEXT_PUBLIC_MARKETING_DOMAIN=localhost:3002  # or your production domain
 NEXT_PUBLIC_APP_NAME='Your App'
-NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
-NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
-NEXT_PUBLIC_SUPPORT_EMAIL=support@yourdomain.com
+NEXT_PUBLIC_SENDER_EMAIL=noreply@marketingdomain.com
+NEXT_PUBLIC_EMAIL_DOMAIN=marketingdomain.com
+NEXT_PUBLIC_SUPPORT_EMAIL=support@marketingdomain.com
 ```
 
 **Generate a secure webhook secret**:
@@ -556,33 +554,37 @@ Congratulations! Your multi-tenant SaaS platform is now running locally. 🎉
 
 ### Learn More
 
-- **[Architecture Guide](./ARCHITECTURE.md)** - Understand how the platform works
-- **[Database Schema](./DATABASE.md)** - Complete database reference
-- **[Stripe Setup](./STRIPE.md)** - Enable billing and subscriptions
-- **[Vercel Deployment](./VERCEL_DEPLOYMENT.md)** - Deploy to production
+| Guide | Description |
+|:------|:------------|
+| [Architecture](./ARCHITECTURE.md) | How the platform works |
+| [Database Schema](./DATABASE.md) | Complete database reference |
+| [Stripe Setup](./STRIPE.md) | Enable billing and subscriptions |
+| [Vercel Deployment](./VERCEL_DEPLOYMENT.md) | Deploy to production |
 
 ### Key Features to Explore
 
-1. **Multi-Tenant Isolation**: Create multiple test organizations with different subdomains
-2. **RBAC System**: Test different user roles (owner, admin, member, view-only)
-3. **Team Management**: Invite users and manage team members
-4. **Projects**: Create projects and assign permissions
-5. **Security**: Enable 2FA, review audit logs
+| Feature | What to Test |
+|:--------|:-------------|
+| Multi-Tenant Isolation | Create multiple test orgs with different subdomains |
+| RBAC System | Test different user roles (owner, admin, member, view-only) |
+| Team Management | Invite users and manage team members |
+| Projects | Create projects and assign permissions |
+| Security | Enable 2FA, review audit logs |
 
 ### Development Tips
 
-- **Hot Reload**: Changes are automatically reflected (no restart needed)
-- **Error Logging**: Check browser console and terminal for errors
-- **Database Changes**: Use Supabase SQL Editor for quick queries
-- **Email Testing**: Use [MailTrap](https://mailtrap.io) for email testing without sending real emails
+| Tip | Details |
+|:----|:--------|
+| Hot Reload | Changes auto-reflect (no restart needed) |
+| Error Logging | Check browser console and terminal |
+| Database Changes | Use Supabase SQL Editor for quick queries |
+| Email Testing | Use [MailTrap](https://mailtrap.io) to avoid real sends |
 
 ### Production Deployment
 
-When you're ready to deploy:
-
 1. Set up production Supabase project
 2. Configure production domains
-3. Deploy to Vercel (see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md))
+3. Deploy to Vercel — see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
 4. Configure Stripe webhooks for production
 5. Set up monitoring (Sentry, Checkly)
 
@@ -590,11 +592,11 @@ When you're ready to deploy:
 
 ## Need Help?
 
-- **Documentation**: Check other docs in the `docs/` folder
-- **Issues**: Review [GitHub Issues](https://github.com/your-repo/issues)
-- **Community**: Join [GitHub Discussions](https://github.com/your-repo/discussions)
-- **Contributing**: See [CONTRIBUTING.md](../CONTRIBUTING.md)
+| Resource | Link |
+|:---------|:-----|
+| Documentation | Other docs in the `docs/` folder |
+| Contributing | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 
 ---
 
-**Happy Building! 🚀**
+<p align="center"><strong>Happy Building! 🚀</strong></p>

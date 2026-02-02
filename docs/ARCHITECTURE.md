@@ -24,7 +24,7 @@ This platform is a **multi-tenant SaaS application** with subdomain-based routin
 
 ### Architecture Highlights
 
-- **Subdomain Isolation**: Each tenant has a unique subdomain (e.g., `acme.yourdomain.app`)
+- **Subdomain Isolation**: Each tenant has a unique subdomain (e.g., `acme.protecteddomain.com`)
 - **JWT-Based Auth**: Custom claims in JWT tokens provide tenant context and permissions
 - **Row Level Security**: Database-level isolation via Supabase RLS policies
 - **RBAC**: 5-tier role hierarchy with 41+ granular capabilities
@@ -107,7 +107,7 @@ The platform uses middleware to rewrite subdomain URLs to internal routes, provi
 ### URL Structure
 
 ```
-User sees:     https://acme.yourdomain.app/dashboard
+User sees:     https://acme.protecteddomain.com/dashboard
 Middleware rewrites to: /s/acme/dashboard
 ```
 
@@ -809,11 +809,13 @@ flowchart TB
 
 ## Next Steps
 
-- **[Database Schema](./DATABASE.md)** - Deep dive into database structure
-- **[Getting Started](./GETTING_STARTED.md)** - Set up your development environment
-- **[Stripe Integration](./STRIPE.md)** - Add billing to your platform
-- **[Deployment Guide](./VERCEL_DEPLOYMENT.md)** - Deploy to production
+| Guide | Description |
+|:------|:------------|
+| [Database Schema](./DATABASE.md) | Deep dive into database structure |
+| [Getting Started](./GETTING_STARTED.md) | Set up your development environment |
+| [Stripe Integration](./STRIPE.md) | Add billing to your platform |
+| [Deployment Guide](./VERCEL_DEPLOYMENT.md) | Deploy to production |
 
 ---
 
-**Questions?** Check the [troubleshooting guide](./GETTING_STARTED.md#troubleshooting) or [open a discussion](https://github.com/your-repo/discussions).
+**Questions?** Check the [troubleshooting guide](./GETTING_STARTED.md#troubleshooting).

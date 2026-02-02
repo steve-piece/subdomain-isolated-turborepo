@@ -1400,10 +1400,12 @@ When setting up the database, run SQL files in this exact order:
 
 ## Next Steps
 
-- **[Architecture Guide](./ARCHITECTURE.md)** - Understand how data flows through the system
-- **[Getting Started](./GETTING_STARTED.md)** - Set up your database
-- **[Stripe Integration](./STRIPE.md)** - Configure billing tables
+| Guide | Description |
+|:------|:------------|
+| [Architecture Guide](./ARCHITECTURE.md) | Understand how data flows |
+| [Getting Started](./GETTING_STARTED.md) | Set up your database |
+| [Stripe Integration](./STRIPE.md) | Configure billing tables |
 
 ---
 
-**Need Help?** Check the [troubleshooting guide](./GETTING_STARTED.md#troubleshooting) or [open a discussion](https://github.com/your-repo/discussions).
+**Need Help?** Check the [troubleshooting guide](./GETTING_STARTED.md#troubleshooting).

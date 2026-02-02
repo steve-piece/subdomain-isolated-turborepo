@@ -371,16 +371,13 @@ SELECT * FROM subscriptions WHERE org_id = 'your-org-id';
 Use these test card numbers in Stripe Checkout:
 
 | Card Number | Scenario |
-|-------------|----------|
+|:------------|:---------|
 | `4242 4242 4242 4242` | Payment succeeds |
 | `4000 0000 0000 0002` | Payment declined |
 | `4000 0025 0000 3155` | Requires 3D Secure authentication |
 | `4000 0000 0000 9995` | Insufficient funds |
 
-**Additional Details**:
-- **Expiry**: Any future date (e.g., `12/34`)
-- **CVC**: Any 3 digits (e.g., `123`)
-- **ZIP**: Any 5 digits (e.g., `12345`)
+> **Test card details**: Expiry = any future date, CVC = any 3 digits, ZIP = any 5 digits
 
 ### Trigger Test Events
 
@@ -467,7 +464,7 @@ STRIPE_FREE_YEARLY_PRICE_ID=price_...
 ### Step 3: Create Production Webhook
 
 1. Go to **Developers** → **Webhooks** → **Add endpoint**
-2. Endpoint URL: `https://yourdomain.app/api/webhooks/stripe`
+2. Endpoint URL: `https://protecteddomain.com/api/webhooks/stripe`
 3. Select events:
    - `customer.subscription.created`
    - `customer.subscription.updated`
@@ -786,24 +783,26 @@ ORDER BY metric_name;
 
 ## Additional Resources
 
-- **[Stripe Documentation](https://stripe.com/docs)** - Official Stripe docs
-- **[Stripe Checkout](https://stripe.com/docs/payments/checkout)** - Checkout integration
-- **[Stripe Billing Portal](https://stripe.com/docs/billing/subscriptions/integrating-customer-portal)** - Billing portal setup
-- **[Stripe Webhooks](https://stripe.com/docs/webhooks)** - Webhook guide
-- **[Stripe Testing](https://stripe.com/docs/testing)** - Testing guide
+| Resource | Link |
+|:---------|:-----|
+| Stripe Documentation | [stripe.com/docs](https://stripe.com/docs) |
+| Stripe Checkout | [Checkout integration](https://stripe.com/docs/payments/checkout) |
+| Stripe Billing Portal | [Billing portal setup](https://stripe.com/docs/billing/subscriptions/integrating-customer-portal) |
+| Stripe Webhooks | [Webhook guide](https://stripe.com/docs/webhooks) |
+| Stripe Testing | [Testing guide](https://stripe.com/docs/testing) |
 
 ---
 
 ## Next Steps
 
-After Stripe setup:
-
-1. **Test Billing Flow**: Create test subscriptions
-2. **Configure Usage Limits**: Set appropriate limits for each tier
-3. **Deploy to Production**: Follow [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
-4. **Set Up Monitoring**: Track failed payments and webhook errors
-5. **Plan Pricing**: Adjust pricing based on market research
+| Step | Action |
+|:-----|:-------|
+| 1 | Test billing flow — create test subscriptions |
+| 2 | Configure usage limits for each tier |
+| 3 | Deploy to production — see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) |
+| 4 | Set up monitoring — track failed payments and webhook errors |
+| 5 | Plan pricing — adjust based on market research |
 
 ---
 
-**Need Help?** Check [GitHub Discussions](https://github.com/your-repo/discussions) or contact support.
+**Need Help?** Check the [troubleshooting guide](./GETTING_STARTED.md#troubleshooting).
