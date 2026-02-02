@@ -13,12 +13,11 @@ export function Header({ appName }: { appName: string }) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 flex h-16 items-center justify-between px-4">
       <Link href="/" className="flex items-center gap-2">
         <Image
-          src="/favicon.svg"
+          src="/logo-dark.png"
           alt={`${appName} logo`}
           width={28}
           height={28}
           priority
-          style={{ borderRadius: 50 }}
           className="size-7"
         />
         <span className="font-bold text-xl" suppressHydrationWarning>

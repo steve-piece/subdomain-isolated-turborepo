@@ -32,9 +32,9 @@ export function generateMetadata(): Metadata {
       type: "website",
       images: [
         {
-          url: "/logo_horizontal.png",
-          width: 540,
-          height: 400,
+          url: "/web-app-manifest-512x512.png",
+          width: 512,
+          height: 512,
           alt: `${appName} Logo`,
         },
       ],
@@ -43,7 +43,7 @@ export function generateMetadata(): Metadata {
       card: "summary_large_image",
       title: appName,
       description,
-      images: ["/logo_horizontal.png"],
+      images: ["/web-app-manifest-512x512.png"],
     },
     icons: {
       icon: [
