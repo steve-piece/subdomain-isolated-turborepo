@@ -588,7 +588,7 @@ Congratulations! Your multi-tenant SaaS platform is now running locally. 🎉
 4. **Redeploy** — Trigger redeploy for both apps
 5. **Configure domains** — Set up custom domains (required for protected app wildcard subdomains)
 6. **Configure Stripe** — Set up webhooks for production (see [STRIPE.md](./STRIPE.md))
-7. **Set up monitoring** — Sentry (auto-configured via deploy button), Checkly (optional)
+7. **Set up monitoring** (optional) — Sentry, Checkly (see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md#optional-monitoring--analytics))
 
 ---
 
