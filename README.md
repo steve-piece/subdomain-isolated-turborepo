@@ -37,7 +37,7 @@ NEXT_PUBLIC_APP_NAME=''
 
 ### Step 3: Go To The Starter Guide
 
-> ![IMPORTANT]
+> [!IMPORTANT]
 >
 > **[Access the Getting Started Guide Here →](./docs/GETTING_STARTED.md)**
 
