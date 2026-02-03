@@ -4,34 +4,52 @@
 
 ## Quick Start
 
-### Step 1: Set Up Supabase (Required First)
+### Step 1: Deploy to Vercel
 
-Before deploying, you need a Supabase project with the database schema:
+**Click the button below** to clone the repo and create the Marketing App project. Enter your app identity values when prompted.
+
+<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&root-directory=apps%2Fmarketing&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_NAME&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=Your+app+domains+and+name.+Additional+env+vars+added+after+Supabase+setup.&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template-marketing&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+B2B+SaaS+Template+-+Marketing+App&demo-description=Multi-tenant+B2B+SaaS+with+subdomain+isolation%2C+RBAC%2C+and+Turborepo+monorepo.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_5lUsiANun1DEzgLg0NZx5Es3&skippable-integrations=1"><img src="https://vercel.com/button" alt="Deploy Marketing" /></a>
+
+> **Note**: The deploy will succeed, but the app will show a "Server Error" when opened — this is expected since Supabase isn't configured yet. The repo is now cloned to your GitHub.
+
+### Step 2: Create Protected App Project
+
+1. In [Vercel Dashboard](https://vercel.com/new), click **Add New** → **Project**
+2. Import the **same cloned repo** from Step 1
+3. Set **Root Directory** to `apps/protected`
+4. Add the same app identity env vars as the Marketing App
+5. Click **Deploy** (app will show "Server Error" until Supabase is configured)
+
+### Step 3: Set Up Supabase
 
 1. **Create a Supabase project** at [supabase.com](https://supabase.com)
 2. **Run the migrations** in order from `supabase/schemas/` (see [Getting Started Guide](./docs/GETTING_STARTED.md#database-setup))
-3. **Copy your credentials** from Settings → API:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` (anon key)
-   - `SUPABASE_SECRET_KEY` (service role key)
+3. **Copy your credentials** from Settings → API
 
-### Step 2: Deploy to Vercel
+### Step 4: Add Environment Variables
 
-**Click the button below** — This clones the repo and deploys the **Marketing App**. You'll be prompted for the Supabase credentials from Step 1.
+Add the remaining env vars to **both** Vercel projects (Settings → Environment Variables):
 
-<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo&root-directory=apps%2Fmarketing&env=NEXT_PUBLIC_MARKETING_DOMAIN%2CNEXT_PUBLIC_APP_DOMAIN%2CNEXT_PUBLIC_APP_ENV%2CNEXT_PUBLIC_APP_NAME%2CNEXT_PUBLIC_EMAIL_DOMAIN%2CNEXT_PUBLIC_SENDER_EMAIL%2CRESEND_API_KEY%2CNEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY%2CSUPABASE_SECRET_KEY&envDefaults=%7B%22NEXT_PUBLIC_APP_ENV%22%3A%22production%22%7D&envDescription=App+identity+and+database+variables.+See+.env.example+for+descriptions.&envLink=https%3A%2F%2Fgithub.com%2Fsteve-piece%2Fsubdomain-isolated-turborepo%2Fblob%2Fmain%2F.env.example&project-name=multi-tenant-saas-template-marketing&repository-name=subdomain-isolated-turborepo&demo-title=Enterprise+B2B+SaaS+Template+-+Marketing+App&demo-description=Multi-tenant+B2B+SaaS+with+subdomain+isolation%2C+RBAC%2C+and+Turborepo+monorepo.&demo-url=marketing-app.com&demo-image=https%3A%2F%2Fwww.marketing-app.com%2Flogo_horizontal.png&integration-ids=oac_5lUsiANun1DEzgLg0NZx5Es3&skippable-integrations=1"><img src="https://vercel.com/button" alt="Deploy Marketing" /></a>
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=eyJ...
+SUPABASE_SECRET_KEY=eyJ...
 
-### Step 3: Deploy Protected App
+# Email (Resend)
+RESEND_API_KEY=re_...
+NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
+NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
 
-1. In [Vercel Dashboard](https://vercel.com/new), click **Add New** → **Project**
-2. Import the **same cloned repo** from Step 2
-3. Set **Root Directory** to `apps/protected`
-4. Copy the same environment variables from the Marketing App
-5. Click **Deploy**
+# Environment
+NEXT_PUBLIC_APP_ENV=production
+```
 
-### Step 4: Configure Custom Domain (Required for Protected App)
+Then **redeploy both apps** from the Vercel dashboard.
 
-> **⚠️ Critical**: The protected app **requires a custom domain with wildcard DNS**. Vercel's auto-generated URLs (e.g., `your-app.vercel.app`) won't work because tenant subdomains like `acme.your-app.vercel.app` cannot be configured.
+### Step 5: Configure Custom Domain (Required for Protected App)
+
+> **⚠️ Critical**: The protected app **requires a custom domain with wildcard DNS**. Vercel's auto-generated URLs won't work for tenant subdomains.
 
 1. In Vercel, go to Protected App → **Settings** → **Domains**
 2. Add your domain: `protecteddomain.com`
@@ -39,8 +57,6 @@ Before deploying, you need a Supabase project with the database schema:
 4. **Easiest setup**: Point your domain's nameservers to Vercel at your registrar:
    - `ns1.vercel-dns.com`
    - `ns2.vercel-dns.com`
-   
-   Vercel will automatically configure all DNS records including wildcard support.
 
 See [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) for complete setup including Stripe webhooks.
 

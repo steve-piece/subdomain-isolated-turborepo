@@ -95,9 +95,11 @@ The easiest way to deploy is using the **Deploy with Vercel** button in the [REA
    - Clone the repository to your GitHub account
    - Create a new Vercel project for the Marketing App
    - Pre-configure the root directory (`apps/marketing`)
-   - Prompt you for required environment variables
-3. Fill in the environment variables (see below)
+   - Prompt you for app identity variables (domains, app name)
+3. Fill in the app identity variables
 4. Click **Deploy**
+
+> **Note**: The deploy will succeed, but the app will show a "Server Error" when opened because Supabase isn't configured yet. This is expected — the repo is now cloned to your GitHub. Continue to [Deploy Protected App](#deploy-protected-app), then set up Supabase and add the remaining env vars.
 
 After deployment, continue to [Deploy Protected App](#deploy-protected-app) to set up the second project.
 
