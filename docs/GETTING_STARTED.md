@@ -244,11 +244,15 @@ You'll need two separate domains for the two applications.
 4. **Important**: Uncheck the "Redirect to www" setting
 5. Click **Add existing** again and enter `*.protecteddomain.com`
 6. **Important**: Uncheck the "Redirect to www" setting again
+7. Go to **Settings** → **Environment Variables**, click **Import from .env** and select `apps/protected/.env.local` (or manually copy/paste the values)
+8. Redeploy when prompted
 
 **Marketing App Project**:
 1. Navigate to your marketing app project in Vercel
 2. Go to **Settings** → **Domains**
 3. Click **Add existing** and enter your marketing domain (e.g., `marketingdomain.com`)
+4. Go to **Settings** → **Environment Variables**, click **Import from .env** and select `apps/marketing/.env.local` (or manually copy/paste the values)
+5. Redeploy when prompted
 
 ---
 
