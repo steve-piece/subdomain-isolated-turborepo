@@ -303,10 +303,23 @@ export async function resendEmailVerification(
     }
   }
 
+  // Build redirect URL if subdomain is provided
+  let emailRedirectTo: string | undefined;
+  if (subdomain) {
+    const normalizedSubdomain = subdomain.trim().toLowerCase();
+    const isDev = process.env.NODE_ENV !== "production";
+    const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com";
+    const tenantBaseUrl = isDev
+      ? `http://${normalizedSubdomain}.localhost:3003`
+      : `https://${normalizedSubdomain}.${appDomain}`;
+    emailRedirectTo = `${tenantBaseUrl}/confirm`;
+  }
+
   // Directly resend verification email without requiring password
   const { error: resendError } = await supabase.auth.resend({
     type: "signup",
     email,
+    options: emailRedirectTo ? { emailRedirectTo } : undefined,
   });
 
   if (resendError) {

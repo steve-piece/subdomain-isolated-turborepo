@@ -205,14 +205,14 @@ const AuthPaths: Record<
   EmailActionType | "recovery-complete" | "invite-accept",
   string
 > = {
-  signup: "/auth/confirm",
-  recovery: "/auth/update-password",
-  magiclink: "/auth/confirm",
-  invite: "/auth/accept-invitation",
-  email_change: "/auth/confirm",
-  reauthenticate: "/auth/reauthenticate",
-  "recovery-complete": "/auth/update-password/complete",
-  "invite-accept": "/auth/accept-invitation/complete",
+  signup: "/confirm",
+  recovery: "/update-password",
+  magiclink: "/confirm",
+  invite: "/accept-invitation",
+  email_change: "/confirm",
+  reauthenticate: "/reauthenticate",
+  "recovery-complete": "/update-password/success",
+  "invite-accept": "/accept-invitation",
 };
 
 function buildAuthUrl(

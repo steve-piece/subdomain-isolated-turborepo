@@ -25,7 +25,7 @@
 
 ### Step 2: Create Protected App Project
 
-1. Go to [vercel.com/new](https://vercel.com/new) and paste the GitHub repo URL from Step 1 (e.g. https://github.com/{YOUR_USERNAME}/subdomain-isolated-turborepo)
+1. Go to [vercel.com/new](https://vercel.com/new) and paste the GitHub repo URL created in Step 1
 2. Click Edit next to **Root Directory**, and set it to `apps/protected`
 3. Copy/paste the env vars below into the environment variables section
 ```
@@ -35,9 +35,11 @@ NEXT_PUBLIC_APP_NAME=''
 ```
 4. Click **Deploy** (app will show "Server Error" until Supabase is configured)
 
-### Step 3: Getting Started Guide
+### Step 3: Go To The Starter Guide
 
-**[Click Here →](./docs/GETTING_STARTED.md)**
+> ![IMPORTANT]
+>
+> **[Access the Getting Started Guide Here →](./docs/GETTING_STARTED.md)**
 
 ## Why This Template?
 

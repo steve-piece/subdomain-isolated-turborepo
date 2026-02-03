@@ -323,6 +323,20 @@ NEXT_PUBLIC_EMAIL_DOMAIN=marketingdomain.com
 NEXT_PUBLIC_SUPPORT_EMAIL=support@marketingdomain.com
 ```
 
+### 5. SMTP Settings
+
+By default Supabase Rate Limits emails sent to 2/hr. To avoid this, we need to enable custom SMTP settings with Resend as our provider (Rate Limit: 100 emails/day in free accounts).
+
+1. Open Resend's [SMTP Settings](https://resend.com/settings/smtp)
+   - We will be copying these values into Supabase
+   - Use the same API Key from your `.env.local` file as the passowrd or create a new API Key
+
+2. Go to the [Supabase Dashboard](https://supabase.com/dashboard)
+   - Navigate to **Authentication** -> **Email** -> **SMTP Settings**
+   - Toggle to Enable Custom SMTP
+   - Configure **Sender Details** using your `NEXT_PUBLIC_SENDER_EMAIL` and `NEXT_PUBLIC_APP_NAME` (Can Also add 'Support' or another word after your app name for the send name; this would appear in the users email inbox as '{Your App} Support')
+   - Copy/Paste values from Resend into the SMTP Provider Details in the Supabase settings
+
 ---
 
 ## Local Development
