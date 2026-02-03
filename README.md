@@ -35,12 +35,9 @@ NEXT_PUBLIC_APP_NAME=''
 ```
 4. Click **Deploy** (app will show "Server Error" until Supabase is configured)
 
-### Step 3: Complete Setup
+### Step 3: Getting Started Guide
 
-
->
-> **Continue with the [Getting Started Guide →](./docs/GETTING_STARTED.md)**
->
+**[Click Here →](./docs/GETTING_STARTED.md)**
 
 ## Why This Template?
 
