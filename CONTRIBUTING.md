@@ -51,11 +51,11 @@ Thank you for considering contributing to this multi-tenant SaaS template! This 
 # Fork the repository on GitHub first
 
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/repo-name.git
-cd repo-name
+git clone https://github.com/YOUR_USERNAME/subdomain-isolated-turborepo.git
+cd subdomain-isolated-turborepo
 
 # Add upstream remote
-git remote add upstream https://github.com/original-owner/repo-name.git
+git remote add upstream https://github.com/steve-piece/subdomain-isolated-turborepo.git
 
 # Install dependencies
 pnpm install
@@ -431,7 +431,7 @@ Before submitting a PR:
 
 Instead:
 
-1. Email security@yourdomain.com with details
+1. Open a private security advisory on GitHub with details
 2. Include reproduction steps
 3. Suggest a fix if possible
 4. Allow time for patch before public disclosure
@@ -456,7 +456,7 @@ Contributors will be:
 
 ## ❓ Questions?
 
-- **General Questions**: Open a [Discussion](https://github.com/your-repo/discussions)
+- **General Questions**: Open a [Discussion](https://github.com/steve-piece/subdomain-isolated-turborepo/discussions)
 - **Contribution Help**: Tag maintainers in your PR or issue
 - **Setup Issues**: See [Getting Started Troubleshooting](./docs/GETTING_STARTED.md#-troubleshooting)
 

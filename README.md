@@ -37,7 +37,7 @@ NEXT_PUBLIC_APP_NAME=''
 
 ### Step 3: Complete Setup
 
-> [!IMPORTANT]
+
 >
 > **Continue with the [Getting Started Guide →](./docs/GETTING_STARTED.md)**
 >
