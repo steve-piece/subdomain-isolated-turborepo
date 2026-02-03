@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/reauthenticate/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/reauthenticate/page.tsx
 import type { ReactElement } from "react";
 import { ReauthenticateForm } from "@/components/auth/reauthenticate-form";
 import { createClient } from "@workspace/supabase/server";
@@ -22,9 +22,9 @@ export default async function ReauthenticatePage({
   // Tight tenant gating (server-side) for this auth route
   const supabase = await createClient();
   const { data: claims, error } = await supabase.auth.getClaims();
-  if (error || !claims) redirect("/auth/login?reason=no_session");
+  if (error || !claims) redirect("/login?reason=no_session");
   if (claims.claims.subdomain !== subdomain)
-    redirect("/auth/login?error=unauthorized");
+    redirect("/login?error=unauthorized");
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">

@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/resend-verification/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/resend-verification/page.tsx
 /**
  * ✅ Server component that unwraps params and passes to client component
  * - Follows Next.js 15+ pattern for handling Promise params

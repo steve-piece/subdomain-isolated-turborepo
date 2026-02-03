@@ -67,7 +67,7 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps): Reac
               </div>
               <div className="text-center text-sm">
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="underline underline-offset-4"
                 >
                   ← Back to Login
@@ -114,7 +114,7 @@ export function ForgotPasswordForm({ subdomain }: ForgotPasswordFormProps): Reac
               <div className="mt-4 text-center text-sm">
                 Remember your password?{" "}
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="underline underline-offset-4"
                 >
                   Login

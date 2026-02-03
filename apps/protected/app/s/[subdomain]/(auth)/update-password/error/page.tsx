@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/update-password/error/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/update-password/error/page.tsx
 import Link from "next/link";
 import {
   Card,
@@ -48,13 +48,13 @@ export default async function UpdatePasswordErrorPage({
           </CardContent>
           <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
-              href={`/s/${subdomain}/auth/reset-password`}
+              href={`/s/${subdomain}/reset-password`}
               className="text-sm text-muted-foreground underline underline-offset-4"
             >
               Request new reset link
             </Link>
             <Button asChild>
-              <Link href={`/s/${subdomain}/auth/login`}>Back to login</Link>
+              <Link href={`/s/${subdomain}/login`}>Back to login</Link>
             </Button>
           </CardFooter>
         </Card>

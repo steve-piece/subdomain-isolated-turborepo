@@ -321,7 +321,7 @@ Run all schema files in the production database:
 03_functions.sql       → Functions (including JWT hook)
 04_views.sql           → Views
 05_rls_policies.sql    → RLS policies
-seed_data.sql          → Seed data (subscription tiers)
+08_seed_data.sql          → Seed data (subscription tiers)
 ```
 
 3. Verify all tables were created successfully
@@ -363,7 +363,6 @@ supabase link --project-ref your-production-project-ref
 
 # Deploy functions
 supabase functions deploy send-email
-supabase functions deploy send-custom-email
 ```
 
 ### Step 5: Set Edge Function Secrets

@@ -176,7 +176,7 @@ export async function approveInvitation(
     }
 
     // Send Supabase Auth invitation
-    const redirectTo = getRedirectUrl("/auth/accept-invitation", subdomain);
+    const redirectTo = getRedirectUrl("/accept-invitation", subdomain);
     const adminClient = createAdminClient();
 
     const { error: inviteError } =

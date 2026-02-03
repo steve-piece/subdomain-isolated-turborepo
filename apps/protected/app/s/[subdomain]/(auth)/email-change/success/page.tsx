@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/email-change/success/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/email-change/success/page.tsx
 import Link from "next/link";
 
 import {
@@ -55,7 +55,7 @@ export default async function EmailChangeSuccessPage({
   const stageCopyEntry = stageCopy[stageKey] ?? stageCopy.generic;
   const { title, description, nextSteps } = stageCopyEntry!;
 
-  const loginHref = "/auth/login?reason=email_change_success";
+  const loginHref = "/login?reason=email_change_success";
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
@@ -70,7 +70,7 @@ export default async function EmailChangeSuccessPage({
           </CardContent>
           <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
-              href="/auth/resend-verification?reason=email_change"
+              href="/resend-verification?reason=email_change"
               className="text-sm text-muted-foreground underline underline-offset-4"
             >
               Didn&apos;t get the email?

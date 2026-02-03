@@ -33,14 +33,14 @@ export default async function ProtectedLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect("/login");
   }
 
   // Use getClaims() - validates JWT locally (faster than getUser)
   const { data: claims } = await supabase.auth.getClaims();
 
   if (!claims || claims.claims.subdomain !== subdomain) {
-    redirect("/auth/login?error=unauthorized");
+    redirect("/login?error=unauthorized");
   }
 
   // ✅ FORCE LOGOUT CHECK: Verify user's session is still valid

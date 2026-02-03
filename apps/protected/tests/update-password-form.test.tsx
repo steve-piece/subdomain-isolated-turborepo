@@ -81,7 +81,7 @@ describe("UpdatePasswordForm", () => {
       expect(updateUser).toHaveBeenCalledWith({ password: "newpassword123" }),
     );
     expect(mockPush).toHaveBeenCalledWith(
-      "/auth/login?message=Password updated successfully! Please login with your new password.",
+      "/login?message=Password updated successfully! Please login with your new password.",
     );
   });
 

@@ -462,7 +462,7 @@ export function AcceptInvitationForm({
           type="button"
           className="w-full"
           variant="outline"
-          onClick={() => router.push("/auth/login")}
+          onClick={() => router.push("/login")}
         >
           Back to Login
         </Button>

@@ -1,4 +1,4 @@
-// apps/protected/middleware.ts
+// apps/protected/proxy.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { extractSubdomainFromHostname } from "@workspace/ui/lib/subdomains";
 import * as Sentry from "@sentry/nextjs";

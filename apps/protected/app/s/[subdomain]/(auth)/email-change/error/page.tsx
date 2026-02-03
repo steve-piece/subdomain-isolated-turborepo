@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/email-change/error/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/email-change/error/page.tsx
 import Link from "next/link";
 
 import {
@@ -77,13 +77,13 @@ export default async function EmailChangeErrorPage({
           </CardContent>
           <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
-              href={`/s/${subdomain}/auth/resend-verification?reason=email_change`}
+              href={`/s/${subdomain}/resend-verification?reason=email_change`}
               className="text-sm text-muted-foreground underline underline-offset-4"
             >
               Need another confirmation email?
             </Link>
             <Button asChild>
-              <Link href={`/s/${subdomain}/auth/login`}>Back to login</Link>
+              <Link href={`/s/${subdomain}/login`}>Back to login</Link>
             </Button>
           </CardFooter>
         </Card>

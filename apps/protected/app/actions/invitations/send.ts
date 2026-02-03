@@ -162,7 +162,7 @@ export async function inviteUserToOrganization(
     const assignedRole = role || teamSettings.auto_assign_default_role;
 
     // Send invitation email using Supabase Auth (requires admin client)
-    const redirectTo = getRedirectUrl("/auth/accept-invitation", subdomain);
+    const redirectTo = getRedirectUrl("/accept-invitation", subdomain);
 
     // Use admin client for inviting users (requires service role key)
     const adminClient = createAdminClient();

@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/update-password/success/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/update-password/success/page.tsx
 import Link from "next/link";
 import {
   Card,
@@ -37,7 +37,7 @@ export default async function UpdatePasswordSuccessPage({
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full">
-              <Link href={`/s/${subdomain}/auth/login`}>Sign in</Link>
+              <Link href={`/s/${subdomain}/login`}>Sign in</Link>
             </Button>
           </CardFooter>
         </Card>

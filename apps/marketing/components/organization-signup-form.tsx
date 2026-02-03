@@ -276,7 +276,7 @@ export function OrganizationSignUpForm({
       const tenantBaseUrl = isDev
         ? `http://${normalizedSubdomain}.localhost:3003`
         : `https://${normalizedSubdomain}.${appDomain}`;
-      const authRedirectUrl = `${tenantBaseUrl}/auth/confirm`;
+      const authRedirectUrl = `${tenantBaseUrl}/confirm`;
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,

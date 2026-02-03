@@ -146,7 +146,7 @@ export function ReauthenticateForm({
 
             <div className="mt-4 text-center text-sm">
               <Link
-                href="/auth/login"
+                href="/login"
                 className="text-muted-foreground underline underline-offset-4"
               >
                 Cancel and return to login

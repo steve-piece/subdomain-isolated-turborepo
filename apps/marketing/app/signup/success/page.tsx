@@ -43,7 +43,7 @@ export default async function Page({ searchParams }: PageProps) {
     subdomain && email && isValidSubdomain(subdomain)
       ? buildSubdomainUrl(
           subdomain,
-          `/auth/resend-verification?email=${encodeURIComponent(email)}&subdomain=${encodeURIComponent(subdomain)}`,
+          `/resend-verification?email=${encodeURIComponent(email)}&subdomain=${encodeURIComponent(subdomain)}`,
           isDevelopment,
           appDomain,
         )

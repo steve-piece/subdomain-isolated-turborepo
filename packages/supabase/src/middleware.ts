@@ -25,7 +25,7 @@ export async function updateSession(
   request: NextRequest,
   options: UpdateSessionOptions = {},
 ) {
-  const { requireAuth = false, authExcludedPaths = ["/login", "/auth"] } =
+  const { requireAuth = false, authExcludedPaths = ["/login", "/confirm", "/forgot-password", "/reset-password", "/update-password", "/resend-verification", "/accept-invitation", "/reauthenticate", "/error", "/email-change"] } =
     options;
 
   let supabaseResponse = NextResponse.next({
@@ -73,7 +73,7 @@ export async function updateSession(
     !authExcludedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 

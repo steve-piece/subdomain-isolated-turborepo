@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/accept-invitation/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/accept-invitation/page.tsx
 import { unstable_noStore as noStore } from "next/cache";
 import { AcceptInvitationForm } from "@/components/auth/accept-invitation-form";
 import {
@@ -52,7 +52,7 @@ export default async function AcceptInvitationPage({
                 </div>
                 <div className="text-center text-sm">
                   <Link
-                    href="/auth/login"
+                    href="/login"
                     className="underline underline-offset-4"
                   >
                     ← Back to Login
@@ -89,7 +89,7 @@ export default async function AcceptInvitationPage({
                 </div>
                 <div className="text-center text-sm">
                   <Link
-                    href="/auth/login"
+                    href="/login"
                     className="underline underline-offset-4"
                   >
                     ← Back to Login

@@ -47,7 +47,7 @@ export async function requestPasswordReset(
     }
 
     // Redirect to the current tenant's update-password route
-    const redirectTo = getRedirectUrl("/auth/update-password", subdomain);
+    const redirectTo = getRedirectUrl("/update-password", subdomain);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,

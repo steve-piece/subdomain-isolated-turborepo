@@ -137,7 +137,7 @@ export async function confirmEmailAndBootstrap(
           message:
             "Verification link invalid or expired. Please request a new one.",
           redirectTo:
-            "/auth/resend-verification?error=expired&message=Verification link has expired. Please request a new one.",
+            "/resend-verification?error=expired&message=Verification link has expired. Please request a new one.",
         };
       }
       return {
@@ -230,7 +230,7 @@ export async function confirmEmailAndBootstrap(
       success: true,
       message: "Email verified successfully! Please login with your details.",
       redirectTo:
-        "/auth/login?verified=true&message=Email verified successfully! Please login with your details.",
+        "/login?verified=true&message=Email verified successfully! Please login with your details.",
     };
   } catch (err) {
     Sentry.withScope((scope) => {
@@ -245,7 +245,7 @@ export async function confirmEmailAndBootstrap(
       success: false,
       message:
         err instanceof Error ? err.message : "An unexpected error occurred",
-      redirectTo: "/auth/error",
+      redirectTo: "/error",
     };
   }
 }
@@ -307,8 +307,8 @@ export async function handleAuthConfirmation(
         message:
           "Verification link invalid or expired. Please request a new one.",
         redirectTo: isEmailChangeFlow
-          ? "/auth/email-change/error?reason=expired"
-          : "/auth/resend-verification?error=expired&message=Verification link has expired. Please request a new one.",
+          ? "/email-change/error?reason=expired"
+          : "/resend-verification?error=expired&message=Verification link has expired. Please request a new one.",
       };
     }
 
@@ -322,16 +322,16 @@ export async function handleAuthConfirmation(
   }
 
   const defaultRedirectMap: Record<string, string> = {
-    email_change: "/auth/email-change/success?stage=generic",
-    email_change_current: "/auth/email-change/success?stage=current",
-    email_change_new: "/auth/email-change/success?stage=new",
+    email_change: "/email-change/success?stage=generic",
+    email_change_current: "/email-change/success?stage=current",
+    email_change_new: "/email-change/success?stage=new",
     magiclink: "/dashboard",
-    invite: "/auth/login?invited=true",
-    recovery: "/auth/update-password",
+    invite: "/login?invited=true",
+    recovery: "/update-password",
     reauthenticate: "/dashboard?reauthenticated=true",
   };
 
-  const defaultRedirect = defaultRedirectMap[typeValue] ?? "/auth/login";
+  const defaultRedirect = defaultRedirectMap[typeValue] ?? "/login";
 
   return {
     success: true,

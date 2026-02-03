@@ -2,6 +2,17 @@
 
 <p align="left"><strong>Ship Faster. Build Smarter.</strong> A production-ready multi-tenant B2B SaaS starter that handles the hard parts—domain isolation, tenant routing, RBAC, and billing—so you can focus on what makes your product unique.</br> Live demo available at <a href="https://marketing-app.com">marketing-app.com</a>.</p>
 
+## Prerequisites
+
+| Requirement | Description |
+|:------------|:------------|
+| **Vercel** | [Sign up](https://vercel.com) (free tier) — for deployment |
+| **Supabase** | [Sign up](https://supabase.com) (free tier) — for auth, database, edge functions |
+| **Resend** | [Sign up](https://resend.com) (free tier) — for transactional emails |
+| **Two Domains** | Marketing domain + protected domain with wildcard support |
+| Node.js 20+ | [Download](https://nodejs.org/) — for local development |
+| pnpm | `npm install -g pnpm` — for local development |
+
 ## Quick Start
 
 ### Step 1: Deploy to Vercel
@@ -14,52 +25,22 @@
 
 ### Step 2: Create Protected App Project
 
-1. In [Vercel Dashboard](https://vercel.com/new), click **Add New** → **Project**
-2. Import the **same cloned repo** from Step 1
-3. Set **Root Directory** to `apps/protected`
-4. Add the same app identity env vars as the Marketing App
-5. Click **Deploy** (app will show "Server Error" until Supabase is configured)
-
-### Step 3: Set Up Supabase
-
-1. **Create a Supabase project** at [supabase.com](https://supabase.com)
-2. **Run the migrations** in order from `supabase/schemas/` (see [Getting Started Guide](./docs/GETTING_STARTED.md#database-setup))
-3. **Copy your credentials** from Settings → API
-
-### Step 4: Add Environment Variables
-
-Add the remaining env vars to **both** Vercel projects (Settings → Environment Variables):
-
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=eyJ...
-SUPABASE_SECRET_KEY=eyJ...
-
-# Email (Resend)
-RESEND_API_KEY=re_...
-NEXT_PUBLIC_SENDER_EMAIL=noreply@yourdomain.com
-NEXT_PUBLIC_EMAIL_DOMAIN=yourdomain.com
-
-# Environment
-NEXT_PUBLIC_APP_ENV=production
+1. Go to [vercel.com/new](https://vercel.com/new) and paste the GitHub repo URL from Step 1 (e.g. https://github.com/{YOUR_USERNAME}/subdomain-isolated-turborepo)
+2. Click Edit next to **Root Directory**, and set it to `apps/protected`
+3. Copy/paste the env vars below into the environment variables section
 ```
+NEXT_PUBLIC_MARKETING_DOMAIN=''
+NEXT_PUBLIC_APP_DOMAIN=''
+NEXT_PUBLIC_APP_NAME=''
+```
+4. Click **Deploy** (app will show "Server Error" until Supabase is configured)
 
-Then **redeploy both apps** from the Vercel dashboard.
+### Step 3: Complete Setup
 
-### Step 5: Configure Custom Domain (Required for Protected App)
-
-> **⚠️ Critical**: The protected app **requires a custom domain with wildcard DNS**. Vercel's auto-generated URLs won't work for tenant subdomains.
-
-1. In Vercel, go to Protected App → **Settings** → **Domains**
-2. Add your domain: `protecteddomain.com`
-3. Add wildcard: `*.protecteddomain.com`
-4. **Easiest setup**: Point your domain's nameservers to Vercel at your registrar:
-   - `ns1.vercel-dns.com`
-   - `ns2.vercel-dns.com`
-
-See [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) for complete setup including Stripe webhooks.
-
+> [!IMPORTANT]
+>
+> **Continue with the [Getting Started Guide →](./docs/GETTING_STARTED.md)**
+>
 
 ## Why This Template?
 
@@ -190,35 +171,6 @@ tenant.yourdomain.com/dashboard  →  /s/[subdomain]/dashboard (internal)
 │   └── functions/           # Edge functions (email hooks)
 └── docs/                    # Setup, architecture, DB, deployment guides
 ```
-
-## Quick Start
-
-### Prerequisites
-
-| Requirement | Description |
-|:------------|:------------|
-| Node.js 20+ | [Download](https://nodejs.org/) |
-| pnpm | `npm install -g pnpm` |
-| Supabase | [Sign up](https://supabase.com) (free tier) |
-| Resend | [Sign up](https://resend.com) (free tier) |
-
-### Get Running
-
-```bash
-pnpm install              # Install dependencies
-cp .env.example .env.local # Copy environment template
-pnpm dev                  # Start dev servers
-```
-
-### Local URLs
-
-| Application | URL |
-|:------------|:----|
-| Marketing site | `http://localhost:3002` |
-| Protected app | `http://localhost:3003` |
-| Tenant subdomain | `http://[company].localhost:3003` |
-
-> 💡 Check the [Getting Started guide](./docs/GETTING_STARTED.md) for complete setup instructions (~15-30 min).
 
 ## Documentation
 

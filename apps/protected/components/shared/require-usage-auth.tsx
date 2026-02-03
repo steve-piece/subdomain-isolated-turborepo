@@ -45,9 +45,9 @@ export default async function RequireUsageAuth({
 
   // Read JWT claims locally
   const { data: claims, error } = await supabase.auth.getClaims();
-  if (error || !claims) redirect("/auth/login");
+  if (error || !claims) redirect("/login");
   if (claims.claims.subdomain !== subdomain)
-    redirect("/auth/login?error=unauthorized");
+    redirect("/login?error=unauthorized");
 
   const role = (claims.claims.user_role ?? "member") as AppRole;
   if (allowedRoles && !allowedRoles.includes(role)) {

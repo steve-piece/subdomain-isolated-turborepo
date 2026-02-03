@@ -66,7 +66,7 @@ export function ResendVerificationForm({
 
         // Redirect to login after a delay
         setTimeout(() => {
-          router.push("/auth/login");
+          router.push("/login");
         }, 3000);
       } else {
         setError(result.message);
@@ -139,7 +139,7 @@ export function ResendVerificationForm({
               <div className="mt-4 text-center text-sm">
                 Already verified?{" "}
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="underline underline-offset-4"
                 >
                   Sign in

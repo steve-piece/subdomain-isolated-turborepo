@@ -45,7 +45,7 @@ export async function sendMagicLink(
 
   // Generate redirect URL if not provided
   const finalRedirectTo =
-    redirectTo || getRedirectUrl("/auth/confirm", subdomain);
+    redirectTo || getRedirectUrl("/confirm", subdomain);
 
   return Sentry.startSpan(
     {

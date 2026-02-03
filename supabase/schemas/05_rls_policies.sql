@@ -150,7 +150,7 @@ CREATE POLICY "delete_projects" ON public.projects FOR DELETE TO authenticated U
 DROP POLICY IF EXISTS "insert_projects" ON public.projects;
 CREATE POLICY "insert_projects" ON public.projects FOR INSERT TO authenticated WITH CHECK (((org_id IN ( SELECT up.org_id
    FROM user_profiles up
-  WHERE (up.user_id = ( SELECT auth.uid() AS uid))))) AND (owner_id = ( SELECT auth.uid() AS uid))));
+  WHERE (up.user_id = ( SELECT auth.uid() AS uid)))) AND (owner_id = ( SELECT auth.uid() AS uid))));
 
 DROP POLICY IF EXISTS "select_projects" ON public.projects;
 CREATE POLICY "select_projects" ON public.projects FOR SELECT TO authenticated USING ((org_id IN ( SELECT up.org_id

@@ -158,7 +158,7 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps): ReactElement {
                 Please request a new magic link from the login page.
               </p>
             </div>
-            <Link href="/auth/login">
+            <Link href="/login">
               <Button className="w-full">Back to Login</Button>
             </Link>
           </div>
@@ -183,7 +183,7 @@ export function MagicLinkVerify({ type }: MagicLinkVerifyProps): ReactElement {
               {errorMessage || "An unexpected error occurred"}
             </p>
           </div>
-          <Link href="/auth/login">
+          <Link href="/login">
             <Button className="w-full">Back to Login</Button>
           </Link>
         </div>

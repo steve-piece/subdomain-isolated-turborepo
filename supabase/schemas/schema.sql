@@ -9,7 +9,7 @@
 \i 02_tables.sql
 \i 03_functions.sql
 \i 04_views.sql
-\i storage_buckets.sql
+\i 07_storage_buckets.sql
 \i 05_rls_policies.sql
 \i 06_cron_jobs.sql
-\i seed_data.sql
+\i 08_seed_data.sql

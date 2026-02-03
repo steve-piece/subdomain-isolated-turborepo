@@ -202,9 +202,9 @@ Add metadata to products for additional context:
 
 ## Environment Configuration
 
-### Step 1: Add to .env.local
+### Step 1: Add to Protected App .env.local
 
-Add these variables to your `.env.local` file:
+Add these variables to `apps/protected/.env.local` (Stripe is only used in the protected app):
 
 ```bash
 # Stripe API Keys (Test Mode)
@@ -312,7 +312,7 @@ stripe listen --forward-to localhost:3003/api/webhooks/stripe
 > Ready! Your webhook signing secret is whsec_... (^C to quit)
 ```
 
-Copy the webhook signing secret and add to `.env.local`:
+Copy the webhook signing secret and add to `apps/protected/.env.local`:
 
 ```bash
 STRIPE_WEBHOOK_SECRET=whsec_...

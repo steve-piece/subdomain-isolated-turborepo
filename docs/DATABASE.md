@@ -1394,7 +1394,7 @@ When setting up the database, run SQL files in this exact order:
 4. `03_functions.sql` - Database functions
 5. `04_views.sql` - Database views
 6. `05_rls_policies.sql` - Row Level Security policies
-7. `seed_data.sql` - Initial seed data (optional)
+7. `08_seed_data.sql` - Initial seed data (optional)
 
 ---
 

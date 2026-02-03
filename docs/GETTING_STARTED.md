@@ -4,52 +4,19 @@ Complete setup guide for the Subdomain-Isolated Turborepo multi-tenant SaaS plat
 
 **Estimated Time**: 15-30 minutes
 
+> **First time here?** Complete the [Quick Start in the README](../README.md#quick-start) to deploy both Vercel projects before continuing.
+
 ---
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
 - [Initial Setup](#initial-setup)
-- [Environment Configuration](#environment-configuration)
 - [Database Setup](#database-setup)
+- [Domain Setup](#domain-setup)
 - [Email Configuration](#email-configuration)
-- [Supabase Auth Hooks](#supabase-auth-hooks)
 - [Local Development](#local-development)
 - [First User Setup](#first-user-setup)
-- [Troubleshooting](#troubleshooting)
 - [Next Steps](#next-steps)
-
----
-
-## Prerequisites
-
-Before you begin, ensure you have the following:
-
-### Required Software
-
-- **Node.js 20+** - [Download](https://nodejs.org/)
-- **pnpm** - Fast, disk-space efficient package manager
-  ```bash
-  npm install -g pnpm
-  ```
-
-### Required Accounts
-
-- **Supabase Account** - [Sign up](https://supabase.com) (free tier available)
-  - For authentication, database, and edge functions
-- **Resend Account** - [Sign up](https://resend.com) (free tier: 100 emails/day)
-  - For transactional emails
-- **Stripe Account** - [Sign up](https://stripe.com) (optional for billing)
-  - Test mode for development, production mode for live billing
-
-### Optional (for production)
-
-- **Vercel Account** - [Sign up](https://vercel.com) (free tier available)
-  - For deployment (see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md))
-- **Two Domain Names**
-  - Marketing domain (e.g., `marketingdomain.com`)
-  - Protected/app domain (e.g., `protecteddomain.com`)
-  - For local development, you can use `localhost`
 
 ---
 
@@ -70,34 +37,20 @@ pnpm install
 
 This will install all dependencies for both apps and packages.
 
-### 3. Replace Placeholder Values
-
-Search and replace these placeholders across your codebase (match case, whole word):
-
-| Placeholder | Replace With | Description |
-|:------------|:-------------|:------------|
-| `Your App` | Your actual app name | Display name shown across all apps |
-| `marketingdomain.com` | Your marketing domain | Public website domain |
-| `protecteddomain.com` | Your protected domain | Multi-tenant app domain |
-| `emaildomain.com` | Your email domain | Domain for sending emails |
-
-> 💡 **Tip**: In VS Code, use `Cmd+Shift+H` (Mac) or `Ctrl+Shift+H` (Windows) for Find & Replace.
-
----
-
-## Environment Configuration
-
-### 1. Copy Environment Template
+### 3. Create Environment Files
 
 ```bash
-cp .env.example .env.local
+cp apps/marketing/.env.example apps/marketing/.env.local
+cp apps/protected/.env.example apps/protected/.env.local
 ```
 
-### 2. Configure Required Variables
+### 4. Configure Environment Variables
 
-Edit `.env.local` and set the following variables:
+> 💡 **Tip**: To make setup easier, configure all variables in `apps/marketing/.env.local` first, then copy/paste them into `apps/protected/.env.local`. Both apps use the same environment variables.
 
 #### App Identity
+
+Then set these environment variables:
 
 ```bash
 # Marketing domain (public website)
@@ -110,42 +63,49 @@ NEXT_PUBLIC_APP_DOMAIN='localhost:3003'  # or 'protecteddomain.app' for producti
 NEXT_PUBLIC_APP_NAME='Your App'
 ```
 
+Once you've set the env values, search and replace these placeholders across your codebase (match case, whole word):
+
+| Placeholder | Replace With | Description |
+|:------------|:-------------|:------------|
+| `Your App` | Your actual app name | Display name shown across all apps |
+| `marketingdomain.com` | Your marketing domain | Public website domain |
+| `protecteddomain.com` | Your protected domain | Multi-tenant app domain |
+
 #### Supabase Configuration
 
 Get these from your Supabase project dashboard:
 
 1. Go to [Supabase Dashboard](https://app.supabase.com)
 2. Create a new project or select existing project
-3. Navigate to **Settings** → **API**
+3. Open the project, and click 'Connect' in the top nav bar and go to the "App Frameworks" tab.
+4. Copy and Paste the contents into your .env.local file.
+5. Then navigate to **Project Settings** → **API Keys**, and copy the Secret API Key (SUPABASE_SECRET_KEY) towards the bottom. 
 
 ```bash
 # Supabase project URL
 NEXT_PUBLIC_SUPABASE_URL='https://your-project.supabase.co'
 
 # Supabase anon/publishable key (public)
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY='sb_publishable_nbmm...'
 
 # Supabase service role key (private - never expose to client)
-SUPABASE_SECRET_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+SUPABASE_SECRET_KEY='sb_secret_zGk...'
 ```
 
 #### Resend Configuration
 
-Get your API key from [Resend Dashboard](https://resend.com/api-keys):
+1. Go to the [API Keys](https://resend.com/api-keys) page
+2. Create a new API Key and add it to your `.env.local`
+3. Decide on a domain for emails to be sent from. For best practices, make it a subdomain like 'mail' of your Marketing App domain. (e.g. `mail.marketingdomain.com`). **DO NOT** choose a subdomain of the protected domain as these are reserved for your tenants. 
+4. Once decided, update the email domain and addresses to match your configuration
+5. **Find & Replace** all `emaildomain.com` instances with the email domain you choose.
 
 ```bash
 # Resend API key
 RESEND_API_KEY='re_...'
 
-# Email configuration
-NEXT_PUBLIC_SENDER_EMAIL='noreply@marketingdomain.com'
-NEXT_PUBLIC_EMAIL_DOMAIN='marketingdomain.com'
-NEXT_PUBLIC_SUPPORT_EMAIL='support@marketingdomain.com'
-
-# Email toggles (optional)
-RESEND_ENABLE_INVITATION_EMAILS='true'
-RESEND_ENABLE_WELCOME_EMAILS='true'
-RESEND_VERIFY_EMAILS='true'
+# Email Domain Config
+NEXT_PUBLIC_EMAIL_DOMAIN='mail.marketingdomain.com'
 ```
 
 #### Stripe Configuration (Optional)
@@ -171,20 +131,15 @@ STRIPE_ENTERPRISE_YEARLY_PRICE_ID='price_...'
 
 See [STRIPE.md](./STRIPE.md) for detailed Stripe setup instructions.
 
+> **REMEMBER TO COPY THE CONTENTS OF YOUR `.env.local` FILE, AND PASTE TO THE OTHER APP'S `.env.local` FILE**
+
 ---
 
 ## Database Setup
 
-### 1. Create Supabase Project
+### 1. Run Database Migrations
 
-1. Go to [Supabase Dashboard](https://app.supabase.com)
-2. Click **New Project**
-3. Choose organization and set project details
-4. Wait for project to be provisioned (~2 minutes)
-
-### 2. Run Database Migrations
-
-The schema files are located in `supabase/schemas/` directory. Run them in this exact order:
+The schema files are located in the [Supabase Schemas](../supabase/schemas/README.md) directory. Run them in this exact order:
 
 #### Option A: Using Supabase SQL Editor (Recommended)
 
@@ -193,15 +148,18 @@ The schema files are located in `supabase/schemas/` directory. Run them in this 
 3. Copy and paste the content from each file
 4. Run queries in this order:
 
-```
-1. 00_extensions.sql      # PostgreSQL extensions
-2. 01_enums.sql           # Custom types and enums
-3. 02_tables.sql          # Core tables
-4. 03_functions.sql       # Database functions (including JWT claims hook)
-5. 04_views.sql           # Database views
-6. 05_rls_policies.sql    # Row Level Security policies
-7. seed_data.sql          # Initial seed data (optional for development)
-```
+Run these files in the exact order listed:
+
+1. **00_extensions.sql** - PostgreSQL extensions (pg_cron, index_advisor, etc.)
+2. **01_enums.sql** - Custom types and enums (invitation_status, user_role, etc.)
+3. **02_tables.sql** - Core tables (organizations, tenants, users, subscriptions, etc.)
+4. **03_functions.sql** - Database functions including JWT claims hook and utilities
+5. **04_views.sql** - Database views for common queries
+6. **05_rls_policies.sql** - Row Level Security policies for multi-tenant isolation
+7. **06_cron_jobs.sql** - Scheduled jobs (renewal reminders, cleanup tasks)
+8. **07_storage_buckets.sql** - S3 storage bucket configurations
+9. **08_seed_data.sql** - Initial seed data (subscription tiers, etc.) - optional for development
+
 
 #### Option B: Using Supabase CLI
 
@@ -218,7 +176,7 @@ supabase link --project-ref your-project-ref
 supabase db push
 ```
 
-### 3. Verify Schema
+### 2. Verify Schema
 
 Check that tables were created successfully:
 
@@ -233,7 +191,7 @@ Check that tables were created successfully:
    - `projects`
    - Plus many others (see [DATABASE.md](./DATABASE.md) for complete list)
 
-### 4. Verify Seed Data
+### 3. Verify Seed Data
 
 Check that subscription tiers were seeded:
 
@@ -245,19 +203,58 @@ You should see four tiers: Free, Pro, Business, Enterprise.
 
 ---
 
-## Email Configuration
+## Domain Setup
 
-### 1. Verify Domain in Resend
+You'll need two separate domains for the two applications.
+
+### 1. Add Protected Domain to Vercel
+
+1. Go to [vercel.com](https://vercel.com) and navigate to **Domains**
+2. Click **Add existing domain** and enter your protected domain (e.g., `protecteddomain.com`)
+3. On the DNS records page, copy the Vercel nameservers
+4. Go to your domain registrar and change the nameservers to the Vercel nameservers
+5. Back in Vercel, add a CNAME record with:
+   - **Name**: `*`
+   - **Value**: `protecteddomain.com` (your domain name)
+
+### 2. Add Marketing Domain to Vercel
+
+1. Go back to the Vercel **Domains** page
+2. Click **Add existing domain** and enter your marketing domain (e.g., `marketingdomain.com`)
+3. Copy the Vercel nameservers and update them at your domain registrar
+
+### 3. Verify Domain in Resend
 
 1. Go to [Resend Dashboard](https://resend.com/domains)
 2. Click **Add Domain**
-3. Enter your domain (e.g., `marketingdomain.com`)
-4. Add the DNS records provided by Resend
-5. Wait for verification (usually a few minutes)
+3. Enter your email domain (e.g., `emaildomain.com`)
+4. Copy the DNS records provided by Resend
+5. In Vercel, go to your marketing domain's DNS configuration and add the Resend DNS records
+6. Wait for Resend to verify the records (usually a few minutes)
 
-For local development, you can skip domain verification and use the default `onboarding@resend.dev` sender.
+> **Optional**: At the bottom of the DNS records provided in Resend, you have the option to enable receiving emails from users, which will reveal one more MX record to add if toggled on.
 
-### 2. Deploy Edge Functions
+
+### 4. Connect Domains to Projects
+
+**Protected App Project**:
+1. Navigate to your protected app project in Vercel
+2. Go to **Settings** → **Domains**
+3. Click **Add existing** and enter your protected domain (e.g., `protecteddomain.com`)
+4. **Important**: Uncheck the "Redirect to www" setting
+5. Click **Add existing** again and enter `*.protecteddomain.com`
+6. **Important**: Uncheck the "Redirect to www" setting again
+
+**Marketing App Project**:
+1. Navigate to your marketing app project in Vercel
+2. Go to **Settings** → **Domains**
+3. Click **Add existing** and enter your marketing domain (e.g., `marketingdomain.com`)
+
+---
+
+## Email Configuration
+
+### 1. Deploy Edge Functions
 
 The platform uses Supabase Edge Functions for sending emails. Deploy the `send-email` function:
 
@@ -265,30 +262,55 @@ The platform uses Supabase Edge Functions for sending emails. Deploy the `send-e
 
 ```bash
 # Login to Supabase (first time only)
-supabase login
+npx supabase login
 
 # Link your project (first time only)
-supabase link --project-ref your-project-ref
+# Find your project ref in: Supabase Dashboard → Project Settings → General → Reference ID
+npx supabase link --project-ref abcdef...
 
 # Deploy the send-email function
-supabase functions deploy send-email
-
-# Deploy the send-custom-email function
-supabase functions deploy send-custom-email
+npx supabase functions deploy send-email
 ```
 
-### 3. Set Edge Function Secrets
+### 2. Configure URL Settings
 
-Edge functions need access to environment variables. Set them in Supabase Dashboard:
+1. Navigate to [Supabase Dashboard](https://app.supabase.com) and go to **Authentication** → **URL Configuration**
+
+2. Set the **Site UR TO**: `https://marketingdomain.com`
+
+3. Add **Redirect URLs** (one per line):
+
+```
+http://localhost:3002/**
+http://localhost:3003/**
+http://*.localhost:3003/**
+https://marketingdomain.com/**
+https://protecteddomain.com/**
+https://*.protecteddomain.com/**
+```
+
+### 3. Enable Auth Hooks
+
+1. Navigate to **Authentication** → **Auth Hooks**
+
+2. Click **Add hook** and select **Customize Access Token (JWT) Claims hook**
+   - In the **Postgres Function** dropdown, select `custom_claims_hook`
+   - Click **Create hook**
+
+3. Click **Add hook** again and select **Send Email hook**
+   - Change **Hook type** to `HTTPS`
+   - Set the **URL** to: `https://[YOUR_PROJECT_REF].supabase.co/functions/v1/send-email`
+   - Click **Generate secret** and copy the generated secret
+   - Click **Create hook**
+
+### 4. Set Edge Function Secrets
 
 1. Go to **Edge Functions** → **Settings** → **Secrets**
 2. Add the following secrets:
 
 ```bash
+SEND_EMAIL_HOOK_SECRET='{paste the secret copied from the Send Email auth hook}'
 RESEND_API_KEY=re_...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SEND_EMAIL_HOOK_SECRET=your-random-secret-string
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_APP_DOMAIN=localhost:3003  # or your production domain
 NEXT_PUBLIC_MARKETING_DOMAIN=localhost:3002  # or your production domain
 NEXT_PUBLIC_APP_NAME='Your App'
@@ -296,41 +318,6 @@ NEXT_PUBLIC_SENDER_EMAIL=noreply@marketingdomain.com
 NEXT_PUBLIC_EMAIL_DOMAIN=marketingdomain.com
 NEXT_PUBLIC_SUPPORT_EMAIL=support@marketingdomain.com
 ```
-
-**Generate a secure webhook secret**:
-
-```bash
-openssl rand -hex 32
-```
-
----
-
-## Supabase Auth Hooks
-
-The platform uses a custom JWT claims hook to add organization and role information to user tokens.
-
-### 1. Enable Custom Access Token Hook
-
-1. Go to **Authentication** → **Hooks** in Supabase Dashboard
-2. Select **Custom Access Token Hook**
-3. Enable the hook
-4. Set the function to: `custom_claims_hook`
-
-This hook is defined in `supabase/schemas/03_functions.sql` and adds the following claims to JWT tokens:
-
-- `user_role`: User's role in the organization
-- `subdomain`: Organization's subdomain
-- `org_id`: Organization UUID
-- `company_name`: Organization name
-- `capabilities`: Array of user capabilities
-- `organization_logo_url`: Organization logo URL
-
-### 2. Configure JWT Expiry (Optional)
-
-By default, JWT tokens expire after 1 hour. To adjust:
-
-1. Go to **Authentication** → **Settings** → **JWT Settings**
-2. Set **JWT Expiry** (recommended: 3600 seconds = 1 hour)
 
 ---
 
@@ -362,9 +349,16 @@ Navigate to: http://localhost:3003
 This redirects to the marketing site (expected behavior).
 
 #### Protected App (With Subdomain)
-Navigate to: http://[company].localhost:3003
 
-Replace `[company]` with any subdomain. Before signup, this will redirect to the marketing site.
+To access the protected app, you first need to create an organization:
+
+1. Go to http://localhost:3002/signup
+2. Create a test organization using your actual email address
+3. Check your email for a confirmation link
+4. Click the confirmation link to verify your account
+5. You'll be redirected to `{your-subdomain}.localhost:3003`
+
+> **Note**: Accessing a subdomain directly (e.g., `http://acme.localhost:3003`) before signup will redirect to the marketing site.
 
 ### 3. Testing Subdomains Locally
 
@@ -414,7 +408,7 @@ After signup, the system will:
 - Check spam folder
 - Verify Resend API key is set
 - Check Edge Function logs in Supabase Dashboard
-- See [Troubleshooting](#troubleshooting) section
+- See [Troubleshooting](./TROUBLESHOOTING.md)
 
 ### 3. Verify Email and Bootstrap Organization
 
@@ -440,119 +434,9 @@ As the organization owner, you have full access to:
 
 ---
 
-## Troubleshooting
-
-### Common Issues and Solutions
-
-#### 1. Subdomain Not Found
-
-**Symptom**: Accessing `http://[company].localhost:3003` redirects to marketing site
-
-**Solutions**:
-- Verify the organization was created: Check `organizations` table in Supabase
-- Check if organization is active: `is_active` should be `true`
-- Verify subdomain exists in `tenants` table
-- Check browser console for errors
-
-#### 2. Email Not Sending
-
-**Symptom**: No verification email received
-
-**Solutions**:
-- **Check Resend API key**: Verify it's set in `.env.local` and Edge Function secrets
-- **Check Edge Function logs**: Go to Supabase Dashboard → Edge Functions → Logs
-- **Verify domain**: Ensure domain is verified in Resend (or use `onboarding@resend.dev` for testing)
-- **Check spam folder**: Email might be filtered
-- **Test Edge Function**: Use the Invoke button in Supabase Dashboard
-
-**Manual Email Verification** (workaround):
-
-```sql
--- In Supabase SQL Editor
-UPDATE auth.users 
-SET email_confirmed_at = NOW() 
-WHERE email = 'your@email.com';
-
--- Bootstrap the organization manually
-SELECT bootstrap_organization(
-  (SELECT id FROM auth.users WHERE email = 'your@email.com'),
-  'your-subdomain'
-);
-```
-
-#### 3. Authentication Errors
-
-**Symptom**: "Invalid credentials" or session errors
-
-**Solutions**:
-- **Clear browser cookies**: Stale cookies can cause issues
-- **Check Supabase URL**: Verify `NEXT_PUBLIC_SUPABASE_URL` is correct
-- **Verify JWT hook**: Ensure custom claims hook is enabled
-- **Check user exists**: Query `auth.users` table in Supabase
-
-#### 4. Middleware/Routing Issues
-
-**Symptom**: Pages not loading, 404 errors, or incorrect redirects
-
-**Solutions**:
-- **Restart dev server**: Stop (`Ctrl+C`) and restart (`pnpm dev`)
-- **Clear `.next` cache**: Delete `.next` folders and rebuild
-  ```bash
-  rm -rf apps/marketing/.next apps/protected/.next
-  pnpm dev
-  ```
-- **Check middleware**: Review `apps/protected/proxy.ts` for errors
-
-#### 5. Database Migration Errors
-
-**Symptom**: SQL errors when running migrations
-
-**Solutions**:
-- **Check order**: Migrations must run in order (00 → 05)
-- **Check dependencies**: Some tables depend on others
-- **Reset database**: In Supabase Dashboard → Database → Reset database (⚠️ loses all data)
-- **Check syntax**: Ensure no syntax errors in SQL files
-
-#### 6. RLS Policy Errors
-
-**Symptom**: "Row level security policy violation" errors
-
-**Solutions**:
-- **Check user session**: Ensure user is authenticated
-- **Verify claims**: User should have `org_id` and `subdomain` in JWT claims
-- **Check RLS policies**: Review policies in `05_rls_policies.sql`
-- **Use service role**: For admin operations, use `SUPABASE_SECRET_KEY`
-
-#### 7. Build Errors
-
-**Symptom**: TypeScript or build errors during development
-
-**Solutions**:
-- **Update dependencies**: `pnpm install`
-- **Clear cache**: `rm -rf node_modules .next && pnpm install`
-- **Check TypeScript**: `pnpm type-check`
-- **Fix lint errors**: `pnpm lint --fix`
-
-#### 8. Port Already in Use
-
-**Symptom**: "Port 3002 (or 3003) is already in use"
-
-**Solutions**:
-- **Kill existing process**:
-  ```bash
-  # macOS/Linux
-  lsof -ti:3002 | xargs kill -9
-  lsof -ti:3003 | xargs kill -9
-  ```
-- **Use different ports**: Edit `package.json` port configurations
-
----
-
 ## Next Steps
 
-Congratulations! Your multi-tenant SaaS platform is now running locally. 🎉
-
-### Learn More
+Your multi-tenant SaaS platform is now running locally.
 
 | Guide | Description |
 |:------|:------------|
@@ -560,45 +444,4 @@ Congratulations! Your multi-tenant SaaS platform is now running locally. 🎉
 | [Database Schema](./DATABASE.md) | Complete database reference |
 | [Stripe Setup](./STRIPE.md) | Enable billing and subscriptions |
 | [Vercel Deployment](./VERCEL_DEPLOYMENT.md) | Deploy to production |
-
-### Key Features to Explore
-
-| Feature | What to Test |
-|:--------|:-------------|
-| Multi-Tenant Isolation | Create multiple test orgs with different subdomains |
-| RBAC System | Test different user roles (owner, admin, member, view-only) |
-| Team Management | Invite users and manage team members |
-| Projects | Create projects and assign permissions |
-| Security | Enable 2FA, review audit logs |
-
-### Development Tips
-
-| Tip | Details |
-|:----|:--------|
-| Hot Reload | Changes auto-reflect (no restart needed) |
-| Error Logging | Check browser console and terminal |
-| Database Changes | Use Supabase SQL Editor for quick queries |
-| Email Testing | Use [MailTrap](https://mailtrap.io) to avoid real sends |
-
-### Production Deployment
-
-1. **Deploy to Vercel** — Click the deploy button in [README.md](../README.md) to clone the repo and create both projects (apps will show "Server Error" until Supabase is configured)
-2. **Set up Supabase** — Create project, run migrations, copy credentials
-3. **Add env vars** — Add Supabase, Resend, and other credentials to both Vercel projects
-4. **Redeploy** — Trigger redeploy for both apps
-5. **Configure domains** — Set up custom domains (required for protected app wildcard subdomains)
-6. **Configure Stripe** — Set up webhooks for production (see [STRIPE.md](./STRIPE.md))
-7. **Set up monitoring** (optional) — Sentry, Checkly (see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md#optional-monitoring--analytics))
-
----
-
-## Need Help?
-
-| Resource | Link |
-|:---------|:-----|
-| Documentation | Other docs in the `docs/` folder |
-| Contributing | [CONTRIBUTING.md](../CONTRIBUTING.md) |
-
----
-
-<p align="center"><strong>Happy Building! 🚀</strong></p>
+| [Troubleshooting](./TROUBLESHOOTING.md) | Common issues and solutions |

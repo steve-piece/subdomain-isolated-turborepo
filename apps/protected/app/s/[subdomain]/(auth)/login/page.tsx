@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/login/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/login/page.tsx
 import type { ReactElement } from "react";
 import { LoginForm } from "@/components/auth/login-form";
 import { createClient } from "@workspace/supabase/server";

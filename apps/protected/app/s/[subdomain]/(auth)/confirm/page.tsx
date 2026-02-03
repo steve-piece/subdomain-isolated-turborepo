@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/confirm/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/confirm/page.tsx
 import type { ReactElement } from "react";
 import { redirect } from "next/navigation";
 import type { EmailOtpType } from "@supabase/supabase-js";
@@ -27,7 +27,7 @@ export default async function ConfirmPage({
 
   if (!tokenHash || !type) {
     redirect(
-      "/auth/resend-verification?error=missing&message=Invalid verification link. Please request a new one.",
+      "/resend-verification?error=missing&message=Invalid verification link. Please request a new one.",
     );
   }
 
@@ -51,7 +51,7 @@ export default async function ConfirmPage({
       redirect(result.redirectTo);
     }
 
-    redirect("/auth/login");
+    redirect("/login");
   }
 
   // Other types (email_change_*, etc.) can use server-side verification
@@ -78,5 +78,5 @@ export default async function ConfirmPage({
     redirect(result.redirectTo);
   }
 
-  redirect("/auth/login");
+  redirect("/login");
 }

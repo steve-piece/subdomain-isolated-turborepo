@@ -25,7 +25,7 @@ export default async function ProjectsPage({
   const orgId = claims?.claims.org_id;
   const capabilities = claims?.claims.capabilities || [];
 
-  if (!orgId) redirect("/auth/login");
+  if (!orgId) redirect("/login");
 
   // ✅ Fetch projects on server with proper member count
   const { data: projects, error } = await supabase

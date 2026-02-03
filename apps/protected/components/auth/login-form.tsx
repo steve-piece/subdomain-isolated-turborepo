@@ -241,7 +241,7 @@ export function LoginForm({
         await supabase.auth.signOut();
         setError("Please confirm your email before logging in.");
         router.push(
-          "/auth/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in.",
+          "/resend-verification?error=email_unconfirmed&reason=email_unconfirmed&message=Please%20confirm%20your%20email%20before%20logging%20in.",
         );
         return;
       }
@@ -371,7 +371,7 @@ export function LoginForm({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <Link
-                    href="/auth/forgot-password" // CLEAN URL
+                    href="/forgot-password" // CLEAN URL
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
                     Forgot your password?
@@ -439,7 +439,7 @@ export function LoginForm({
                     {error}
                     {error.includes("Email not confirmed") && (
                       <Link
-                        href="/auth/resend-verification" // CLEAN URL
+                        href="/resend-verification" // CLEAN URL
                         className="ml-2 underline underline-offset-4 hover:no-underline"
                       >
                         Resend verification email

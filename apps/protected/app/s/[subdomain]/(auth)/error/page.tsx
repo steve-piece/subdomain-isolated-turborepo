@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/error/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/error/page.tsx
 import type { ReactElement } from "react";
 import {
   Card,

@@ -255,7 +255,7 @@ export function AppSidebar({
     try {
       const result = await signOut();
       if (result.success) {
-        router.push("/auth/login");
+        router.push("/login");
       } else {
         addToast({
           title: "Error",

@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/update-password/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/update-password/page.tsx
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@workspace/supabase/server";
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
@@ -55,12 +55,12 @@ export default async function UpdatePasswordPage({
                   </p>
                 </div>
                 <div className="text-center space-y-2">
-                  <Link href="/auth/forgot-password">
+                  <Link href="/forgot-password">
                     <Button className="w-full">Request New Reset Link</Button>
                   </Link>
                   <div className="text-sm">
                     <Link
-                      href="/auth/login"
+                      href="/login"
                       className="underline underline-offset-4"
                     >
                       ← Back to Login
@@ -124,7 +124,7 @@ export default async function UpdatePasswordPage({
                       </p>
                     </div>
                     <div className="text-center space-y-2">
-                      <Link href="/auth/login">
+                      <Link href="/login">
                         <Button className="w-full">Back to Login</Button>
                       </Link>
                     </div>
@@ -158,7 +158,7 @@ export default async function UpdatePasswordPage({
                       </p>
                     </div>
                     <div className="text-center space-y-2">
-                      <Link href="/auth/login">
+                      <Link href="/login">
                         <Button className="w-full">Back to Login</Button>
                       </Link>
                     </div>
@@ -207,7 +207,7 @@ export default async function UpdatePasswordPage({
                     </p>
                   </div>
                   <div className="text-center space-y-2">
-                    <Link href="/auth/login">
+                    <Link href="/login">
                       <Button className="w-full">Back to Login</Button>
                     </Link>
                   </div>

@@ -129,7 +129,7 @@ export function UpdatePasswordForm({
       await supabase.auth.signOut();
 
       router.push(
-        `/auth/login?message=${encodeURIComponent(
+        `/login?message=${encodeURIComponent(
           "Password updated successfully! Please login with your new password.",
         )}`,
       );

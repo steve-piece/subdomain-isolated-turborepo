@@ -1,4 +1,4 @@
-// apps/protected/app/s/[subdomain]/auth/forgot-password/page.tsx
+// apps/protected/app/s/[subdomain]/(auth)/forgot-password/page.tsx
 import type { ReactElement } from "react";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
