@@ -40,7 +40,7 @@ const appName =
 
 const supportEmail =
   Deno.env.get("NEXT_PUBLIC_SENDER_EMAIL") ??
-  Deno.env.get("NEXT_PUBLIC_SUPPORT_EMAI") ??
+  Deno.env.get("NEXT_PUBLIC_SUPPORT_EMAIL") ??
   "support@emaildomain.com";
 
 // Email toggle settings for testing
