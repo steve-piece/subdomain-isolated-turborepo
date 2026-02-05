@@ -459,7 +459,9 @@ export function OrganizationSignUpForm({
                   )}
                 >
                   {subdomainValidation === "invalid" && subdomain
-                    ? "Subdomain must be 3-63 characters, letters, numbers, and hyphens only"
+                    ? subdomainTaken
+                      ? "This subdomain is already taken. Please choose another."
+                      : "Subdomain must be 3-63 characters, letters, numbers, and hyphens only"
                     : `Your team will access the app at ${subdomain || "subdomain"}.${
                         process.env.NEXT_PUBLIC_APP_DOMAIN || "protecteddomain.com"
                       }`}

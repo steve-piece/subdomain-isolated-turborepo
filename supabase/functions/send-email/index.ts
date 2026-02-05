@@ -43,11 +43,15 @@ const supportEmail =
   Deno.env.get("NEXT_PUBLIC_SUPPORT_EMAIL") ??
   "support@emaildomain.com";
 
-// Email toggle settings for testing
+// Email toggle settings for testing (all enabled by default unless explicitly set to "false")
 const enableInvitations =
   Deno.env.get("RESEND_ENABLE_INVITATION_EMAILS") !== "false";
-const enableWelcome = Deno.env.get("RESEND_ENABLE_WELCOME_EMAILS") !== "false";
-const enableVerify = Deno.env.get("RESEND_VERIFY_EMAILS") !== "false";
+const enableSignupVerification =
+  Deno.env.get("RESEND_VERIFY_EMAILS") !== "false";
+const enablePasswordReset =
+  Deno.env.get("RESEND_ENABLE_PASSWORD_RESET_EMAILS") !== "false";
+const enableMagicLink =
+  Deno.env.get("RESEND_ENABLE_MAGIC_LINK_EMAILS") !== "false";
 
 type EmailActionType =
   | "signup"
@@ -447,15 +451,13 @@ Deno.serve(async (req: Request) => {
 
     // Check email type toggles for testing
     const emailType = event.email_data.email_action_type;
-    if (
+    const isEmailTypeDisabled =
       (emailType === "invite" && !enableInvitations) ||
-      (emailType === "signup" && !enableVerify) ||
-      ((emailType === "recovery" ||
-        emailType === "magiclink" ||
-        emailType === "email_change" ||
-        emailType === "reauthenticate") &&
-        !enableWelcome)
-    ) {
+      (emailType === "signup" && !enableSignupVerification) ||
+      (emailType === "recovery" && !enablePasswordReset) ||
+      (emailType === "magiclink" && !enableMagicLink);
+
+    if (isEmailTypeDisabled) {
       console.info(`send-email hook: ${emailType} emails disabled, skipping`);
       return new Response(JSON.stringify({ success: true, skipped: true }), {
         status: 200,
