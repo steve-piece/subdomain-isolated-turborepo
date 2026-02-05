@@ -323,19 +323,27 @@ NEXT_PUBLIC_EMAIL_DOMAIN=marketingdomain.com
 NEXT_PUBLIC_SUPPORT_EMAIL=support@marketingdomain.com
 ```
 
-### 5. SMTP Settings
+### 5. Understanding Email Rate Limits
 
-By default Supabase Rate Limits emails sent to 2/hr. To avoid this, we need to enable custom SMTP settings with Resend as our provider (Rate Limit: 100 emails/day in free accounts).
+Supabase has a **2 emails/hour rate limit** on auth endpoints (`/auth/v1/signup`, `/auth/v1/recover`, etc.) that applies regardless of whether you use the Auth Hook. This limit can **only** be increased by enabling Custom SMTP.
 
-1. Open Resend's [SMTP Settings](https://resend.com/settings/smtp)
-   - We will be copying these values into Supabase
-   - Use the same API Key from your `.env.local` file as the passowrd or create a new API Key
+**The Trade-off:**
 
-2. Go to the [Supabase Dashboard](https://supabase.com/dashboard)
-   - Navigate to **Authentication** -> **Email** -> **SMTP Settings**
-   - Toggle to Enable Custom SMTP
-   - Configure **Sender Details** using your `NEXT_PUBLIC_SENDER_EMAIL` and `NEXT_PUBLIC_APP_NAME` (Can Also add 'Support' or another word after your app name for the send name; this would appear in the users email inbox as '{Your App} Support')
-   - Copy/Paste values from Resend into the SMTP Provider Details in the Supabase settings
+| Configuration | Custom Templates | Email Rate Limit | Best For |
+|--------------|------------------|------------------|----------|
+| **Send Email Hook (current setup)** | ✅ React Email | ❌ 2/hr (locked) | Most production apps |
+| Custom SMTP only | ❌ Dashboard templates | ✅ Configurable | High-volume, simple emails |
+
+**Why the Auth Hook is still recommended for production:**
+
+1. **Production users rarely hit the limit** - Real users don't request 3+ password resets in an hour
+2. **Beautiful, branded emails** - React Email templates with your design system
+3. **Multi-tenant support** - Subdomain-aware URLs that Custom SMTP can't provide
+4. **Better deliverability** - Resend's infrastructure and analytics
+
+**The 2/hr limit mainly affects development testing**, not real users. See [Troubleshooting](./TROUBLESHOOTING.md#too-many-reset-requests) for workarounds during development.
+
+> ⚠️ **Warning**: Do NOT enable "Custom SMTP" in Supabase Authentication settings. When Custom SMTP is enabled, Supabase bypasses the Send Email Auth Hook entirely and sends emails directly through SMTP, disabling your custom React Email templates.
 
 ---
 

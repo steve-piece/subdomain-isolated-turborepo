@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Zap, Check, Lock } from "lucide-react";
 import Link from "next/link";
 
@@ -107,9 +108,9 @@ export function UpgradePrompt({
             </div>
             <div className="blur-sm">
               <div className="space-y-3 p-6 border rounded-lg">
-                <div className="h-10 bg-muted rounded animate-pulse" />
-                <div className="h-10 bg-muted rounded animate-pulse" />
-                <div className="h-10 bg-muted rounded animate-pulse" />
+                <Skeleton className="h-10 rounded" />
+                <Skeleton className="h-10 rounded" />
+                <Skeleton className="h-10 rounded" />
               </div>
             </div>
           </div>

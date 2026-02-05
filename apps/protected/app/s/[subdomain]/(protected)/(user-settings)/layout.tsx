@@ -9,6 +9,7 @@ import { usePathname, useParams } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { User, Shield, Bell } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { useEffect } from "react";
 
 const userSettingsTabs = [
   {
@@ -39,6 +40,11 @@ export default function UserSettingsLayout({
   const pathname = usePathname();
   const params = useParams();
   const subdomain = params?.subdomain as string;
+
+  // ✅ Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   // Get the current active route by checking pathname
   // After middleware rewrite: http://subdomain.localhost:3003/security 

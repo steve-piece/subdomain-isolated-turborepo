@@ -10,7 +10,8 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
-import { Loader2, Shield, Clock, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { Shield, Clock, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { getUserSecuritySummary, type SecuritySummary } from "@/app/actions/security/security-summary";
 import { formatDistanceToNow } from "date-fns";
 
@@ -55,8 +56,40 @@ export function SecuritySummaryCard({ showFullDetails = false }: SecuritySummary
           <CardDescription>Your account security overview</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="space-y-4">
+            {/* MFA Status Skeleton */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+
+            {/* Last Sign In Skeleton */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-40" />
+                </div>
+              </div>
+            </div>
+
+            {/* Password Skeleton */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

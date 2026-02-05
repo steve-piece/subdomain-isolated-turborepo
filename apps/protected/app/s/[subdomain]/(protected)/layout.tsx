@@ -4,6 +4,8 @@
  * by enforcing tenant auth once at the layout boundary.
  * Now includes the AppSidebar for consistent navigation with RBAC enforcement.
  * ✅ PHASE 1.2: Centralized auth with TenantClaimsProvider
+ *
+ * NOTE: Uses connection() to explicitly opt into dynamic rendering for auth checks
  */
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { CommandKSearch } from "@/components/shared/command-k-search";
@@ -11,6 +13,7 @@ import { OnboardingCheck } from "@/components/shared/onboarding-check";
 import { TenantClaimsProvider } from "@/lib/contexts/tenant-claims-context";
 import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import {
   SidebarInset,
@@ -24,6 +27,8 @@ export default async function ProtectedLayout({
   children: React.ReactNode;
   params: Promise<{ subdomain: string }>;
 }): Promise<React.ReactNode> {
+  // Explicitly opt into dynamic rendering for auth and session checks
+  await connection();
   const { subdomain } = await params;
   const supabase = await createClient();
 

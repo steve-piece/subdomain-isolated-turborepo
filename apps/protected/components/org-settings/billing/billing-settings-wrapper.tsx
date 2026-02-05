@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
   Empty,
   EmptyDescription,
@@ -77,29 +78,26 @@ export function BillingSettingsWrapper() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <div className="h-6 bg-muted rounded animate-pulse w-64 mb-2" />
-            <div className="h-4 bg-muted rounded animate-pulse w-96" />
+            <Skeleton className="h-6 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="h-24 bg-muted rounded-lg animate-pulse" />
-              <div className="h-12 bg-muted rounded-lg animate-pulse" />
-              <div className="h-12 bg-muted rounded-lg animate-pulse" />
+              <Skeleton className="h-24 rounded-lg" />
+              <Skeleton className="h-12 rounded-lg" />
+              <Skeleton className="h-12 rounded-lg" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="h-6 bg-muted rounded animate-pulse w-48" />
+            <Skeleton className="h-6 w-48" />
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-16 bg-muted rounded-lg animate-pulse"
-                />
+                <Skeleton key={i} className="h-16 rounded-lg" />
               ))}
             </div>
           </CardContent>

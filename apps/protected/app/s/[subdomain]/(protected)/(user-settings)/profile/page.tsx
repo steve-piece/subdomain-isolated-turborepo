@@ -3,13 +3,11 @@
  * ✅ PHASE 2: Refactored profile page - centralized auth
  * - No duplicate auth checks (layout handles it)
  * - Data fetching moved to wrapper component
- * - Caching enabled (revalidate = 120)
+ * - MIGRATED from: export const revalidate = 120
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife({ revalidate: 120 }) if caching needed
  */
 import type { ReactElement } from "react";
 import { ProfileWrapper } from "@/components/profile/profile-wrapper";
-
-// ✅ Profile changes infrequently - cache for 2 minutes
-export const revalidate = 120;
 
 export default async function ProfilePage({
   params,

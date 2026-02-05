@@ -20,6 +20,7 @@ import { Input } from "@workspace/ui/components/input";
 import { useToast } from "@workspace/ui/components/toast";
 import { Pencil, Check, X, Camera, Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@workspace/ui/components/card";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import Image from "next/image";
 
 interface ProfileWrapperProps {
@@ -84,17 +85,17 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
         {/* Profile Header Skeleton */}
         <Card>
           <CardHeader>
-            <div className="h-7 bg-muted rounded animate-pulse w-48 mb-2" />
-            <div className="h-4 bg-muted rounded animate-pulse w-72" />
+            <Skeleton className="h-7 w-48 mb-2" />
+            <Skeleton className="h-4 w-72" />
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               {/* Avatar Section Skeleton */}
               <div className="flex items-center gap-6">
-                <div className="h-24 w-24 bg-muted rounded-full animate-pulse" />
+                <Skeleton className="h-24 w-24 rounded-full" />
                 <div className="space-y-2">
-                  <div className="h-4 bg-muted rounded animate-pulse w-32" />
-                  <div className="h-10 w-40 bg-muted rounded-lg animate-pulse" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-10 w-40 rounded-lg" />
                 </div>
               </div>
 
@@ -102,8 +103,8 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
               <div className="grid gap-6 md:grid-cols-2">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="space-y-2">
-                    <div className="h-4 bg-muted rounded animate-pulse w-24" />
-                    <div className="h-10 bg-muted rounded-lg animate-pulse w-full" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full rounded-lg" />
                   </div>
                 ))}
               </div>
@@ -114,8 +115,8 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
         {/* Security Card Skeleton */}
         <Card>
           <CardHeader>
-            <div className="h-6 bg-muted rounded animate-pulse w-40 mb-2" />
-            <div className="h-4 bg-muted rounded animate-pulse w-64" />
+            <Skeleton className="h-6 w-40 mb-2" />
+            <Skeleton className="h-4 w-64" />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -125,10 +126,10 @@ export function ProfileWrapper({ subdomain }: ProfileWrapperProps) {
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
                   <div className="space-y-2">
-                    <div className="h-5 bg-muted rounded animate-pulse w-32" />
-                    <div className="h-3 bg-muted rounded animate-pulse w-48" />
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-3 w-48" />
                   </div>
-                  <div className="h-10 w-28 bg-muted rounded-lg animate-pulse" />
+                  <Skeleton className="h-10 w-28 rounded-lg" />
                 </div>
               ))}
             </div>

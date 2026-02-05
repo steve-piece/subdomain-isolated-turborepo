@@ -10,6 +10,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Clock, Check, X, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import {
@@ -89,11 +90,34 @@ export function PendingInvitationsList({
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <Clock className="h-6 w-6 animate-pulse text-primary" />
-            <span className="ml-2">Loading pending invitations...</span>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-5 rounded" />
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-5 w-8 rounded-full" />
           </div>
+          <Skeleton className="h-4 w-80" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-4 border rounded-lg"
+            >
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-3 w-40" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-20 rounded-lg" />
+                <Skeleton className="h-9 w-24 rounded-lg" />
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
     );

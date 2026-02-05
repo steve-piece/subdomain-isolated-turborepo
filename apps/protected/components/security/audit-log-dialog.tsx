@@ -11,7 +11,8 @@ import {
 } from "@workspace/ui/components/dialog";
 import { Button } from "@workspace/ui/components/button";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
-import { Loader2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { getAuditLogs } from "@/app/actions/security/audit-log";
 import { format } from "date-fns";
 
@@ -96,8 +97,19 @@ export function AuditLogDialog() {
         </DialogHeader>
         
         {loading ? (
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="space-y-3 p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4 px-4 py-3 border-b">
+                <Skeleton className="h-2 w-2 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-20 rounded" />
+                  </div>
+                </div>
+                <Skeleton className="h-3 w-24" />
+              </div>
+            ))}
           </div>
         ) : error ? (
           <div className="flex items-center justify-center p-8 text-destructive gap-2">

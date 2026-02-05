@@ -2,14 +2,12 @@
 /**
  * ✅ PHASE 1.5c: Simplified notifications page
  * - No duplicate auth checks (layout handles it)
- * - Caching enabled (revalidate = 120)
+ * - MIGRATED from: export const revalidate = 120
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife({ revalidate: 120 }) if caching needed
  */
 import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { NotificationPreferencesForm } from "@/components/notifications/notification-preferences-form";
-
-// ✅ Notification preferences change infrequently - cache for 2 minutes
-export const revalidate = 120;
 
 export default async function NotificationsPage({
   params,

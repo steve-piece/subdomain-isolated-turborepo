@@ -3,10 +3,15 @@
  * Root layout for all subdomain routes
  * Validates that the organization exists before allowing access
  * Redirects to marketing site if organization doesn't exist
+ *
+ * NOTE: This layout is intentionally dynamic (not cached) because:
+ * - Subdomain validation is a security check that must happen per-request
+ * - Uses connection() to explicitly opt into dynamic rendering
  */
 import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
 /**
@@ -86,6 +91,8 @@ export default async function SubdomainLayout({
   children: React.ReactNode;
   params: Promise<{ subdomain: string }>;
 }): Promise<ReactElement> {
+  // Opt into dynamic rendering at the start - all subdomain routes are dynamic
+  await connection();
   const { subdomain } = await params;
 
   // Verify subdomain exists (either as active organization or active reservation)

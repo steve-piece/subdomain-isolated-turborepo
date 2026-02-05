@@ -3,6 +3,9 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig = {
+  // Cache Components enabled (Next.js 16.1.x canary)
+  // Routes are dynamic by default; use "use cache" to opt into caching
+  cacheComponents: true,
   transpilePackages: ["@workspace/ui"],
   images: {
     remotePatterns: [

@@ -1,5 +1,5 @@
 // apps/protected/app/s/[subdomain]/(auth)/update-password/page.tsx
-import { unstable_noStore as noStore } from "next/cache";
+// MIGRATED: Removed unstable_noStore() - dynamic by default with Cache Components
 import { createClient } from "@workspace/supabase/server";
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 import type { EmailOtpType } from "@supabase/supabase-js";
@@ -24,7 +24,6 @@ export default async function UpdatePasswordPage({
   params,
   searchParams,
 }: UpdatePasswordPageProps): Promise<ReactElement> {
-  noStore();
   const { subdomain } = await params;
   const searchParamsData = await searchParams;
 

@@ -2,16 +2,14 @@
 /**
  * ✅ PHASE 1.3: Simplified dashboard page
  * - No duplicate auth checks (layout handles it)
- * - Caching enabled (revalidate = 60)
+ * - MIGRATED from: export const revalidate = 60
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife('minutes') if caching needed
  * - Minimal page, logic in wrapper component
  */
 import type { ReactElement } from "react";
 import { DashboardWrapper } from "@/components/dashboard/dashboard-wrapper";
 import { createClient } from "@workspace/supabase/server";
 import type { Metadata } from "next";
-
-// ✅ Enable caching - auth is handled by layout
-export const revalidate = 60;
 
 // ✅ Generate dynamic page title
 export async function generateMetadata({

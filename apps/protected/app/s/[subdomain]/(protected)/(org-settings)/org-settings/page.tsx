@@ -3,13 +3,11 @@
  * ✅ PHASE 2: Refactored org settings page - centralized auth
  * - No duplicate auth checks (layout handles it)
  * - Role check moved to wrapper component
- * - Caching enabled (revalidate = 60)
+ * - MIGRATED from: export const revalidate = 60
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife('minutes') if caching needed
  */
 import type { ReactElement } from "react";
 import { OrgSettingsWrapper } from "@/components/org-settings/org-settings-wrapper";
-
-// ✅ Org settings change infrequently - cache for 60 seconds
-export const revalidate = 60;
 
 export default async function OrgSettingsPage({
   params,

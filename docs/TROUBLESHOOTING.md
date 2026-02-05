@@ -29,6 +29,7 @@ This guide covers common issues you may encounter during setup and development.
 - **Verify domain**: Ensure domain is verified in Resend (or use `onboarding@resend.dev` for testing)
 - **Check spam folder**: Email might be filtered
 - **Test Edge Function**: Use the Invoke button in Supabase Dashboard
+- **Verify Auth Hook is enabled**: Go to Authentication → Auth Hooks and confirm the Send Email hook is configured
 
 **Manual Email Verification** (workaround):
 
@@ -44,6 +45,46 @@ SELECT bootstrap_organization(
   'your-subdomain'
 );
 ```
+
+---
+
+## Too Many Reset Requests
+
+**Symptom**: "Too many reset requests. Please wait an hour and try again."
+
+**Cause**: Supabase enforces a **2 emails/hour rate limit** on auth endpoints (`/auth/v1/signup`, `/auth/v1/recover`, `/auth/v1/user`). This limit applies even when using the Send Email Auth Hook.
+
+**Why the Auth Hook doesn't bypass this limit**: The rate limit is checked by Supabase *before* your hook is invoked. The hook only handles the actual email delivery, not the rate limiting.
+
+**According to Supabase docs**: "You can only change this with your own custom SMTP setup." However, enabling Custom SMTP disables your Auth Hook (and your custom React Email templates).
+
+**Solutions for Development**:
+
+1. **Use email variations** (recommended): Gmail and many providers treat `+` addresses as the same inbox but Supabase sees them as different users:
+   ```
+   yourname+test1@gmail.com
+   yourname+test2@gmail.com
+   yourname+test3@gmail.com
+   ```
+
+2. **Wait for the cooldown**: The rate limit resets after approximately 1 hour
+
+3. **Use different email addresses**: Test with completely different email addresses
+
+4. **Manual verification workaround**: Skip email verification during testing:
+   ```sql
+   -- In Supabase SQL Editor
+   UPDATE auth.users 
+   SET email_confirmed_at = NOW() 
+   WHERE email = 'your@email.com';
+   ```
+
+**Why this is acceptable for production**:
+- Real users don't request 3+ password resets in an hour
+- The limit prevents abuse (someone spamming reset emails to a victim)
+- If a legitimate user hits this limit, they're likely frustrated but safe
+
+**If you absolutely need higher limits**, you must enable Custom SMTP (losing custom templates) or implement a fully custom auth flow. For most SaaS applications, the Auth Hook approach with its 2/hr limit is the right trade-off
 
 ---
 

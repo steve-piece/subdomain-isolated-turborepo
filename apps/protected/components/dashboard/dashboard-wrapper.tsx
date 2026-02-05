@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/card";
 import Link from "next/link";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
 import { ActivityFeed } from "./activity-feed";
 import { PageHeader } from "@/components/shared/page-header";
 import { getRecentActivity } from "@/app/actions/activity/get-recent-activity";
@@ -340,16 +341,19 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
                 {["owner", "admin", "superadmin"].includes(
                   claims.user_role,
                 ) && (
-                  <Link href="/org-settings/team" className="w-full block">
-                    <Button
-                      className="w-full justify-start"
-                      size="lg"
-                      variant="outline"
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Team Members
-                    </Button>
-                  </Link>
+                  <InviteUserDialog
+                    subdomain={subdomain}
+                    trigger={
+                      <Button
+                        className="w-full justify-start"
+                        size="lg"
+                        variant="outline"
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Invite Team Members
+                      </Button>
+                    }
+                  />
                 )}
 
                 <Link href="/profile" className="w-full block">
@@ -504,13 +508,23 @@ export function DashboardWrapper({ subdomain }: DashboardWrapperProps): ReactEle
                             task.actionLink &&
                             task.actionLabel && (
                               <>
-                                {task.id === "invite-team" &&
-                                !["owner", "admin", "superadmin"].includes(
-                                  claims.user_role,
-                                ) ? (
-                                  <Button size="sm" disabled>
-                                    {task.actionLabel}
-                                  </Button>
+                                {task.id === "invite-team" ? (
+                                  ["owner", "admin", "superadmin"].includes(
+                                    claims.user_role,
+                                  ) ? (
+                                    <InviteUserDialog
+                                      subdomain={subdomain}
+                                      trigger={
+                                        <Button size="sm">
+                                          {task.actionLabel}
+                                        </Button>
+                                      }
+                                    />
+                                  ) : (
+                                    <Button size="sm" disabled>
+                                      {task.actionLabel}
+                                    </Button>
+                                  )
                                 ) : (
                                   <Link href={task.actionLink}>
                                     <Button size="sm">

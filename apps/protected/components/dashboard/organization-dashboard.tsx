@@ -3,6 +3,7 @@
 "use client";
 
 import { LogoutButton } from "@/components/shared/logout-button";
+import { InviteUserDialog } from "@/components/shared/invite-user-dialog";
 import { useTenantClaims } from "@/lib/contexts/tenant-claims-context";
 import { Button } from "@workspace/ui/components/button";
 import { useToast } from "@workspace/ui/components/toast";
@@ -13,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import Link from "next/link";
 
 interface OrganizationDashboardProps {
   /**
@@ -128,12 +128,15 @@ export function OrganizationDashboard({
               </CardHeader>
               <CardContent className="space-y-3">
                 {hasAdminAccess ? (
-                  <Link href="/invite-user">
-                    <Button className="w-full justify-start" size="lg">
-                      <span className="mr-2">👤</span>
-                      Invite Team Members
-                    </Button>
-                  </Link>
+                  <InviteUserDialog
+                    subdomain={subdomain}
+                    trigger={
+                      <Button className="w-full justify-start" size="lg">
+                        <span className="mr-2">👤</span>
+                        Invite Team Members
+                      </Button>
+                    }
+                  />
                 ) : (
                   <Button
                     className="w-full justify-start"

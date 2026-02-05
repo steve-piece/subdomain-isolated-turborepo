@@ -3,13 +3,11 @@
  * ✅ PHASE 2: Refactored project detail page - centralized auth
  * - No duplicate auth checks (layout handles it)
  * - Data fetching moved to wrapper component
- * - Caching enabled (revalidate = 60)
+ * - MIGRATED from: export const revalidate = 60
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife('minutes') if caching needed
  */
 import type { ReactElement } from "react";
 import { ProjectDetailWrapper } from "@/components/projects/project-detail-wrapper";
-
-// ✅ Project details can be cached for 60 seconds
-export const revalidate = 60;
 
 export default async function ProjectDetailPage({
   params,

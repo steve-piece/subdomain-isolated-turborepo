@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { ProjectMemberDialog } from "./project-member-dialog";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { ManagePermissionDialog } from "./manage-permission-dialog";
@@ -203,12 +204,12 @@ export function ProjectDetailWrapper({
         {/* Header Skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div className="flex-1 min-w-0 space-y-3">
-            <div className="h-9 bg-muted rounded-lg animate-pulse w-64" />
-            <div className="h-4 bg-muted rounded animate-pulse w-96" />
+            <Skeleton className="h-9 w-64 rounded-lg" />
+            <Skeleton className="h-4 w-96" />
           </div>
           <div className="flex gap-2">
-            <div className="h-10 w-32 bg-muted rounded-lg animate-pulse" />
-            <div className="h-10 w-32 bg-muted rounded-lg animate-pulse" />
+            <Skeleton className="h-10 w-32 rounded-lg" />
+            <Skeleton className="h-10 w-32 rounded-lg" />
           </div>
         </div>
 
@@ -217,12 +218,12 @@ export function ProjectDetailWrapper({
           {[1, 2, 3].map((i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="h-4 bg-muted rounded animate-pulse w-24" />
-                <div className="h-5 w-5 bg-muted rounded animate-pulse" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-5 w-5" />
               </CardHeader>
               <CardContent>
-                <div className="h-8 bg-muted rounded animate-pulse w-16 mb-2" />
-                <div className="h-3 bg-muted rounded animate-pulse w-32" />
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-32" />
               </CardContent>
             </Card>
           ))}
@@ -232,16 +233,13 @@ export function ProjectDetailWrapper({
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="shadow-lg">
             <CardHeader>
-              <div className="h-6 bg-muted rounded animate-pulse w-40 mb-2" />
-              <div className="h-4 bg-muted rounded animate-pulse w-56" />
+              <Skeleton className="h-6 w-40 mb-2" />
+              <Skeleton className="h-4 w-56" />
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-12 bg-muted rounded-lg animate-pulse"
-                  />
+                  <Skeleton key={i} className="h-12 w-full rounded-lg" />
                 ))}
               </div>
             </CardContent>
@@ -249,16 +247,13 @@ export function ProjectDetailWrapper({
 
           <Card className="shadow-lg">
             <CardHeader>
-              <div className="h-6 bg-muted rounded animate-pulse w-40 mb-2" />
-              <div className="h-4 bg-muted rounded animate-pulse w-56" />
+              <Skeleton className="h-6 w-40 mb-2" />
+              <Skeleton className="h-4 w-56" />
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-12 bg-muted rounded-lg animate-pulse"
-                  />
+                  <Skeleton key={i} className="h-12 w-full rounded-lg" />
                 ))}
               </div>
             </CardContent>

@@ -13,6 +13,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { useToast } from "@workspace/ui/components/toast";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
 export function MFASetup(): ReactElement {
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -162,14 +163,14 @@ export function MFASetup(): ReactElement {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 bg-muted rounded-full animate-pulse" />
+          <Skeleton className="h-12 w-12 rounded-full" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-muted rounded animate-pulse w-48" />
-            <div className="h-3 bg-muted rounded animate-pulse w-64" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-64" />
           </div>
         </div>
-        <div className="h-32 bg-muted rounded-lg animate-pulse" />
-        <div className="h-10 bg-muted rounded-lg animate-pulse w-full" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
       </div>
     );
   }

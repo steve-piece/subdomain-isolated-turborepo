@@ -3,14 +3,13 @@
  * ✅ Server-side data fetching with centralized auth
  * - Auth handled by layout
  * - Data fetched on server for performance
- * - Caching enabled (revalidate = 30)
+ * - MIGRATED from: export const revalidate = 30
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife('seconds') if caching needed
  */
 import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
 import { ProjectsWrapper } from "@/components/projects/projects-wrapper";
 import { redirect } from "next/navigation";
-
-export const revalidate = 30;
 
 export default async function ProjectsPage({
   params,

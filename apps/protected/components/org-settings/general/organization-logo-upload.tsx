@@ -23,6 +23,7 @@ export function OrganizationLogoUpload({
   const [isPending, startTransition] = useTransition();
   const [logoUrl, setLogoUrl] = useState(currentLogoUrl);
   const [isDragging, setIsDragging] = useState(false);
+  const [justUploaded, setJustUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addToast } = useToast();
 
@@ -35,6 +36,7 @@ export function OrganizationLogoUpload({
 
       if (result.success && result.url) {
         setLogoUrl(result.url);
+        setJustUploaded(true);
         addToast({
           title: "Success",
           description: result.message,
@@ -168,10 +170,12 @@ export function OrganizationLogoUpload({
               "Click logo or drag & drop. SVG, PNG, JPG or WebP. Max 5MB."
             )}
           </p>
-          <p className="text-xs text-warning dark:text-warning flex items-center gap-1">
-            <Info className="h-3 w-3" />
-            Logo updates in the sidebar will appear on your next login
-          </p>
+          {justUploaded && (
+            <p className="text-xs text-warning dark:text-warning flex items-center gap-1">
+              <Info className="h-3 w-3" />
+              Logo updates in the sidebar will appear on your next login
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <Button

@@ -9,6 +9,7 @@ import { usePathname, useParams } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Building2, Users, CreditCard, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { ScrollToTop } from "@/components/shared/scroll-to-top";
 
 const orgSettingsTabs = [
   {
@@ -84,6 +85,9 @@ export default function OrgSettingsLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Scroll to top on route change */}
+      <ScrollToTop />
+      
       {/* Header */}
       <PageHeader title="Organization Settings" />
 

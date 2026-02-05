@@ -581,6 +581,7 @@ export function AppSidebar({
             key={group.title}
             defaultOpen
             className="group/collapsible"
+            suppressHydrationWarning
           >
             <SidebarGroup>
               <SidebarGroupLabel asChild>
@@ -596,7 +597,7 @@ export function AppSidebar({
                   </span>
                 )}
               </SidebarGroupLabel>
-              <CollapsibleContent>
+              <CollapsibleContent suppressHydrationWarning>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {group.items.map((item) => {

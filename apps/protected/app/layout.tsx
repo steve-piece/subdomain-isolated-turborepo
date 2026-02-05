@@ -1,6 +1,7 @@
 // apps/protected/app/layout.tsx
 // Protected app root layout wiring fonts, Sentry metadata, and global providers.
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 
 import "./globals.css";
 import { Providers } from "@/components/shared/providers";
@@ -86,7 +87,9 @@ export default function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <Suspense>{children}</Suspense>
+        </Providers>
         <Analytics />
       </body>
     </html>

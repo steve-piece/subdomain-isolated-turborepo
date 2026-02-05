@@ -158,9 +158,17 @@ export async function updateTeamSettings(
       return { success: false, message: "Unauthorized: Invalid organization" };
     }
 
-    // Remove max_team_size from settings if present (managed by subscription tier)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { max_team_size: _max_team_size, ...settingsToUpdate } = settings;
+    // Remove computed fields and max_team_size (managed by subscription tier)
+    // These fields are derived at read time, not stored in the table
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const {
+      max_team_size,
+      tier_name,
+      tier_max_team_size,
+      current_team_count,
+      ...settingsToUpdate
+    } = settings as TeamSettingsWithTier;
+    /* eslint-enable @typescript-eslint/no-unused-vars */
 
     // Upsert settings (create if doesn't exist, update if exists)
     const { error: upsertError } = await supabase

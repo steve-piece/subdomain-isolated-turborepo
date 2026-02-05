@@ -16,10 +16,10 @@ import {
   syncPaymentMethodUpdated,
 } from "@/app/actions/billing/webhook-sync";
 
-// Disable body parsing so we can get raw body for signature verification
-export const runtime = "nodejs";
-export const preferredRegion = "auto";
-export const dynamic = "force-dynamic";
+// MIGRATED: Route Segment Config removed for Cache Components
+// - Removed: export const runtime = "nodejs" (nodejs is the default)
+// - Removed: export const preferredRegion = "auto" (auto-distributed by default)
+// - Removed: export const dynamic = "force-dynamic" (dynamic is now the default with Cache Components)
 
 // Create service role client for webhook handlers (lazy initialization)
 async function getSupabaseAdmin() {

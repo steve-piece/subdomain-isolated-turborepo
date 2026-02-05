@@ -263,7 +263,24 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
     user.user_metadata as Record<string, unknown> | undefined,
   );
 
-  const subdomain = metadata.subdomain ?? userMetadata.subdomain;
+  // Extract subdomain from redirect_to URL if not in metadata
+  let subdomain = metadata.subdomain ?? userMetadata.subdomain;
+  if (!subdomain && email_data.redirect_to) {
+    try {
+      const redirectUrl = new URL(email_data.redirect_to);
+      // Extract subdomain from hostname (e.g., my-business.protected-app.com -> my-business)
+      const hostParts = redirectUrl.hostname.split(".");
+      if (hostParts.length > 2 && redirectUrl.hostname !== "localhost") {
+        subdomain = hostParts[0];
+      }
+    } catch (error) {
+      console.warn("send-email hook: unable to extract subdomain from redirect_to", {
+        redirect_to: email_data.redirect_to,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
   const organizationName =
     metadata.company_name ??
     metadata.organization_name ??
@@ -426,6 +443,12 @@ function resolveEmail({ user, email_data }: HookPayload): ResolvedEmail {
 }
 
 Deno.serve(async (req: Request) => {
+  console.info("send-email hook: received request", {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries()),
+  });
+
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
@@ -434,6 +457,7 @@ Deno.serve(async (req: Request) => {
   const headers = Object.fromEntries(req.headers.entries());
 
   try {
+    console.info("send-email hook: verifying webhook signature");
     const event = webhookVerifier.verify(payload, headers) as HookPayload;
 
     console.info(
@@ -451,6 +475,15 @@ Deno.serve(async (req: Request) => {
 
     // Check email type toggles for testing
     const emailType = event.email_data.email_action_type;
+    
+    console.info("send-email hook: checking email toggles", {
+      emailType,
+      enableInvitations,
+      enableSignupVerification,
+      enablePasswordReset,
+      enableMagicLink,
+    });
+    
     const isEmailTypeDisabled =
       (emailType === "invite" && !enableInvitations) ||
       (emailType === "signup" && !enableSignupVerification) ||
@@ -495,11 +528,27 @@ Deno.serve(async (req: Request) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("send-email hook error", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    const errorDetails = {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : typeof error,
+    };
+    console.error("send-email hook error", JSON.stringify(errorDetails, null, 2));
+    
+    // Log the raw error for debugging
+    console.error("send-email hook raw error:", error);
+    
+    // Return error details for debugging (Supabase will log this)
+    return new Response(
+      JSON.stringify({
+        error: errorDetails.message,
+        type: errorDetails.name,
+        ...(process.env.NODE_ENV === "development" && { stack: errorDetails.stack }),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 });

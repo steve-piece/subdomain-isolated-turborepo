@@ -1,5 +1,5 @@
 // apps/protected/app/s/[subdomain]/(auth)/accept-invitation/page.tsx
-import { unstable_noStore as noStore } from "next/cache";
+// MIGRATED: Removed unstable_noStore() - dynamic by default with Cache Components
 import { AcceptInvitationForm } from "@/components/auth/accept-invitation-form";
 import {
   Card,
@@ -20,7 +20,6 @@ export default async function AcceptInvitationPage({
   params,
   searchParams,
 }: AcceptInvitationPageProps): Promise<ReactElement> {
-  noStore();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { subdomain } = await params;
   const searchParamsData = await searchParams;

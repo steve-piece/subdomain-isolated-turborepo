@@ -3,7 +3,8 @@
  * ✅ TIER-GATED: Roles page with Business+ access control
  * - Wrapped with RequireTierAccess for tier checking
  * - Simple role check (owner only)
- * - Caching enabled (revalidate = 60)
+ * - MIGRATED from: export const revalidate = 60
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife('minutes') if caching needed
  */
 import type { ReactElement } from "react";
 import { createClient } from "@workspace/supabase/server";
@@ -12,9 +13,6 @@ import { getAllCapabilities, getOrgCustomCapabilities } from "@actions/rbac";
 import { RoleCapabilitiesManager } from "@/components/org-settings/roles/role-capabilities-manager";
 import { RequireTierAccess } from "@/components/shared/require-tier-access";
 import { UserRole } from "@/lib/rbac/permissions";
-
-// ✅ Roles change infrequently - cache for 60 seconds
-export const revalidate = 60;
 
 export default async function RolesCustomizationPage({
   params,

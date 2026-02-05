@@ -3,13 +3,11 @@
  * ✅ PHASE 2: Refactored team page - centralized auth
  * - No duplicate auth checks (layout handles it)
  * - Role check moved to wrapper component
- * - Caching enabled (revalidate = 30)
+ * - MIGRATED from: export const revalidate = 30
+ *   → Dynamic by default with Cache Components; add "use cache" + cacheLife('seconds') if caching needed
  */
 import type { ReactElement } from "react";
 import { TeamSettingsWrapper } from "@/components/org-settings/team/team-settings-wrapper";
-
-// ✅ Team page is more dynamic - cache for 30 seconds
-export const revalidate = 30;
 
 export default async function TeamSettingsPage({
   params,

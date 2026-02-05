@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { updateOrganizationIdentity } from "@/app/actions/organization";
 import { createClient } from "@workspace/supabase/client";
 import { useState, useEffect } from "react";
@@ -88,25 +89,25 @@ export function OrgSettingsWrapper({
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <div className="h-6 bg-muted rounded animate-pulse w-56 mb-2" />
-            <div className="h-4 bg-muted rounded animate-pulse w-80" />
+            <Skeleton className="h-6 w-56 mb-2" />
+            <Skeleton className="h-4 w-80" />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {/* Logo Upload Skeleton */}
               <div className="space-y-2">
-                <div className="h-4 bg-muted rounded animate-pulse w-32" />
+                <Skeleton className="h-4 w-32" />
                 <div className="flex items-center gap-4">
-                  <div className="h-24 w-24 bg-muted rounded-lg animate-pulse" />
-                  <div className="h-10 w-32 bg-muted rounded-lg animate-pulse" />
+                  <Skeleton className="h-24 w-24 rounded-lg" />
+                  <Skeleton className="h-10 w-32 rounded-lg" />
                 </div>
               </div>
 
               {/* Form Fields Skeleton */}
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="space-y-2">
-                  <div className="h-4 bg-muted rounded animate-pulse w-24" />
-                  <div className="h-10 bg-muted rounded-lg animate-pulse w-full" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full rounded-lg" />
                 </div>
               ))}
             </div>

@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
   Empty,
   EmptyContent,
@@ -117,15 +118,15 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
         {/* Team Settings Card Skeleton */}
         <Card>
           <CardHeader>
-            <div className="h-6 bg-muted rounded animate-pulse w-40 mb-2" />
-            <div className="h-4 bg-muted rounded animate-pulse w-64" />
+            <Skeleton className="h-6 w-40 mb-2" />
+            <Skeleton className="h-4 w-64" />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex items-center justify-between">
-                  <div className="h-5 bg-muted rounded animate-pulse w-48" />
-                  <div className="h-6 w-12 bg-muted rounded animate-pulse" />
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-6 w-12" />
                 </div>
               ))}
             </div>
@@ -137,10 +138,10 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <div className="h-6 bg-muted rounded animate-pulse w-32 mb-2" />
-                <div className="h-4 bg-muted rounded animate-pulse w-56" />
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-4 w-56" />
               </div>
-              <div className="h-10 w-32 bg-muted rounded-lg animate-pulse" />
+              <Skeleton className="h-10 w-32 rounded-lg" />
             </div>
           </CardHeader>
           <CardContent>
@@ -151,13 +152,13 @@ export function TeamSettingsWrapper({ subdomain }: TeamSettingsWrapperProps) {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-muted rounded-full animate-pulse" />
+                    <Skeleton className="h-10 w-10 rounded-full" />
                     <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded animate-pulse w-32" />
-                      <div className="h-3 bg-muted rounded animate-pulse w-48" />
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-48" />
                     </div>
                   </div>
-                  <div className="h-8 w-24 bg-muted rounded animate-pulse" />
+                  <Skeleton className="h-8 w-24" />
                 </div>
               ))}
             </div>

@@ -30,6 +30,7 @@ import {
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { useToast } from "@workspace/ui/components/toast";
 import { Badge } from "@workspace/ui/components/badge";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
   UserPlus,
   Users,
@@ -311,8 +312,15 @@ export function ProjectMemberDialog({
             {/* Invite Tab */}
             <TabsContent value="invite" className="flex-1 mt-4">
               {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full rounded-lg" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-10 w-full rounded-lg" />
+                  </div>
                 </div>
               ) : availableMembers.length === 0 ? (
                 <div className="py-8 text-center space-y-2">
@@ -408,8 +416,22 @@ export function ProjectMemberDialog({
             {/* Manage Tab */}
             <TabsContent value="manage" className="flex-1 mt-4">
               {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className="space-y-4 py-4">
+                  <Skeleton className="h-10 w-full rounded-lg" />
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-48" />
+                          <Skeleton className="h-3 w-32" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Skeleton className="h-8 w-8 rounded" />
+                          <Skeleton className="h-8 w-8 rounded" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
