@@ -40,7 +40,7 @@ export function generateMetadata(): Metadata {
       type: "website",
       images: [
         {
-          url: "/web-app-manifest-512x512.png",
+          url: "/icon-white.png",
           width: 512,
           height: 512,
           alt: `${appName} Logo`,
@@ -51,13 +51,14 @@ export function generateMetadata(): Metadata {
       card: "summary",
       title: appName,
       description,
-      images: ["/web-app-manifest-512x512.png"],
+      images: ["/icon-white.png"],
     },
     icons: {
       icon: [
         { url: "/favicon.ico", sizes: "any" },
+        { url: "/icon-white.png", type: "image/png" },
       ],
-      apple: "/apple-touch-icon.png",
+      apple: "/icon-white.png",
     },
     manifest: "/site.webmanifest",
     other: {

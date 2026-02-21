@@ -11,7 +11,7 @@ export function Header({ appName }: { appName: string }) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 flex h-16 items-center justify-between px-4">
       <Link href="/" className="flex items-center gap-2">
         <Image
-          src="/logo_dark.png"
+          src="/icon-dark.png"
           alt={`${appName} logo`}
           width={40}
           height={40}
@@ -19,7 +19,7 @@ export function Header({ appName }: { appName: string }) {
           className="size-10 rounded-full dark:hidden"
         />
         <Image
-          src="/logo_white.png"
+          src="/icon-white.png"
           alt={`${appName} logo`}
           width={40}
           height={40}
