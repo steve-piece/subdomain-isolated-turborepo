@@ -28,7 +28,7 @@ importers:
         version: 14.6.1(@testing-library/dom@10.4.1)
       '@vitest/coverage-v8':
         specifier: ^4.0.0
-        version: 4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
+        version: 4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
       '@workspace/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
@@ -36,8 +36,8 @@ importers:
         specifier: workspace:*
         version: link:packages/typescript-config
       happy-dom:
-        specifier: ^20.3.2
-        version: 20.3.7
+        specifier: ^20.8.8
+        version: 20.8.8
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -52,10 +52,10 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.0
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
       vitest-dom:
         specifier: ^0.1.1
-        version: 0.1.1(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
+        version: 0.1.1(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
 
   apps/marketing:
     dependencies:
@@ -136,8 +136,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/typescript-config
       happy-dom:
-        specifier: ^20.3.2
-        version: 20.3.7
+        specifier: ^20.8.8
+        version: 20.8.8
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
@@ -146,10 +146,10 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@20.19.30)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
+        version: 3.2.4(@types/node@20.19.30)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
       vitest-dom:
         specifier: ^0.1.1
-        version: 0.1.1(vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
+        version: 0.1.1(vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
 
   apps/protected:
     dependencies:
@@ -236,8 +236,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/typescript-config
       happy-dom:
-        specifier: ^20.3.2
-        version: 20.3.7
+        specifier: ^20.8.8
+        version: 20.8.8
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
@@ -246,10 +246,10 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@20.19.30)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
+        version: 3.2.4(@types/node@20.19.30)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
       vitest-dom:
         specifier: ^0.1.1
-        version: 0.1.1(vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
+        version: 0.1.1(vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
 
   packages/eslint-config:
     devDependencies:
@@ -2762,8 +2762,8 @@ packages:
     resolution: {integrity: sha512-Qohcme7V1inbAfvjItgw0EaxVX5q2rdVEZHRBrEQdRZTssLDGsL8Lwrznl8oQ/6kuTJONLaDcGjkNP247XEhcA==}
     engines: {node: '>=10.13.0'}
 
-  entities@4.5.0:
-    resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
+  entities@7.0.1:
+    resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
     engines: {node: '>=0.12'}
 
   es-abstract@1.24.0:
@@ -3055,8 +3055,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  happy-dom@20.3.7:
-    resolution: {integrity: sha512-sb5IzoRl1WJKsUSRe+IloJf3z1iDq5PQ7Yk/ULMsZ5IAQEs9ZL7RsFfiKBXU7nK9QmO+iz0e59EH8r8jexTZ/g==}
+  happy-dom@20.8.8:
+    resolution: {integrity: sha512-5/F8wxkNxYtsN0bXfMwIyNLZ9WYsoOYPbmoluqVJqv8KBUbcyKZawJ7uYK4WTX8IHBLYv+VXIwfeNDPy1oKMwQ==}
     engines: {node: '>=20.0.0'}
 
   has-bigints@1.1.0:
@@ -4048,6 +4048,10 @@ packages:
     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
     engines: {node: '>=6'}
 
+  tapable@2.3.2:
+    resolution: {integrity: sha512-1MOpMXuhGzGL5TTCZFItxCc0AARf1EZFQkGqMm7ERKj8+Hgr5oLvJOVFcC+lRmR8hCe2S3jC4T5D7Vg/d7/fhA==}
+    engines: {node: '>=6'}
+
   tar@7.5.6:
     resolution: {integrity: sha512-xqUeu2JAIJpXyvskvU3uvQW8PAmHrtXp2KDuMJwQqW8Sqq0CaZBAQ+dKS3RBXVhU4wC5NjAdKrmh84241gO9cA==}
     engines: {node: '>=18'}
@@ -4437,8 +4441,8 @@ packages:
     resolution: {integrity: sha512-GmqrO8WJ1NuzJ2DrziEI2o57jKAVIQNf8a18W3nCYU3H7PNWqCCVTeH6/NQE93CIllIgQS98rrmVkYgTX9fFJQ==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
-  ws@8.19.0:
-    resolution: {integrity: sha512-blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg==}
+  ws@8.20.0:
+    resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -6027,7 +6031,7 @@ snapshots:
       '@types/phoenix': 1.6.7
       '@types/ws': 8.18.1
       tslib: 2.8.1
-      ws: 8.19.0
+      ws: 8.20.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -6169,7 +6173,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.19.30
+      '@types/node': 20.19.37
 
   '@types/deep-eql@4.0.2': {}
 
@@ -6189,7 +6193,7 @@ snapshots:
 
   '@types/mysql@2.15.27':
     dependencies:
-      '@types/node': 20.19.30
+      '@types/node': 20.19.37
 
   '@types/node@20.19.30':
     dependencies:
@@ -6210,7 +6214,7 @@ snapshots:
 
   '@types/pg@8.15.6':
     dependencies:
-      '@types/node': 20.19.30
+      '@types/node': 20.19.37
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
@@ -6226,13 +6230,13 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 20.19.30
+      '@types/node': 20.19.37
 
   '@types/whatwg-mimetype@3.0.2': {}
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 20.19.30
+      '@types/node': 20.19.37
 
   '@typescript-eslint/eslint-plugin@8.44.1(@typescript-eslint/parser@8.44.1(eslint@9.36.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.36.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
@@ -6332,7 +6336,7 @@ snapshots:
       next: 16.1.7(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
 
-  '@vitest/coverage-v8@4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))':
+  '@vitest/coverage-v8@4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.18
@@ -6344,7 +6348,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -6869,9 +6873,9 @@ snapshots:
   enhanced-resolve@5.20.1:
     dependencies:
       graceful-fs: 4.2.11
-      tapable: 2.3.0
+      tapable: 2.3.2
 
-  entities@4.5.0: {}
+  entities@7.0.1: {}
 
   es-abstract@1.24.0:
     dependencies:
@@ -7286,14 +7290,14 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  happy-dom@20.3.7:
+  happy-dom@20.8.8:
     dependencies:
-      '@types/node': 20.19.30
+      '@types/node': 20.19.37
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
-      entities: 4.5.0
+      entities: 7.0.1
       whatwg-mimetype: 3.0.0
-      ws: 8.19.0
+      ws: 8.20.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -8314,6 +8318,8 @@ snapshots:
 
   tapable@2.3.0: {}
 
+  tapable@2.3.2: {}
+
   tar@7.5.6:
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
@@ -8550,7 +8556,7 @@ snapshots:
       lightningcss: 1.30.2
       terser: 5.46.1
 
-  vitest-dom@0.1.1(vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)):
+  vitest-dom@0.1.1(vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)):
     dependencies:
       aria-query: 5.3.2
       chalk: 5.6.2
@@ -8558,9 +8564,9 @@ snapshots:
       dom-accessibility-api: 0.6.3
       lodash-es: 4.17.23
       redent: 4.0.0
-      vitest: 3.2.4(@types/node@20.19.30)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
+      vitest: 3.2.4(@types/node@20.19.30)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
 
-  vitest-dom@0.1.1(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)):
+  vitest-dom@0.1.1(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)):
     dependencies:
       aria-query: 5.3.2
       chalk: 5.6.2
@@ -8568,9 +8574,9 @@ snapshots:
       dom-accessibility-api: 0.6.3
       lodash-es: 4.17.23
       redent: 4.0.0
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1)
 
-  vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1):
+  vitest@3.2.4(@types/node@20.19.30)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
@@ -8597,7 +8603,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.30
-      happy-dom: 20.3.7
+      happy-dom: 20.8.8
     transitivePeerDependencies:
       - jiti
       - less
@@ -8612,7 +8618,7 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.3.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1):
+  vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(happy-dom@20.8.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1):
     dependencies:
       '@vitest/expect': 4.0.18
       '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@25.0.10)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.1))
@@ -8637,7 +8643,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/node': 25.0.10
-      happy-dom: 20.3.7
+      happy-dom: 20.8.8
     transitivePeerDependencies:
       - jiti
       - less
@@ -8689,7 +8695,7 @@ snapshots:
       mime-types: 2.1.35
       neo-async: 2.6.2
       schema-utils: 4.3.3
-      tapable: 2.3.0
+      tapable: 2.3.2
       terser-webpack-plugin: 5.4.0(webpack@5.101.3)
       watchpack: 2.5.1
       webpack-sources: 3.3.4
@@ -8774,7 +8780,7 @@ snapshots:
       imurmurhash: 0.1.4
       signal-exit: 4.1.0
 
-  ws@8.19.0: {}
+  ws@8.20.0: {}
 
   xtend@4.0.2: {}
 
