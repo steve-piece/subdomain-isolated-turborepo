@@ -22,7 +22,7 @@
     "@vitest/coverage-v8": "^4.0.0",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "happy-dom": "^20.3.2",
+    "happy-dom": "^20.8.8",
     "prettier": "^3.6.2",
     "supabase": "^2.45.5",
     "turbo": "^2.5.6",
