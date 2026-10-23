@@ -1,7 +1,7 @@
 // apps/protected/app/s/[subdomain]/opengraph-image.tsx
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+// Removed: export const runtime = "edge" (Next 16.4 rejects segment runtime config with cacheComponents; Node runtime is the default)
 export const alt = "Organization";
 export const size = {
   width: 1200,
