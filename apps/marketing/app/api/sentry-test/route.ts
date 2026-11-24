@@ -6,6 +6,10 @@ import * as Sentry from "@sentry/nextjs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (process.env.NODE_ENV !== "development") {
+    return new Response(null, { status: 404 });
+  }
+
   // Test console logging integration first
   console.error("🔥 SENTRY TEST: Console error from API route");
   console.warn("⚠️ SENTRY TEST: Console warning from API route");
